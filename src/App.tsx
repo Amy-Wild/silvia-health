@@ -9,6 +9,8 @@ import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
 import Education from "./pages/Education";
 import PartnerZone from "./pages/PartnerZone";
+import GPDashboard from "./pages/GPDashboard";
+import PatientAssessment from "./pages/PatientAssessment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/gp-dashboard" element={<GPDashboard />} />
+          <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/results" element={<Results />} />
           <Route path="/education" element={<Education />} />
