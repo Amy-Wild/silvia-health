@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,12 +9,32 @@ import { calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
 import { EmailService } from "@/services/EmailService";
 import { useToast } from "@/hooks/use-toast";
 
+interface AssessmentData {
+  patientRef?: string;
+  age?: string;
+  menstrualStatus?: string;
+  periodsStopped?: string;
+  postmenopausalBleeding?: string;
+  unexplainedWeightLoss?: string;
+  severePelvicPain?: string;
+  hotFlashFrequency?: string;
+  nightSweats?: string;
+  physicalSymptoms?: string;
+  moodSymptoms?: string;
+  libidoChanges?: string;
+  smokingStatus?: string;
+  alcoholConsumption?: string;
+  exerciseLevel?: string;
+  bmi?: string;
+  [key: string]: any;
+}
+
 const PatientAssessment = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [assessmentData, setAssessmentData] = useState({});
+  const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -88,7 +107,7 @@ const PatientAssessment = () => {
     }
   };
 
-  const getRedFlags = (data: any): string[] => {
+  const getRedFlags = (data: AssessmentData): string[] => {
     const flags = [];
     if (data.postmenopausalBleeding === "yes") flags.push("Postmenopausal bleeding");
     if (data.unexplainedWeightLoss === "yes") flags.push("Unexplained weight loss");
@@ -96,7 +115,7 @@ const PatientAssessment = () => {
     return flags;
   };
 
-  const generateClinicalSummary = (data: any) => {
+  const generateClinicalSummary = (data: AssessmentData) => {
     return {
       vasomotor: data.hotFlashFrequency || "Not reported",
       physical: data.physicalSymptoms || "Not reported",
@@ -109,7 +128,7 @@ const PatientAssessment = () => {
     };
   };
 
-  const generateRecommendations = (data: any, riskLevel: string): string[] => {
+  const generateRecommendations = (data: AssessmentData, riskLevel: string): string[] => {
     const recommendations = [];
     
     if (riskLevel === "red") {
@@ -145,7 +164,7 @@ const PatientAssessment = () => {
     }
   };
 
-  const handleDataChange = (data: any) => {
+  const handleDataChange = (data: AssessmentData) => {
     setAssessmentData(data);
     // Basic validation - could be enhanced
     setIsValid(Object.keys(data).length > 0);
