@@ -1,0 +1,315 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertTriangle, Eye, Mail, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
+
+const ClinicalDashboard = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterRisk, setFilterRisk] = useState("all");
+
+  // Mock assessment data
+  const assessments = [
+    {
+      id: "uuid-123-456",
+      patientRef: "Patient A",
+      completed: "2024-06-30 14:30",
+      status: "completed",
+      riskLevel: "red",
+      redFlags: ["Postmenopausal bleeding", "Unexplained weight loss"],
+      symptoms: { vasomotor: "severe", psychological: "moderate", physical: "mild" },
+      bmi: 32,
+      smoking: "current",
+      alcohol: "high",
+      priority: "urgent"
+    },
+    {
+      id: "uuid-789-012", 
+      patientRef: "Patient B",
+      completed: "2024-06-30 11:15",
+      status: "completed",
+      riskLevel: "amber",
+      redFlags: [],
+      symptoms: { vasomotor: "moderate", psychological: "significant", physical: "moderate" },
+      bmi: 28,
+      smoking: "former",
+      alcohol: "moderate",
+      priority: "routine"
+    },
+    {
+      id: "uuid-345-678",
+      patientRef: "Patient C", 
+      completed: "2024-06-29 16:45",
+      status: "completed",
+      riskLevel: "green",
+      redFlags: [],
+      symptoms: { vasomotor: "mild", psychological: "mild", physical: "minimal" },
+      bmi: 24,
+      smoking: "never",
+      alcohol: "low",
+      priority: "routine"
+    },
+    {
+      id: "uuid-901-234",
+      patientRef: "",
+      completed: null,
+      status: "pending",
+      riskLevel: null,
+      redFlags: [],
+      symptoms: {},
+      priority: null
+    }
+  ];
+
+  const getRiskBadge = (level: string | null) => {
+    if (!level) return <Badge variant="outline">Pending</Badge>;
+    const colors = {
+      red: "bg-red-500 text-white",
+      amber: "bg-amber-500 text-white", 
+      green: "bg-green-500 text-white"
+    };
+    return <Badge className={colors[level as keyof typeof colors]}>{level.toUpperCase()}</Badge>;
+  };
+
+  const getPriorityIcon = (priority: string | null) => {
+    if (priority === "urgent") return <AlertTriangle className="w-4 h-4 text-red-500" />;
+    if (priority === "routine") return <Clock className="w-4 h-4 text-gray-500" />;
+    return null;
+  };
+
+  const filteredAssessments = assessments.filter(assessment => {
+    const matchesSearch = !searchTerm || 
+      assessment.patientRef.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assessment.id.includes(searchTerm);
+    
+    const matchesStatus = filterStatus === "all" || assessment.status === filterStatus;
+    const matchesRisk = filterRisk === "all" || assessment.riskLevel === filterRisk;
+    
+    return matchesSearch && matchesStatus && matchesRisk;
+  });
+
+  const stats = {
+    total: assessments.length,
+    completed: assessments.filter(a => a.status === "completed").length,
+    pending: assessments.filter(a => a.status === "pending").length,
+    urgent: assessments.filter(a => a.priority === "urgent").length
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Clinical Assessment Dashboard</h1>
+              <p className="text-gray-600">Review and manage patient assessments</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+              </Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Mail className="w-4 h-4 mr-2" />
+                Bulk Email
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Assessments</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Completed</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Pending</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Urgent</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.urgent}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search by patient reference or session ID..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterRisk} onValueChange={setFilterRisk}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by risk" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Risk Levels</SelectItem>
+                    <SelectItem value="red">Red Flag</SelectItem>
+                    <SelectItem value="amber">Amber</SelectItem>
+                    <SelectItem value="green">Green</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Assessment Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Patient Assessments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Patient</TableHead>
+                    <TableHead>Session ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Risk Level</TableHead>
+                    <TableHead>Red Flags</TableHead>
+                    <TableHead>Completed</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssessments.map((assessment) => (
+                    <TableRow key={assessment.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {getPriorityIcon(assessment.priority)}
+                          <span className="font-medium">
+                            {assessment.patientRef || "Anonymous"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {assessment.id.slice(-8)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
+                          {assessment.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {getRiskBadge(assessment.riskLevel)}
+                      </TableCell>
+                      <TableCell>
+                        {assessment.redFlags.length > 0 ? (
+                          <Badge variant="destructive">
+                            {assessment.redFlags.length} flag(s)
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-500">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {assessment.completed ? (
+                          <span className="text-sm text-gray-600">
+                            {assessment.completed}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {assessment.status === "completed" && (
+                            <>
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Mail className="w-4 h-4 mr-1" />
+                                Email
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ClinicalDashboard;

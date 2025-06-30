@@ -6,13 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, ArrowLeft, Heart } from "lucide-react";
 import PatientAssessmentForm from "@/components/PatientAssessmentForm";
+import { calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
+import { EmailService } from "@/services/EmailService";
+import { useToast } from "@/hooks/use-toast";
 
 const PatientAssessment = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState({});
   const [isValid, setIsValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
@@ -35,13 +40,103 @@ const PatientAssessment = () => {
     }
   }, [sessionId, navigate]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
       // Submit assessment
-      navigate(`/patient-results/${sessionId}`);
+      await submitAssessment();
     }
+  };
+
+  const submitAssessment = async () => {
+    setIsSubmitting(true);
+    try {
+      // Calculate risk level
+      const riskLevel = calculateRiskLevel(assessmentData);
+      
+      // Prepare assessment result
+      const result = {
+        sessionId: sessionId!,
+        patientRef: assessmentData.patientRef || "",
+        completedAt: new Date().toISOString(),
+        riskLevel,
+        redFlags: getRedFlags(assessmentData),
+        clinicalSummary: generateClinicalSummary(assessmentData),
+        recommendations: generateRecommendations(assessmentData, riskLevel)
+      };
+
+      // Send email to GP (simulated)
+      const gpEmail = "gp@example.com"; // In real app, this would be retrieved from session
+      await EmailService.sendAssessmentResults(gpEmail, result);
+      
+      toast({
+        title: "Assessment Complete",
+        description: "Your results have been sent to your GP",
+      });
+
+      // Navigate to results page
+      navigate(`/patient-results/${sessionId}`);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit assessment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getRedFlags = (data: any): string[] => {
+    const flags = [];
+    if (data.postmenopausalBleeding === "yes") flags.push("Postmenopausal bleeding");
+    if (data.unexplainedWeightLoss === "yes") flags.push("Unexplained weight loss");
+    if (data.severePelvicPain === "yes") flags.push("Severe pelvic pain");
+    return flags;
+  };
+
+  const generateClinicalSummary = (data: any) => {
+    return {
+      vasomotor: data.hotFlashFrequency || "Not reported",
+      physical: data.physicalSymptoms || "Not reported",
+      psychological: data.moodSymptoms || "Not reported",
+      sexual: data.libidoChanges || "Not reported",
+      smoking: data.smokingStatus || "Not reported",
+      alcohol: data.alcoholConsumption || "Not reported",
+      exercise: data.exerciseLevel || "Not reported",
+      bmi: data.bmi || "Not calculated"
+    };
+  };
+
+  const generateRecommendations = (data: any, riskLevel: string): string[] => {
+    const recommendations = [];
+    
+    if (riskLevel === "red") {
+      recommendations.push("Urgent medical review required");
+      recommendations.push("Consider urgent referral");
+    }
+    
+    if (data.hotFlashFrequency === "severe" || data.nightSweats === "severe") {
+      recommendations.push("Discuss HRT options");
+    }
+    
+    if (data.smokingStatus === "current") {
+      recommendations.push("Smoking cessation support");
+    }
+    
+    if (data.exerciseLevel === "none") {
+      recommendations.push("Exercise counseling");
+    }
+    
+    if (data.alcoholConsumption === "22+") {
+      recommendations.push("Alcohol reduction advice");
+    }
+    
+    recommendations.push("Lifestyle counseling");
+    recommendations.push("Follow-up appointment in 4-6 weeks");
+    
+    return recommendations;
   };
 
   const handlePrevious = () => {
@@ -140,10 +235,12 @@ const PatientAssessment = () => {
             </Button>
             <Button 
               onClick={handleNext}
-              disabled={!isValid && currentStep < totalSteps}
+              disabled={(!isValid && currentStep < totalSteps) || isSubmitting}
               className="bg-pink-500 hover:bg-pink-600 flex items-center"
             >
-              {currentStep === totalSteps ? (
+              {isSubmitting ? (
+                <>Submitting...</>
+              ) : currentStep === totalSteps ? (
                 <>Complete Assessment</>
               ) : (
                 <>

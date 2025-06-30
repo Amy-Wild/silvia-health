@@ -11,6 +11,8 @@ import Education from "./pages/Education";
 import PartnerZone from "./pages/PartnerZone";
 import GPDashboard from "./pages/GPDashboard";
 import PatientAssessment from "./pages/PatientAssessment";
+import PatientResults from "./pages/PatientResults";
+import ClinicalDashboard from "./pages/ClinicalDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,7 +26,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/gp-dashboard" element={<GPDashboard />} />
+          <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
+          <Route path="/patient-results/:sessionId" element={<PatientResults />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/results" element={<Results />} />
           <Route path="/education" element={<Education />} />

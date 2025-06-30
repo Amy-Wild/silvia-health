@@ -1,15 +1,16 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Plus, Eye, Mail, Calendar } from "lucide-react";
+import { Copy, Plus, Eye, Mail, Calendar, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const GPDashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([
     {
       id: "uuid-123-456",
@@ -63,8 +64,19 @@ const GPDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">GP Assessment Dashboard</h1>
-          <p className="text-gray-600">Manage patient menopause assessments</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">GP Assessment Dashboard</h1>
+              <p className="text-gray-600">Manage patient menopause assessments</p>
+            </div>
+            <Button 
+              onClick={() => navigate('/clinical-dashboard')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Clinical Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -107,7 +119,7 @@ const GPDashboard = () => {
           {/* Active Sessions */}
           <Card>
             <CardHeader>
-              <CardTitle>Assessment Sessions</CardTitle>
+              <CardTitle>Recent Assessment Sessions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
