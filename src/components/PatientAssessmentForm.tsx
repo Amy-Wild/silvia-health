@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -210,6 +209,242 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
                 placeholder="e.g., Affects my sleep, embarrassing at work, limits social activities..."
                 className="mt-2"
               />
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label>Which physical symptoms are you experiencing? (Select all that apply)</Label>
+              <div className="mt-3 space-y-3">
+                {[
+                  { id: "joint-pain", label: "Joint aches and pains" },
+                  { id: "muscle-pain", label: "Muscle aches" },
+                  { id: "headaches", label: "Headaches or migraines" },
+                  { id: "fatigue", label: "Tiredness or fatigue" },
+                  { id: "weight-gain", label: "Weight gain" },
+                  { id: "bloating", label: "Bloating or digestive issues" },
+                  { id: "breast-tenderness", label: "Breast tenderness" },
+                  { id: "skin-changes", label: "Dry skin or hair changes" },
+                ].map((symptom) => (
+                  <div key={symptom.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={symptom.id}
+                      checked={formData.physicalSymptoms?.includes(symptom.id) || false}
+                      onCheckedChange={(checked) => {
+                        const current = formData.physicalSymptoms || [];
+                        const updated = checked
+                          ? [...current, symptom.id]
+                          : current.filter((item: string) => item !== symptom.id);
+                        updateData("physicalSymptoms", updated);
+                      }}
+                    />
+                    <Label htmlFor={symptom.id}>{symptom.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Card className="bg-red-50 border-red-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <Label className="text-red-800 font-medium">Important Questions</Label>
+                </div>
+                <div className="mt-3 space-y-4">
+                  <div>
+                    <Label>Have you experienced unexplained weight loss (more than 10% of body weight)?</Label>
+                    <RadioGroup
+                      value={formData.unexplainedWeightLoss}
+                      onValueChange={(value) => updateData("unexplainedWeightLoss", value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="weight-loss-yes" />
+                        <Label htmlFor="weight-loss-yes">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="weight-loss-no" />
+                        <Label htmlFor="weight-loss-no">No</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  <div>
+                    <Label>Do you have severe pelvic pain?</Label>
+                    <RadioGroup
+                      value={formData.severePelvicPain}
+                      onValueChange={(value) => updateData("severePelvicPain", value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="pelvic-pain-yes" />
+                        <Label htmlFor="pelvic-pain-yes">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="pelvic-pain-no" />
+                        <Label htmlFor="pelvic-pain-no">No</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label>How would you describe your mood and emotional wellbeing?</Label>
+              <RadioGroup
+                value={formData.moodSymptoms}
+                onValueChange={(value) => updateData("moodSymptoms", value)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="none" id="mood-none" />
+                  <Label htmlFor="mood-none">No changes - feeling normal</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mild" id="mood-mild" />
+                  <Label htmlFor="mood-mild">Slightly more emotional than usual</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="moderate" id="mood-moderate" />
+                  <Label htmlFor="mood-moderate">Noticeable mood swings or anxiety</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="severe" id="mood-severe" />
+                  <Label htmlFor="mood-severe">Significant depression or anxiety</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Are you experiencing any memory or concentration problems?</Label>
+              <RadioGroup
+                value={formData.cognitiveSymptoms}
+                onValueChange={(value) => updateData("cognitiveSymptoms", value)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="none" id="cognitive-none" />
+                  <Label htmlFor="cognitive-none">No problems</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mild" id="cognitive-mild" />
+                  <Label htmlFor="cognitive-mild">Occasional forgetfulness</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="moderate" id="cognitive-moderate" />
+                  <Label htmlFor="cognitive-moderate">Regular memory or focus issues</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="severe" id="cognitive-severe" />
+                  <Label htmlFor="cognitive-severe">Significant memory problems affecting daily life</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>How are these symptoms affecting your work or daily activities?</Label>
+              <Textarea
+                value={formData.moodImpact || ""}
+                onChange={(e) => updateData("moodImpact", e.target.value)}
+                placeholder="e.g., Difficulty concentrating at work, avoiding social situations, affecting relationships..."
+                className="mt-2"
+              />
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div>
+              <Label>How is your sleep quality?</Label>
+              <RadioGroup
+                value={formData.sleepQuality}
+                onValueChange={(value) => updateData("sleepQuality", value)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="good" id="sleep-good" />
+                  <Label htmlFor="sleep-good">Good - sleeping well most nights</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fair" id="sleep-fair" />
+                  <Label htmlFor="sleep-fair">Fair - some difficulty sleeping</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="poor" id="sleep-poor" />
+                  <Label htmlFor="sleep-poor">Poor - frequently disturbed sleep</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="very-poor" id="sleep-very-poor" />
+                  <Label htmlFor="sleep-very-poor">Very poor - severe insomnia</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Have you noticed changes in your interest in intimacy?</Label>
+              <RadioGroup
+                value={formData.libidoChanges}
+                onValueChange={(value) => updateData("libidoChanges", value)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no-change" id="libido-no-change" />
+                  <Label htmlFor="libido-no-change">No change</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="decreased" id="libido-decreased" />
+                  <Label htmlFor="libido-decreased">Decreased interest</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="significantly-decreased" id="libido-sig-decreased" />
+                  <Label htmlFor="libido-sig-decreased">Significantly decreased interest</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="prefer-not-to-say" id="libido-prefer-not" />
+                  <Label htmlFor="libido-prefer-not">Prefer not to say</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Are you experiencing vaginal dryness or discomfort?</Label>
+              <RadioGroup
+                value={formData.vaginalSymptoms}
+                onValueChange={(value) => updateData("vaginalSymptoms", value)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="none" id="vaginal-none" />
+                  <Label htmlFor="vaginal-none">No problems</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mild" id="vaginal-mild" />
+                  <Label htmlFor="vaginal-mild">Mild dryness</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="moderate" id="vaginal-moderate" />
+                  <Label htmlFor="vaginal-moderate">Moderate dryness affecting comfort</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="severe" id="vaginal-severe" />
+                  <Label htmlFor="vaginal-severe">Severe dryness affecting intimacy</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="prefer-not-to-say" id="vaginal-prefer-not" />
+                  <Label htmlFor="vaginal-prefer-not">Prefer not to say</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
         );
