@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Eye, Mail, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ClinicalDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
+  const navigate = useNavigate();
 
   // Mock assessment data
   const assessments = [
@@ -288,9 +289,13 @@ const ClinicalDashboard = () => {
                         <div className="flex items-center space-x-2">
                           {assessment.status === "completed" && (
                             <>
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => navigate(`/gp-results/${assessment.id}`)}
+                              >
                                 <Eye className="w-4 h-4 mr-1" />
-                                View
+                                Clinical View
                               </Button>
                               <Button variant="outline" size="sm">
                                 <Mail className="w-4 h-4 mr-1" />

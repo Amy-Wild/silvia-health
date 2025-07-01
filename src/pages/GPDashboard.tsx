@@ -262,10 +262,10 @@ const GPDashboard = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => navigate(`/patient-results/${session.id}`)}
+                              onClick={() => navigate(`/gp-results/${session.id}`)}
                             >
                               <Eye className="w-4 h-4 mr-1" />
-                              View Results
+                              Clinical Results
                             </Button>
                             <Button variant="outline" size="sm">
                               <Mail className="w-4 h-4 mr-1" />

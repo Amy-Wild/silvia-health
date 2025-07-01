@@ -12,6 +12,7 @@ import PartnerZone from "./pages/PartnerZone";
 import GPDashboard from "./pages/GPDashboard";
 import PatientAssessment from "./pages/PatientAssessment";
 import PatientResults from "./pages/PatientResults";
+import GPResults from "./pages/GPResults";
 import ClinicalDashboard from "./pages/ClinicalDashboard";
 import Instructions from "./pages/Instructions";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
           <Route path="/patient-results/:sessionId" element={<PatientResults />} />
+          <Route path="/gp-results/:sessionId" element={<GPResults />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/results" element={<Results />} />
           <Route path="/education" element={<Education />} />
