@@ -13,6 +13,7 @@ import GPDashboard from "./pages/GPDashboard";
 import PatientAssessment from "./pages/PatientAssessment";
 import PatientResults from "./pages/PatientResults";
 import ClinicalDashboard from "./pages/ClinicalDashboard";
+import Instructions from "./pages/Instructions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/instructions" element={<Instructions />} />
           <Route path="/gp-dashboard" element={<GPDashboard />} />
           <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
