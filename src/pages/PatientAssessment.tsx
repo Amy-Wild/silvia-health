@@ -1,20 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { ArrowRight, ArrowLeft, Heart } from "lucide-react";
 import PatientAssessmentForm from "@/components/PatientAssessmentForm";
-import SelfCarePathway from "@/components/SelfCarePathway";
-import { 
-  calculateRiskLevel, 
-  generateClinicalSummary, 
-  generateNHSRecommendations, 
-  determineCarePath, 
-  generatePatientGuidance,
-  getUrgentFlags 
-} from "@/components/ConditionalQuestionLogic";
-import { EmailService } from "@/services/EmailService";
+import AssessmentHeader from "@/components/assessment/AssessmentHeader";
+import AssessmentProgress from "@/components/assessment/AssessmentProgress";
+import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
+import WelcomeMessage from "@/components/assessment/WelcomeMessage";
+import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
+import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { useToast } from "@/hooks/use-toast";
 
 interface AssessmentData {
@@ -55,8 +49,6 @@ const PatientAssessment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = 8;
-  const progress = (currentStep / totalSteps) * 100;
-
   const steps = [
     "About You",
     "Your Periods", 
@@ -85,46 +77,7 @@ const PatientAssessment = () => {
   const processAssessmentCompletion = async () => {
     setIsSubmitting(true);
     try {
-      // Normalize data
-      const normalizedData = {
-        ...assessmentData,
-        physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
-          ? assessmentData.physicalSymptoms 
-          : assessmentData.physicalSymptoms 
-            ? [assessmentData.physicalSymptoms] 
-            : [],
-        bmi: calculateBMI(assessmentData.height, assessmentData.weight)?.toFixed(1)
-      };
-
-      // Determine care pathway
-      const determinedPath = determineCarePath(normalizedData);
-
-      // Generate clinical results for GP
-      const riskLevel = calculateRiskLevel(normalizedData);
-      const clinicalSummary = generateClinicalSummary(normalizedData);
-      const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
-      const urgentFlags = getUrgentFlags(normalizedData);
-      
-      const result = {
-        sessionId: sessionId!,
-        patientRef: normalizedData.patientRef || `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`,
-        completedAt: new Date().toISOString(),
-        riskLevel,
-        urgentFlags,
-        clinicalSummary,
-        recommendations,
-        rawData: normalizedData,
-        carePath: determinedPath
-      };
-
-      // Store result for GP access
-      localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
-      
-      // Send email to GP (only for cases requiring GP attention)
-      if (determinedPath === 'gp-urgent' || determinedPath === 'gp-routine') {
-        const gpEmail = "gp@example.com";
-        await EmailService.sendAssessmentResults(gpEmail, result);
-      }
+      const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education-first') {
@@ -168,23 +121,6 @@ const PatientAssessment = () => {
     }
   };
 
-  const calculateBMI = (height?: string, weight?: string): number | null => {
-    if (!height || !weight) return null;
-    const h = parseFloat(height) / 100;
-    const w = parseFloat(weight);
-    if (h > 0 && w > 0) {
-      return w / (h * h);
-    }
-    return null;
-  };
-
-  const getDOBFromAge = (age?: string): string => {
-    if (!age) return "Not provided";
-    const currentDate = new Date();
-    const birthYear = currentDate.getFullYear() - parseInt(age);
-    return `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${birthYear}`;
-  };
-
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -198,55 +134,17 @@ const PatientAssessment = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-center">
-                <h1 className="text-xl font-bold text-gray-900">Your Health Assessment</h1>
-                <p className="text-sm text-gray-600">Understanding your menopause journey</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AssessmentHeader />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          {/* Welcome Message */}
-          {currentStep === 1 && (
-            <Card className="mb-8 bg-gradient-to-r from-pink-500 to-purple-600 text-white">
-              <CardContent className="p-8 text-center">
-                <h2 className="text-2xl font-bold mb-4">Welcome!</h2>
-                <p className="text-lg opacity-90 mb-4">
-                  Your GP has asked you to complete this health assessment to better understand your symptoms and provide the best care possible.
-                </p>
-                <p className="opacity-80">
-                  This assessment is completely anonymous and secure. Your responses will help create a personalized care plan for you.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <WelcomeMessage show={currentStep === 1} />
 
-          {/* Progress Section */}
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between mb-4">
-                <CardTitle className="text-lg">Assessment Progress</CardTitle>
-                <span className="text-sm text-gray-500">
-                  Step {currentStep} of {totalSteps}
-                </span>
-              </div>
-              <Progress value={progress} className="w-full" />
-              <p className="text-sm text-gray-600 mt-2">
-                {steps[currentStep - 1]}
-              </p>
-            </CardHeader>
-          </Card>
+          <AssessmentProgress 
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            steps={steps}
+          />
 
           {/* Assessment Form */}
           <Card>
@@ -267,34 +165,14 @@ const PatientAssessment = () => {
             </CardContent>
           </Card>
 
-          {/* Navigation */}
-          <div className="flex justify-between mt-8">
-            <Button 
-              variant="outline" 
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-              className="flex items-center"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Previous
-            </Button>
-            <Button 
-              onClick={handleNext}
-              disabled={(!isValid && currentStep < totalSteps) || isSubmitting}
-              className="bg-pink-500 hover:bg-pink-600 flex items-center"
-            >
-              {isSubmitting ? (
-                <>Processing...</>
-              ) : currentStep === totalSteps ? (
-                <>Complete Assessment</>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
+          <AssessmentNavigation 
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            isValid={isValid}
+            isSubmitting={isSubmitting}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
         </div>
       </div>
     </div>
