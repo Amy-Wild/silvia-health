@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Heart, Info, AlertTriangle, Download } from "lucide-react";
+import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen } from "lucide-react";
 
 const PatientResults = () => {
   const { sessionId } = useParams();
@@ -12,6 +12,7 @@ const PatientResults = () => {
   const results = {
     completedAt: new Date().toLocaleDateString(),
     riskLevel: "moderate",
+    needsGPAppointment: true,
     keyFindings: [
       "Moderate menopause symptoms affecting daily life",
       "Some cardiovascular risk factors present",
@@ -27,12 +28,22 @@ const PatientResults = () => {
       "Your GP will review these results before your appointment",
       "Prepare questions about treatment options",
       "Consider keeping a symptom diary until your appointment"
+    ],
+    educationalTopics: [
+      "Understanding HRT options",
+      "Lifestyle modifications for symptom relief",
+      "Bone health in menopause",
+      "Preparing for your GP appointment"
     ]
   };
 
   const handleDownloadResults = () => {
     // In real app, this would generate a PDF
     console.log("Downloading patient results summary");
+  };
+
+  const handleExploreEducation = () => {
+    window.open(`/education?sessionId=${sessionId}&source=results`, '_blank');
   };
 
   return (
@@ -112,6 +123,39 @@ const PatientResults = () => {
                   </ul>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Educational Resources Integration */}
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-blue-800">
+                <BookOpen className="w-5 h-5 mr-2" />
+                Learn More While You Wait
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-blue-700 mb-4">
+                Explore educational resources tailored to your assessment results. 
+                Understanding your condition better will help you have more informed conversations with your GP.
+              </p>
+              <div className="space-y-2 mb-4">
+                <h4 className="font-medium text-blue-800">Recommended topics for you:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {results.educationalTopics.map((topic, index) => (
+                    <Badge key={index} variant="outline" className="border-blue-300 text-blue-700">
+                      {topic}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <Button 
+                onClick={handleExploreEducation}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Explore Educational Resources
+              </Button>
             </CardContent>
           </Card>
 

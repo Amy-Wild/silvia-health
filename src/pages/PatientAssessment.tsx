@@ -53,8 +53,6 @@ const PatientAssessment = () => {
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSelfCare, setShowSelfCare] = useState(false);
-  const [carePath, setCarePath] = useState<'gp-urgent' | 'gp-routine' | 'self-care' | 'education-first' | null>(null);
 
   const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
@@ -100,7 +98,6 @@ const PatientAssessment = () => {
 
       // Determine care pathway
       const determinedPath = determineCarePath(normalizedData);
-      setCarePath(determinedPath);
 
       // Generate clinical results for GP
       const riskLevel = calculateRiskLevel(normalizedData);
@@ -129,9 +126,25 @@ const PatientAssessment = () => {
         await EmailService.sendAssessmentResults(gpEmail, result);
       }
 
-      // Route based on care pathway
+      // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education-first') {
-        setShowSelfCare(true);
+        const treatmentPreferences = normalizedData.treatmentPreferences || [];
+        const educationUrl = treatmentPreferences.length > 0 
+          ? `/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}&source=assessment`
+          : `/education?sessionId=${sessionId}&source=assessment`;
+        
+        toast({
+          title: "Great news! You can manage your symptoms effectively",
+          description: "You're being redirected to educational resources to support your wellness journey.",
+          duration: 3000
+        });
+        
+        // Redirect to educational website after brief delay
+        setTimeout(() => {
+          window.location.href = educationUrl;
+        }, 2000);
+        
+        return;
       } else {
         // Show patient guidance for GP appointments
         const patientGuidance = generatePatientGuidance(determinedPath, normalizedData);
@@ -153,20 +166,6 @@ const PatientAssessment = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleContinueToEducation = () => {
-    const treatmentPreferences = assessmentData.treatmentPreferences || [];
-    
-    if (treatmentPreferences.length > 0) {
-      navigate(`/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}`);
-    } else {
-      navigate(`/education?sessionId=${sessionId}`);
-    }
-  };
-
-  const handleBookGPAnyway = () => {
-    navigate(`/patient-results/${sessionId}`);
   };
 
   const calculateBMI = (height?: string, weight?: string): number | null => {
@@ -196,40 +195,6 @@ const PatientAssessment = () => {
     setAssessmentData(data);
     setIsValid(Object.keys(data).length > 0);
   };
-
-  // Show self-care pathway if appropriate
-  if (showSelfCare && carePath) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-        <header className="bg-white border-b shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-center">
-                  <h1 className="text-xl font-bold text-gray-900">Your Wellness Journey</h1>
-                  <p className="text-sm text-gray-600">Personalized support for your menopause experience</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto">
-            <SelfCarePathway
-              treatmentPreferences={assessmentData.treatmentPreferences || []}
-              symptomLevel="mild" // This would be calculated from assessment data
-              onContinueToEducation={handleContinueToEducation}
-              onBookGPAppointment={handleBookGPAnyway}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">

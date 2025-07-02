@@ -1,14 +1,20 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, BookOpen, Download, Clock, Users, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Play, BookOpen, Download, Clock, Users, ArrowLeft, CheckCircle, Heart } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Education = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  
+  // Check if user came from assessment
+  const fromAssessment = searchParams.get('source') === 'assessment';
+  const sessionId = searchParams.get('sessionId');
+  const preferences = searchParams.get('preferences')?.split(',') || [];
 
   const videos = [
     {
@@ -88,11 +94,25 @@ const Education = () => {
     }
   ];
 
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
   const filteredVideos = selectedCategory === "all" 
     ? videos 
     : videos.filter(video => video.category === selectedCategory);
+
+  // Get personalized content based on assessment preferences
+  const getPersonalizedContent = () => {
+    if (!fromAssessment || preferences.length === 0) return null;
+    
+    const personalizedVideos = videos.filter(video => {
+      if (preferences.includes('non-hormonal') && video.category === 'lifestyle') return true;
+      if (preferences.includes('cbt') && video.title.toLowerCase().includes('mood')) return true;
+      if (preferences.includes('hrt') && video.title.toLowerCase().includes('hrt')) return true;
+      return false;
+    });
+
+    return personalizedVideos;
+  };
+
+  const personalizedContent = getPersonalizedContent();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,10 +137,74 @@ const Education = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
+          {/* Welcome message for assessment users */}
+          {fromAssessment && (
+            <Card className="mb-8 bg-gradient-to-r from-green-500 to-teal-600 text-white">
+              <CardContent className="p-8 text-center">
+                <Heart className="w-12 h-12 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-4">Welcome to Your Wellness Journey!</h2>
+                <p className="text-lg opacity-90 mb-4">
+                  Based on your assessment, you have the tools to manage your symptoms effectively. 
+                  These resources will support you every step of the way.
+                </p>
+                {sessionId && (
+                  <p className="opacity-80 text-sm">
+                    Assessment completed • Session: {sessionId.slice(-8)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Personalized recommendations for assessment users */}
+          {personalizedContent && personalizedContent.length > 0 && (
+            <Card className="mb-8 border-green-200 bg-green-50">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-800">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Your Personalized Resources
+                </CardTitle>
+                <CardDescription className="text-green-700">
+                  Based on your assessment preferences, these resources are specially selected for you.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {personalizedContent.slice(0, 4).map((video) => (
+                    <Card key={video.id} className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+                      <div className="relative">
+                        <div className="aspect-video bg-gray-200 rounded-t-lg flex items-center justify-center">
+                          <Play className="w-8 h-8 text-gray-500" />
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm flex items-center">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {video.duration}
+                        </div>
+                        <Badge className="absolute top-2 left-2 bg-green-500 text-white">
+                          Recommended
+                        </Badge>
+                      </div>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">{video.title}</CardTitle>
+                        <CardDescription className="text-sm">{video.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <Button className="w-full bg-green-600 hover:bg-green-700" size="sm">
+                          <Play className="w-4 h-4 mr-2" />
+                          Watch Now
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Education Hub
+              {fromAssessment ? "Your Menopause Support Hub" : "Education Hub"}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Evidence-based educational resources to help you understand perimenopause 
@@ -252,6 +336,27 @@ const Education = () => {
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Assessment Integration Footer */}
+          {fromAssessment && (
+            <Card className="mt-8 bg-blue-50 border-blue-200">
+              <CardContent className="p-6 text-center">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Need Additional Support?</h3>
+                <p className="text-blue-800 mb-4">
+                  If your symptoms change or you need additional guidance, don't hesitate to contact your GP. 
+                  They can review your assessment and discuss other treatment options.
+                </p>
+                <div className="flex justify-center space-x-4">
+                  <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                    Download Symptom Tracker
+                  </Button>
+                  <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                    Questions for GP Visit
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
