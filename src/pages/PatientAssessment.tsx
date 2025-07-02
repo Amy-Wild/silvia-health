@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,8 +47,8 @@ const PatientAssessment = () => {
     "Hot Flashes & Night Sweats",
     "Physical Symptoms",
     "Mood & Memory",
-    "Sleep & Intimacy",
-    "Lifestyle & Health",
+    "Sleep & Treatment Preferences",
+    "Medical History & Lifestyle",
     "Complete"
   ];
 
@@ -72,50 +71,63 @@ const PatientAssessment = () => {
   const submitAssessment = async () => {
     setIsSubmitting(true);
     try {
-      // Ensure physicalSymptoms is always an array
+      // Normalize data
       const normalizedData = {
         ...assessmentData,
         physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
           ? assessmentData.physicalSymptoms 
           : assessmentData.physicalSymptoms 
             ? [assessmentData.physicalSymptoms] 
-            : []
+            : [],
+        bmi: calculateBMI(assessmentData.height, assessmentData.weight)?.toFixed(1)
       };
 
-      // Calculate risk level using improved logic
+      // Calculate risk level and generate results
       const riskLevel = calculateRiskLevel(normalizedData);
-      
-      // Generate detailed clinical summary
       const clinicalSummary = generateClinicalSummary(normalizedData);
-      
-      // Generate NHS-compliant recommendations
       const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
+      const redFlags = getRedFlags(normalizedData);
       
-      // Prepare comprehensive assessment result
+      // Prepare assessment result
       const result = {
         sessionId: sessionId!,
         patientRef: normalizedData.patientRef || `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`,
         completedAt: new Date().toISOString(),
         riskLevel,
-        redFlags: getRedFlags(normalizedData),
+        redFlags,
         clinicalSummary,
         recommendations,
         rawData: normalizedData
       };
 
-      // Store result for GP Results page
+      // Store result
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
       
-      // Send email to GP (simulated)
+      // Send email to GP
       const gpEmail = "gp@example.com";
       await EmailService.sendAssessmentResults(gpEmail, result);
       
-      toast({
-        title: "Assessment Complete",
-        description: "Your results have been sent to your GP",
-      });
-
-      navigate(`/patient-results/${sessionId}`);
+      // Check if patient selected treatment preferences for education
+      const treatmentPreferences = normalizedData.treatmentPreferences || [];
+      
+      if (treatmentPreferences.length > 0) {
+        toast({
+          title: "Assessment Complete",
+          description: "You'll now be shown educational resources for your selected treatment options",
+        });
+        
+        // Redirect to education with preferences
+        navigate(`/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}`);
+      } else {
+        toast({
+          title: "Assessment Complete",
+          description: redFlags.some(flag => flag.includes('🚨')) 
+            ? "Please book an appointment with your GP soon" 
+            : "Your results have been sent to your GP",
+        });
+        
+        navigate(`/patient-results/${sessionId}`);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -125,6 +137,16 @@ const PatientAssessment = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const calculateBMI = (height?: string, weight?: string): number | null => {
+    if (!height || !weight) return null;
+    const h = parseFloat(height) / 100;
+    const w = parseFloat(weight);
+    if (h > 0 && w > 0) {
+      return w / (h * h);
+    }
+    return null;
   };
 
   const getDOBFromAge = (age?: string): string => {
