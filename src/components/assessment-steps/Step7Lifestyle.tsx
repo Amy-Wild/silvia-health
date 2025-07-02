@@ -11,18 +11,20 @@ interface Step7LifestyleProps {
 }
 
 const Step7Lifestyle = ({ data, onUpdate }: Step7LifestyleProps) => {
-  const handleFamilyHistoryChange = (checked: boolean, condition: string) => {
+  const handleFamilyHistoryChange = (checked: boolean | string, condition: string) => {
+    const isChecked = checked === true;
     const currentHistory = data.familyHistory || [];
-    if (checked) {
+    if (isChecked) {
       onUpdate('familyHistory', [...currentHistory, condition]);
     } else {
       onUpdate('familyHistory', currentHistory.filter((item: string) => item !== condition));
     }
   };
 
-  const handlePersonalHistoryChange = (checked: boolean, condition: string) => {
+  const handlePersonalHistoryChange = (checked: boolean | string, condition: string) => {
+    const isChecked = checked === true;
     const currentHistory = data.personalMedicalHistory || [];
-    if (checked) {
+    if (isChecked) {
       onUpdate('personalMedicalHistory', [...currentHistory, condition]);
     } else {
       onUpdate('personalMedicalHistory', currentHistory.filter((item: string) => item !== condition));

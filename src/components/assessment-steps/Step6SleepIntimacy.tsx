@@ -10,9 +10,10 @@ interface Step6SleepIntimacyProps {
 }
 
 const Step6SleepIntimacy = ({ data, onUpdate }: Step6SleepIntimacyProps) => {
-  const handleCheckboxChange = (checked: boolean, value: string) => {
+  const handleCheckboxChange = (checked: boolean | string, value: string) => {
+    const isChecked = checked === true;
     const currentPreferences = data.treatmentPreferences || [];
-    if (checked) {
+    if (isChecked) {
       onUpdate('treatmentPreferences', [...currentPreferences, value]);
     } else {
       onUpdate('treatmentPreferences', currentPreferences.filter((pref: string) => pref !== value));

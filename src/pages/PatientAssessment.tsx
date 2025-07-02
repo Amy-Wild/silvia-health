@@ -26,6 +26,13 @@ interface AssessmentData {
   alcoholConsumption?: string;
   exerciseLevel?: string;
   bmi?: string;
+  treatmentPreferences?: string[];
+  personalMedicalHistory?: string[];
+  familyHistory?: string[];
+  height?: string;
+  weight?: string;
+  sleepQuality?: string;
+  vaginalSymptoms?: string;
   [key: string]: any;
 }
 
