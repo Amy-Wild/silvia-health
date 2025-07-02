@@ -34,6 +34,17 @@ const ClinicalAnalytics = ({ data, overallRisk, confidenceLevel }: ClinicalAnaly
     }
   };
 
+  const chartConfig = {
+    severity: {
+      label: "Severity",
+      color: "#3b82f6",
+    },
+    score: {
+      label: "Score",
+      color: "#ef4444",
+    },
+  };
+
   return (
     <div className="space-y-6">
       {/* Overall Assessment */}
@@ -87,45 +98,41 @@ const ClinicalAnalytics = ({ data, overallRisk, confidenceLevel }: ClinicalAnaly
             </TabsList>
 
             <TabsContent value="progression" className="space-y-4">
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data.symptomProgression}>
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="severity" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3}
-                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <ChartContainer config={chartConfig} className="h-80">
+                <LineChart data={data.symptomProgression}>
+                  <XAxis dataKey="week" />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="severity" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                  />
+                </LineChart>
+              </ChartContainer>
               <div className="text-sm text-gray-600">
                 <p><strong>Predictive Analysis:</strong> Based on current symptom severity and progression patterns from similar patient profiles.</p>
               </div>
             </TabsContent>
 
             <TabsContent value="risk" className="space-y-4">
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="factor" />
-                    <PolarRadiusAxis angle={90} domain={[0, 10]} />
-                    <Radar
-                      name="Risk Score"
-                      dataKey="score"
-                      stroke="#ef4444"
-                      fill="#ef4444"
-                      fillOpacity={0.3}
-                    />
-                    <ChartTooltip />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
+              <ChartContainer config={chartConfig} className="h-80">
+                <RadarChart data={radarData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="factor" />
+                  <PolarRadiusAxis angle={90} domain={[0, 10]} />
+                  <Radar
+                    name="Risk Score"
+                    dataKey="score"
+                    stroke="#ef4444"
+                    fill="#ef4444"
+                    fillOpacity={0.3}
+                  />
+                  <ChartTooltip />
+                </RadarChart>
+              </ChartContainer>
               <div className="text-sm text-gray-600">
                 <p><strong>Multi-dimensional Risk Assessment:</strong> Comprehensive evaluation across cardiovascular, bone health, psychological, and lifestyle factors.</p>
               </div>

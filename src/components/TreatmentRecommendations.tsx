@@ -36,6 +36,13 @@ const TreatmentRecommendations = ({ treatments, patientProfile }: TreatmentRecom
     fill: `hsl(${index * 60}, 70%, 50%)`
   }));
 
+  const chartConfig = {
+    probability: {
+      label: "Probability",
+      color: "#3b82f6",
+    },
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -95,42 +102,38 @@ const TreatmentRecommendations = ({ treatments, patientProfile }: TreatmentRecom
           </TabsContent>
 
           <TabsContent value="regression" className="space-y-4">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="probability" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer config={chartConfig} className="h-80">
+              <BarChart data={chartData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="probability" fill="#3b82f6" />
+              </BarChart>
+            </ChartContainer>
             <div className="text-sm text-gray-600">
               <p><strong>Logistic Regression Analysis:</strong> Based on symptom severity, patient demographics, and clinical risk factors.</p>
             </div>
           </TabsContent>
 
           <TabsContent value="decision" className="space-y-4">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}%`}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <ChartContainer config={chartConfig} className="h-80">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}%`}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <ChartTooltip />
+              </PieChart>
+            </ChartContainer>
             <div className="text-sm text-gray-600">
               <p><strong>Decision Tree Model:</strong> Hierarchical analysis considering primary symptoms and patient characteristics.</p>
             </div>
