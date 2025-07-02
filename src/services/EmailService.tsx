@@ -4,7 +4,7 @@ interface AssessmentResult {
   patientRef?: string;
   completedAt: string;
   riskLevel: string;
-  redFlags: string[];
+  urgentFlags: string[];
   clinicalSummary: any;
   recommendations: string[];
 }
@@ -33,9 +33,9 @@ Patient Reference: ${result.patientRef || "Anonymous"}
 Completed: ${result.completedAt}
 Risk Level: ${riskBadge}
 
-${result.redFlags.length > 0 ? `
+${result.urgentFlags.length > 0 ? `
 RED FLAG ALERTS:
-${result.redFlags.map(flag => `⚠️ ${flag}`).join('\n')}
+${result.urgentFlags.map(flag => `⚠️ ${flag}`).join('\n')}
 ` : ""}
 
 CLINICAL SUMMARY:
