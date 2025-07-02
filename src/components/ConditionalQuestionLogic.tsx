@@ -25,7 +25,65 @@ interface AssessmentData {
   [key: string]: any;
 }
 
-// Enhanced red flag detection with comprehensive medical history
+// Enhanced care pathway determination with gentle language
+export const determineCarePath = (data: AssessmentData): 'gp-urgent' | 'gp-routine' | 'self-care' | 'education-first' => {
+  const urgentFlags = getUrgentFlags(data);
+  const riskFactors = assessRiskFactors(data);
+  const preferences = data.treatmentPreferences || [];
+  
+  // Urgent GP appointment needed (but with gentle messaging)
+  if (urgentFlags.length > 0) {
+    return 'gp-urgent';
+  }
+  
+  // Check if patient prefers self-management approaches
+  if (preferences.includes('non-hormonal') || preferences.includes('cbt')) {
+    const symptomSeverity = calculateSymptomSeverity(data);
+    const hasComplicatingFactors = riskFactors.length > 2;
+    
+    // Even with preferences, some cases need GP input
+    if (symptomSeverity === 'severe' || hasComplicatingFactors) {
+      return 'gp-routine';
+    }
+    
+    // Safe for education-first approach
+    return 'education-first';
+  }
+  
+  // HRT interest - needs GP discussion
+  if (preferences.includes('hrt')) {
+    return 'gp-routine';
+  }
+  
+  // No preferences specified - assess based on symptoms and risk
+  const overallComplexity = calculateOverallComplexity(data, getRedFlags(data));
+  if (overallComplexity.includes('Low') && riskFactors.length === 0) {
+    return 'self-care';
+  }
+  
+  return 'gp-routine';
+};
+
+// Gentle urgent flags - no alarming language
+export const getUrgentFlags = (data: AssessmentData): string[] => {
+  const flags = [];
+  
+  if (data.postmenopausalBleeding === "yes") {
+    flags.push("We'd like your GP to review your bleeding pattern to ensure you get the right care");
+  }
+  
+  if (data.unexplainedWeightLoss === "yes") {
+    flags.push("Your weight changes are something your GP should discuss with you");
+  }
+  
+  if (data.severePelvicPain === "yes") {
+    flags.push("Your pelvic discomfort would benefit from a GP review");
+  }
+  
+  return flags;
+};
+
+// GP-facing red flags (clinical language for healthcare professionals)
 export const getRedFlags = (data: AssessmentData): string[] => {
   const flags = [];
   
@@ -79,9 +137,74 @@ export const getRedFlags = (data: AssessmentData): string[] => {
   return flags;
 };
 
+// Generate patient-friendly guidance messages
+export const generatePatientGuidance = (carePath: string, data: AssessmentData): {
+  title: string;
+  description: string;
+  nextSteps: string[];
+  urgency: 'low' | 'medium' | 'high';
+} => {
+  const preferences = data.treatmentPreferences || [];
+  
+  switch (carePath) {
+    case 'gp-urgent':
+      return {
+        title: "We recommend booking an appointment with your GP",
+        description: "Based on your answers, it would be helpful for your GP to review your symptoms and provide personalized guidance.",
+        nextSteps: [
+          "Contact your GP practice to book an appointment",
+          "Mention you've completed a menopause assessment",
+          "Take a note of your main concerns to discuss"
+        ],
+        urgency: 'high'
+      };
+      
+    case 'gp-routine':
+      return {
+        title: preferences.includes('hrt') 
+          ? "Great choice exploring HRT - let's get you the right support"
+          : "A GP appointment would be helpful for your next steps",
+        description: preferences.includes('hrt')
+          ? "Since you're interested in hormone replacement therapy, your GP can discuss options that might work well for you."
+          : "Your symptoms and preferences suggest a conversation with your GP would help create the right plan for you.",
+        nextSteps: [
+          "Book a routine appointment with your GP",
+          "You've already learned about your preferred treatment options",
+          "Prepare questions about what you'd like to try first"
+        ],
+        urgency: 'medium'
+      };
+      
+    case 'education-first':
+      return {
+        title: "You're taking a great approach to managing your symptoms",
+        description: "Based on your preferences for natural approaches, we have resources that can help you get started right away.",
+        nextSteps: [
+          "Explore the educational resources for your chosen approaches",
+          "Try the suggested lifestyle changes and techniques",
+          "Consider booking a routine GP appointment in 2-3 months to review progress"
+        ],
+        urgency: 'low'
+      };
+      
+    case 'self-care':
+    default:
+      return {
+        title: "You have options to start managing your symptoms today",
+        description: "Your assessment suggests several self-care approaches that could help improve how you're feeling.",
+        nextSteps: [
+          "Review the lifestyle and wellness resources available",
+          "Track your symptoms to see what helps most",
+          "Book a GP appointment if you'd like to discuss treatment options"
+        ],
+        urgency: 'low'
+      };
+  }
+};
+
 export const calculateBMI = (height?: string, weight?: string): number | null => {
   if (!height || !weight) return null;
-  const h = parseFloat(height) / 100; // Convert cm to meters
+  const h = parseFloat(height) / 100;
   const w = parseFloat(weight);
   if (h > 0 && w > 0) {
     return w / (h * h);
@@ -89,13 +212,12 @@ export const calculateBMI = (height?: string, weight?: string): number | null =>
   return null;
 };
 
-// Enhanced risk calculation with medical history weighting
 export const calculateRiskLevel = (data: AssessmentData): string => {
-  // Immediate red flags - highest priority
+  // Immediate urgent care needed
   if (data.postmenopausalBleeding === "yes" || 
       data.unexplainedWeightLoss === "yes" || 
       data.severePelvicPain === "yes") {
-    return "red";
+    return "urgent";
   }
   
   // Personal history red flags
@@ -103,7 +225,7 @@ export const calculateRiskLevel = (data: AssessmentData): string => {
   if (personalHistory.includes('breast-cancer') || 
       personalHistory.includes('blood-clots') || 
       personalHistory.includes('liver-disease')) {
-    return "red"; // Requires specialist input
+    return "high";
   }
   
   // Calculate symptom-based score
@@ -118,7 +240,7 @@ export const calculateRiskLevel = (data: AssessmentData): string => {
   const psychScore = (getSymptomScore('moodSymptoms', data.moodSymptoms) + 
                      getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms)) * 1.2;
   if (personalHistory.includes('depression')) {
-    totalScore += psychScore * 1.5; // Increase weight if history of depression
+    totalScore += psychScore * 1.5;
   } else {
     totalScore += psychScore;
   }
@@ -142,7 +264,7 @@ export const calculateRiskLevel = (data: AssessmentData): string => {
   else if (age > 55) totalScore += 3;
   else if (age > 50) totalScore += 2;
   else if (age > 45) totalScore += 1;
-  else if (age < 40) totalScore += 3; // Early menopause concern
+  else if (age < 40) totalScore += 3;
   
   // BMI-based risk
   const bmi = calculateBMI(data.height, data.weight);
@@ -150,7 +272,7 @@ export const calculateRiskLevel = (data: AssessmentData): string => {
     if (bmi > 35) totalScore += 6;
     else if (bmi > 30) totalScore += 4;
     else if (bmi > 25) totalScore += 2;
-    else if (bmi < 18.5) totalScore += 3; // Underweight concern
+    else if (bmi < 18.5) totalScore += 3;
   }
   
   // Family history risk adjustment
@@ -162,10 +284,40 @@ export const calculateRiskLevel = (data: AssessmentData): string => {
     totalScore += 3;
   }
   
-  // Risk stratification with enhanced thresholds
-  if (totalScore >= 35) return "red";    // High complexity requiring specialist input
-  if (totalScore >= 20) return "amber";  // Moderate risk - structured GP management
-  return "green";                        // Low risk - lifestyle and monitoring
+  // Risk stratification
+  if (totalScore >= 35) return "high";
+  if (totalScore >= 20) return "medium";
+  return "low";
+};
+
+const calculateSymptomSeverity = (data: AssessmentData): 'mild' | 'moderate' | 'severe' => {
+  const vasomotorScore = getSymptomScore('hotFlashFrequency', data.hotFlashFrequency) + 
+                        getSymptomScore('nightSweats', data.nightSweats);
+  const psychScore = getSymptomScore('moodSymptoms', data.moodSymptoms) + 
+                    getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms);
+  const totalScore = vasomotorScore + psychScore;
+  
+  if (totalScore >= 15) return 'severe';
+  if (totalScore >= 8) return 'moderate';
+  return 'mild';
+};
+
+const assessRiskFactors = (data: AssessmentData): string[] => {
+  const factors = [];
+  
+  if (data.smokingStatus === 'current') factors.push('smoking');
+  if (data.exerciseLevel === 'none') factors.push('sedentary');
+  
+  const bmi = calculateBMI(data.height, data.weight);
+  if (bmi && bmi > 30) factors.push('high-bmi');
+  
+  const personalHistory = data.personalMedicalHistory || [];
+  const familyHistory = data.familyHistory || [];
+  
+  if (personalHistory.length > 0) factors.push('personal-history');
+  if (familyHistory.length > 0) factors.push('family-history');
+  
+  return factors;
 };
 
 export const getSymptomScore = (questionId: string, answer: any): number => {
@@ -248,7 +400,6 @@ export const getSymptomScore = (questionId: string, answer: any): number => {
   return scores[questionId]?.[answer] || 0;
 };
 
-// Enhanced clinical summary generation
 export const generateClinicalSummary = (data: AssessmentData) => {
   const bmi = calculateBMI(data.height, data.weight);
   const redFlags = getRedFlags(data);
@@ -416,7 +567,6 @@ const calculateOverallComplexity = (data: AssessmentData, redFlags: string[]): s
   return 'Low - Routine GP management appropriate';
 };
 
-// Enhanced NHS recommendations with treatment preferences
 export const generateNHSRecommendations = (data: AssessmentData, riskLevel: string): string[] => {
   const recommendations = [];
   const redFlags = getRedFlags(data);

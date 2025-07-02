@@ -5,7 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, ArrowLeft, Heart } from "lucide-react";
 import PatientAssessmentForm from "@/components/PatientAssessmentForm";
-import { calculateRiskLevel, generateClinicalSummary, generateNHSRecommendations } from "@/components/ConditionalQuestionLogic";
+import SelfCarePathway from "@/components/SelfCarePathway";
+import { 
+  calculateRiskLevel, 
+  generateClinicalSummary, 
+  generateNHSRecommendations, 
+  determineCarePath, 
+  generatePatientGuidance,
+  getUrgentFlags 
+} from "@/components/ConditionalQuestionLogic";
 import { EmailService } from "@/services/EmailService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +41,7 @@ interface AssessmentData {
   weight?: string;
   sleepQuality?: string;
   vaginalSymptoms?: string;
+  cognitiveSymptoms?: string;
   [key: string]: any;
 }
 
@@ -44,6 +53,8 @@ const PatientAssessment = () => {
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSelfCare, setShowSelfCare] = useState(false);
+  const [carePath, setCarePath] = useState<'gp-urgent' | 'gp-routine' | 'self-care' | 'education-first' | null>(null);
 
   const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
@@ -60,7 +71,6 @@ const PatientAssessment = () => {
   ];
 
   useEffect(() => {
-    // Validate session ID exists
     if (!sessionId) {
       navigate('/');
     }
@@ -70,12 +80,11 @@ const PatientAssessment = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Submit assessment
-      await submitAssessment();
+      await processAssessmentCompletion();
     }
   };
 
-  const submitAssessment = async () => {
+  const processAssessmentCompletion = async () => {
     setIsSubmitting(true);
     try {
       // Normalize data
@@ -89,61 +98,75 @@ const PatientAssessment = () => {
         bmi: calculateBMI(assessmentData.height, assessmentData.weight)?.toFixed(1)
       };
 
-      // Calculate risk level and generate results
+      // Determine care pathway
+      const determinedPath = determineCarePath(normalizedData);
+      setCarePath(determinedPath);
+
+      // Generate clinical results for GP
       const riskLevel = calculateRiskLevel(normalizedData);
       const clinicalSummary = generateClinicalSummary(normalizedData);
       const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
-      const redFlags = getRedFlags(normalizedData);
+      const urgentFlags = getUrgentFlags(normalizedData);
       
-      // Prepare assessment result
       const result = {
         sessionId: sessionId!,
         patientRef: normalizedData.patientRef || `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`,
         completedAt: new Date().toISOString(),
         riskLevel,
-        redFlags,
+        urgentFlags,
         clinicalSummary,
         recommendations,
-        rawData: normalizedData
+        rawData: normalizedData,
+        carePath: determinedPath
       };
 
-      // Store result
+      // Store result for GP access
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
       
-      // Send email to GP
-      const gpEmail = "gp@example.com";
-      await EmailService.sendAssessmentResults(gpEmail, result);
-      
-      // Check if patient selected treatment preferences for education
-      const treatmentPreferences = normalizedData.treatmentPreferences || [];
-      
-      if (treatmentPreferences.length > 0) {
-        toast({
-          title: "Assessment Complete",
-          description: "You'll now be shown educational resources for your selected treatment options",
-        });
-        
-        // Redirect to education with preferences
-        navigate(`/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}`);
+      // Send email to GP (only for cases requiring GP attention)
+      if (determinedPath === 'gp-urgent' || determinedPath === 'gp-routine') {
+        const gpEmail = "gp@example.com";
+        await EmailService.sendAssessmentResults(gpEmail, result);
+      }
+
+      // Route based on care pathway
+      if (determinedPath === 'self-care' || determinedPath === 'education-first') {
+        setShowSelfCare(true);
       } else {
+        // Show patient guidance for GP appointments
+        const patientGuidance = generatePatientGuidance(determinedPath, normalizedData);
+        
         toast({
-          title: "Assessment Complete",
-          description: redFlags.some(flag => flag.includes('🚨')) 
-            ? "Please book an appointment with your GP soon" 
-            : "Your results have been sent to your GP",
+          title: patientGuidance.title,
+          description: patientGuidance.nextSteps[0],
+          duration: 5000
         });
         
         navigate(`/patient-results/${sessionId}`);
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to submit assessment. Please try again.",
+        title: "Error", 
+        description: "Failed to process assessment. Please try again.",
         variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleContinueToEducation = () => {
+    const treatmentPreferences = assessmentData.treatmentPreferences || [];
+    
+    if (treatmentPreferences.length > 0) {
+      navigate(`/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}`);
+    } else {
+      navigate(`/education?sessionId=${sessionId}`);
+    }
+  };
+
+  const handleBookGPAnyway = () => {
+    navigate(`/patient-results/${sessionId}`);
   };
 
   const calculateBMI = (height?: string, weight?: string): number | null => {
@@ -163,20 +186,6 @@ const PatientAssessment = () => {
     return `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${birthYear}`;
   };
 
-  const getRedFlags = (data: AssessmentData): string[] => {
-    const flags = [];
-    if (data.postmenopausalBleeding === "yes") {
-      flags.push("Postmenopausal bleeding - requires urgent 2-week wait referral");
-    }
-    if (data.unexplainedWeightLoss === "yes") {
-      flags.push("Unexplained weight loss - investigate for underlying pathology");
-    }
-    if (data.severePelvicPain === "yes") {
-      flags.push("Severe pelvic pain - requires urgent gynecological assessment");
-    }
-    return flags;
-  };
-
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -185,9 +194,42 @@ const PatientAssessment = () => {
 
   const handleDataChange = (data: AssessmentData) => {
     setAssessmentData(data);
-    // Basic validation - could be enhanced
     setIsValid(Object.keys(data).length > 0);
   };
+
+  // Show self-care pathway if appropriate
+  if (showSelfCare && carePath) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <header className="bg-white border-b shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <h1 className="text-xl font-bold text-gray-900">Your Wellness Journey</h1>
+                  <p className="text-sm text-gray-600">Personalized support for your menopause experience</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-3xl mx-auto">
+            <SelfCarePathway
+              treatmentPreferences={assessmentData.treatmentPreferences || []}
+              symptomLevel="mild" // This would be calculated from assessment data
+              onContinueToEducation={handleContinueToEducation}
+              onBookGPAppointment={handleBookGPAnyway}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
@@ -219,7 +261,7 @@ const PatientAssessment = () => {
                   Your GP has asked you to complete this health assessment to better understand your symptoms and provide the best care possible.
                 </p>
                 <p className="opacity-80">
-                  This assessment is completely anonymous and secure. Your responses will help your GP prepare for your appointment.
+                  This assessment is completely anonymous and secure. Your responses will help create a personalized care plan for you.
                 </p>
               </CardContent>
             </Card>
@@ -277,7 +319,7 @@ const PatientAssessment = () => {
               className="bg-pink-500 hover:bg-pink-600 flex items-center"
             >
               {isSubmitting ? (
-                <>Submitting...</>
+                <>Processing...</>
               ) : currentStep === totalSteps ? (
                 <>Complete Assessment</>
               ) : (
