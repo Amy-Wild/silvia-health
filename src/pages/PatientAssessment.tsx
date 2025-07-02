@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ interface AssessmentData {
   severePelvicPain?: string;
   hotFlashFrequency?: string;
   nightSweats?: string;
-  physicalSymptoms?: string;
+  physicalSymptoms?: string[];
   moodSymptoms?: string;
   libidoChanges?: string;
   smokingStatus?: string;
@@ -71,25 +72,35 @@ const PatientAssessment = () => {
   const submitAssessment = async () => {
     setIsSubmitting(true);
     try {
+      // Ensure physicalSymptoms is always an array
+      const normalizedData = {
+        ...assessmentData,
+        physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
+          ? assessmentData.physicalSymptoms 
+          : assessmentData.physicalSymptoms 
+            ? [assessmentData.physicalSymptoms] 
+            : []
+      };
+
       // Calculate risk level using improved logic
-      const riskLevel = calculateRiskLevel(assessmentData);
+      const riskLevel = calculateRiskLevel(normalizedData);
       
       // Generate detailed clinical summary
-      const clinicalSummary = generateClinicalSummary(assessmentData);
+      const clinicalSummary = generateClinicalSummary(normalizedData);
       
       // Generate NHS-compliant recommendations
-      const recommendations = generateNHSRecommendations(assessmentData, riskLevel);
+      const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
       
       // Prepare comprehensive assessment result
       const result = {
         sessionId: sessionId!,
-        patientRef: assessmentData.patientRef || `Patient (DOB: ${getDOBFromAge(assessmentData.age)})`,
+        patientRef: normalizedData.patientRef || `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`,
         completedAt: new Date().toISOString(),
         riskLevel,
-        redFlags: getRedFlags(assessmentData),
+        redFlags: getRedFlags(normalizedData),
         clinicalSummary,
         recommendations,
-        rawData: assessmentData
+        rawData: normalizedData
       };
 
       // Store result for GP Results page

@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,7 +82,7 @@ const GPResults = () => {
     }
     
     // Physical symptoms
-    if (rawData.physicalSymptoms && rawData.physicalSymptoms.length > 0) {
+    if (rawData.physicalSymptoms && Array.isArray(rawData.physicalSymptoms) && rawData.physicalSymptoms.length > 0) {
       rawData.physicalSymptoms.forEach((symptom: string) => {
         const score = getSymptomScore('physicalSymptoms', [symptom]);
         detailedSymptoms.push({
@@ -470,7 +469,7 @@ const GPResults = () => {
                         <span className="font-medium text-gray-700 capitalize">
                           {key.replace(/([A-Z])/g, ' $1')}:
                         </span>
-                        <span className="text-gray-600 text-right max-w-xs">{value}</span>
+                        <span className="text-gray-600 text-right max-w-xs">{String(value)}</span>
                       </div>
                     </div>
                   ))}
