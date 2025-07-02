@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, ArrowLeft, Heart } from "lucide-react";
 import PatientAssessmentForm from "@/components/PatientAssessmentForm";
-import { calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
+import { calculateRiskLevel, generateClinicalSummary, generateNHSRecommendations } from "@/components/ConditionalQuestionLogic";
 import { EmailService } from "@/services/EmailService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -71,22 +71,32 @@ const PatientAssessment = () => {
   const submitAssessment = async () => {
     setIsSubmitting(true);
     try {
-      // Calculate risk level
+      // Calculate risk level using improved logic
       const riskLevel = calculateRiskLevel(assessmentData);
       
-      // Prepare assessment result
+      // Generate detailed clinical summary
+      const clinicalSummary = generateClinicalSummary(assessmentData);
+      
+      // Generate NHS-compliant recommendations
+      const recommendations = generateNHSRecommendations(assessmentData, riskLevel);
+      
+      // Prepare comprehensive assessment result
       const result = {
         sessionId: sessionId!,
-        patientRef: assessmentData.patientRef || "",
+        patientRef: assessmentData.patientRef || `Patient (DOB: ${getDOBFromAge(assessmentData.age)})`,
         completedAt: new Date().toISOString(),
         riskLevel,
         redFlags: getRedFlags(assessmentData),
-        clinicalSummary: generateClinicalSummary(assessmentData),
-        recommendations: generateRecommendations(assessmentData, riskLevel)
+        clinicalSummary,
+        recommendations,
+        rawData: assessmentData
       };
 
+      // Store result for GP Results page
+      localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
+      
       // Send email to GP (simulated)
-      const gpEmail = "gp@example.com"; // In real app, this would be retrieved from session
+      const gpEmail = "gp@example.com";
       await EmailService.sendAssessmentResults(gpEmail, result);
       
       toast({
@@ -94,7 +104,6 @@ const PatientAssessment = () => {
         description: "Your results have been sent to your GP",
       });
 
-      // Navigate to results page
       navigate(`/patient-results/${sessionId}`);
     } catch (error) {
       toast({
@@ -107,55 +116,25 @@ const PatientAssessment = () => {
     }
   };
 
+  const getDOBFromAge = (age?: string): string => {
+    if (!age) return "Not provided";
+    const currentDate = new Date();
+    const birthYear = currentDate.getFullYear() - parseInt(age);
+    return `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${birthYear}`;
+  };
+
   const getRedFlags = (data: AssessmentData): string[] => {
     const flags = [];
-    if (data.postmenopausalBleeding === "yes") flags.push("Postmenopausal bleeding");
-    if (data.unexplainedWeightLoss === "yes") flags.push("Unexplained weight loss");
-    if (data.severePelvicPain === "yes") flags.push("Severe pelvic pain");
+    if (data.postmenopausalBleeding === "yes") {
+      flags.push("Postmenopausal bleeding - requires urgent 2-week wait referral");
+    }
+    if (data.unexplainedWeightLoss === "yes") {
+      flags.push("Unexplained weight loss - investigate for underlying pathology");
+    }
+    if (data.severePelvicPain === "yes") {
+      flags.push("Severe pelvic pain - requires urgent gynecological assessment");
+    }
     return flags;
-  };
-
-  const generateClinicalSummary = (data: AssessmentData) => {
-    return {
-      vasomotor: data.hotFlashFrequency || "Not reported",
-      physical: data.physicalSymptoms || "Not reported",
-      psychological: data.moodSymptoms || "Not reported",
-      sexual: data.libidoChanges || "Not reported",
-      smoking: data.smokingStatus || "Not reported",
-      alcohol: data.alcoholConsumption || "Not reported",
-      exercise: data.exerciseLevel || "Not reported",
-      bmi: data.bmi || "Not calculated"
-    };
-  };
-
-  const generateRecommendations = (data: AssessmentData, riskLevel: string): string[] => {
-    const recommendations = [];
-    
-    if (riskLevel === "red") {
-      recommendations.push("Urgent medical review required");
-      recommendations.push("Consider urgent referral");
-    }
-    
-    if (data.hotFlashFrequency === "severe" || data.nightSweats === "severe") {
-      recommendations.push("Discuss HRT options");
-    }
-    
-    if (data.smokingStatus === "current") {
-      recommendations.push("Smoking cessation support");
-    }
-    
-    if (data.exerciseLevel === "none") {
-      recommendations.push("Exercise counseling");
-    }
-    
-    if (data.alcoholConsumption === "22+") {
-      recommendations.push("Alcohol reduction advice");
-    }
-    
-    recommendations.push("Lifestyle counseling");
-    recommendations.push("Follow-up appointment in 4-6 weeks");
-    
-    return recommendations;
   };
 
   const handlePrevious = () => {
