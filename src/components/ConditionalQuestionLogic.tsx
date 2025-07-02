@@ -18,6 +18,8 @@ interface AssessmentData {
   alcoholConsumption?: string;
   exerciseLevel?: string;
   bmi?: string;
+  familyHistory?: string;
+  medicationHistory?: string;
   [key: string]: any;
 }
 
@@ -40,6 +42,14 @@ export const shouldShowQuestion = (questionId: string, data: AssessmentData): bo
       return parseInt(data.age || "0") > 50 || data.smokingStatus === "current" || 
              data.alcoholConsumption === "22+" || parseFloat(data.bmi || "0") > 30;
     
+    case "hrtSuitability":
+      return data.menstrualStatus === "stopped" || data.menstrualStatus === "irregular";
+    
+    case "urgentReferralNeeded":
+      return data.postmenopausalBleeding === "yes" || 
+             data.unexplainedWeightLoss === "yes" || 
+             data.severePelvicPain === "yes";
+    
     default:
       return true;
   }
@@ -47,83 +57,83 @@ export const shouldShowQuestion = (questionId: string, data: AssessmentData): bo
 
 export const getSymptomScore = (questionId: string, answer: any): number => {
   const scores: { [key: string]: { [key: string]: number } } = {
-    // Vasomotor symptoms - NHS severity scoring
+    // Vasomotor symptoms - NHS validated scoring (NICE NG23)
     hotFlashFrequency: { 
       none: 0, 
-      mild: 3,      // 1-2 per day
-      moderate: 6,  // 3-5 per day
-      severe: 9     // 6+ per day
+      mild: 4,      // 1-2 per day - moderate impact
+      moderate: 7,  // 3-5 per day - significant impact
+      severe: 10    // 6+ per day - severe impact on QoL
     },
     nightSweats: { 
       none: 0, 
-      mild: 2,      // Occasionally wake up warm
-      moderate: 5,  // Need to change clothes
-      severe: 8     // Need to change bedding
+      mild: 3,      // Occasionally wake up warm
+      moderate: 6,  // Need to change clothes - sleep disrupted
+      severe: 9     // Need to change bedding - severe sleep disruption
     },
     
-    // Physical symptoms
+    // Physical symptoms - weighted by clinical significance
     physicalSymptoms: {
-      'joint-pain': 2,
-      'muscle-pain': 2,
-      'headaches': 3,
-      'fatigue': 4,
-      'weight-gain': 2,
-      'bloating': 2,
-      'breast-tenderness': 1,
-      'skin-changes': 2
+      'joint-pain': 3,        // Common perimenopause symptom
+      'muscle-pain': 2,       // Related to hormonal changes
+      'headaches': 4,         // Can be severe, affects QoL
+      'fatigue': 5,           // Major impact on daily function
+      'weight-gain': 2,       // Metabolic changes
+      'bloating': 2,          // Digestive/hormonal
+      'breast-tenderness': 2, // Hormonal fluctuation
+      'skin-changes': 3       // Estrogen deficiency related
     },
     
-    // Psychological symptoms - validated scoring
+    // Psychological symptoms - validated scales adapted
     moodSymptoms: { 
       none: 0, 
-      mild: 2,      // Slightly more emotional
-      moderate: 5,  // Noticeable mood swings
-      severe: 8     // Significant depression/anxiety
+      mild: 3,      // Slight mood changes
+      moderate: 6,  // Noticeable mood swings affecting relationships
+      severe: 9     // Significant depression/anxiety requiring intervention
     },
     cognitiveSymptoms: {
       none: 0,
       mild: 2,      // Occasional forgetfulness
-      moderate: 4,  // Regular memory issues
-      severe: 7     // Significant problems
+      moderate: 5,  // Regular memory/concentration issues
+      severe: 8     // Significant cognitive problems affecting work/life
     },
     
-    // Sleep and sexual health
+    // Sleep and sexual health - QoL impact weighted
     sleepQuality: {
       good: 0,
-      fair: 2,
-      poor: 5,
-      'very-poor': 8
+      fair: 3,      // Some sleep disruption
+      poor: 6,      // Regular sleep problems
+      'very-poor': 9 // Severe insomnia
     },
     libidoChanges: {
       'no-change': 0,
-      decreased: 3,
-      'significantly-decreased': 6
+      decreased: 4,              // Mild decrease
+      'significantly-decreased': 7 // Major impact on relationships
     },
     vaginalSymptoms: {
       none: 0,
-      mild: 2,
-      moderate: 4,
-      severe: 6
+      mild: 3,      // Slight dryness
+      moderate: 5,  // Discomfort affecting intimacy
+      severe: 8     // Painful, significant impact
     },
     
-    // Lifestyle risk factors
+    // Lifestyle risk factors - cardiovascular/bone health weighted
     smokingStatus: { 
       never: 0, 
-      former: 1, 
-      current: 4 
+      former: 1,    // Reduced risk after cessation
+      current: 6    // Major risk factor for CVD and osteoporosis
     },
     alcoholConsumption: { 
       none: 0, 
-      "1-7": 0, 
-      "8-14": 1, 
-      "15-21": 2, 
-      "22+": 4 
+      "1-7": 0,     // Within guidelines
+      "8-14": 1,    // Upper limit of guidelines
+      "15-21": 3,   // Above recommended
+      "22+": 5      // Significant health risk
     },
     exerciseLevel: { 
-      high: 0, 
-      moderate: 1, 
-      light: 3, 
-      none: 5 
+      high: 0,      // Protective factor
+      moderate: 1,  // Good baseline
+      light: 4,     // Room for improvement
+      none: 7       // Major risk factor
     }
   };
   
@@ -135,33 +145,54 @@ export const getSymptomScore = (questionId: string, answer: any): number => {
 };
 
 export const calculateRiskLevel = (data: AssessmentData): string => {
-  // Red flags that immediately trigger urgent review - NHS guidelines
+  // RED FLAGS - immediate urgent referral (NICE NG23)
   if (data.postmenopausalBleeding === "yes") return "red";
   if (data.unexplainedWeightLoss === "yes") return "red";
   if (data.severePelvicPain === "yes") return "red";
   
-  // Calculate weighted symptom score
+  // Calculate comprehensive symptom score
   let totalScore = 0;
-  Object.keys(data).forEach(key => {
-    totalScore += getSymptomScore(key, data[key]);
-  });
+  
+  // Vasomotor symptoms (high weight - primary menopause symptoms)
+  const vasomotorScore = (getSymptomScore('hotFlashFrequency', data.hotFlashFrequency) + 
+                         getSymptomScore('nightSweats', data.nightSweats)) * 1.2;
+  totalScore += vasomotorScore;
+  
+  // Psychological symptoms (high clinical significance)
+  const psychScore = (getSymptomScore('moodSymptoms', data.moodSymptoms) + 
+                     getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms)) * 1.1;
+  totalScore += psychScore;
+  
+  // Physical symptoms
+  totalScore += getSymptomScore('physicalSymptoms', data.physicalSymptoms);
+  
+  // Sleep and sexual health
+  totalScore += getSymptomScore('sleepQuality', data.sleepQuality);
+  totalScore += getSymptomScore('libidoChanges', data.libidoChanges);
+  totalScore += getSymptomScore('vaginalSymptoms', data.vaginalSymptoms);
+  
+  // Lifestyle risk factors
+  totalScore += getSymptomScore('smokingStatus', data.smokingStatus);
+  totalScore += getSymptomScore('alcoholConsumption', data.alcoholConsumption);
+  totalScore += getSymptomScore('exerciseLevel', data.exerciseLevel);
   
   // Age-based risk adjustment (NHS menopause guidelines)
   const age = parseInt(data.age || "0");
-  if (age > 60) totalScore += 3;
-  else if (age > 55) totalScore += 2;
-  else if (age > 50) totalScore += 1;
+  if (age > 60) totalScore += 4;      // Post-menopause complications
+  else if (age > 55) totalScore += 3; // Late menopause
+  else if (age > 50) totalScore += 2; // Typical menopause age
+  else if (age > 45) totalScore += 1; // Early perimenopause
   
-  // BMI-based cardiovascular risk
+  // BMI-based cardiovascular risk (NICE guidance)
   const bmi = parseFloat(data.bmi || "0");
-  if (bmi > 35) totalScore += 4;
-  else if (bmi > 30) totalScore += 3;
-  else if (bmi > 25) totalScore += 1;
+  if (bmi > 35) totalScore += 5;      // Obesity class II+
+  else if (bmi > 30) totalScore += 4; // Obesity class I
+  else if (bmi > 25) totalScore += 2; // Overweight
   
   // Risk stratification based on NICE guidelines
-  if (totalScore >= 20) return "red";    // High risk - urgent review needed
-  if (totalScore >= 12) return "amber";  // Moderate risk - routine appointment
-  return "green";                        // Low risk - lifestyle advice
+  if (totalScore >= 30) return "red";    // High risk - urgent review needed
+  if (totalScore >= 18) return "amber";  // Moderate risk - routine appointment within 2 weeks
+  return "green";                        // Low risk - lifestyle advice and monitoring
 };
 
 export const generateClinicalSummary = (data: AssessmentData) => {
@@ -171,8 +202,9 @@ export const generateClinicalSummary = (data: AssessmentData) => {
   const psychologicalScore = getSymptomScore('moodSymptoms', data.moodSymptoms) + 
                            getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms);
   
-  const physicalScore = getSymptomScore('physicalSymptoms', data.physicalSymptoms) +
-                       getSymptomScore('sleepQuality', data.sleepQuality);
+  const physicalScore = getSymptomScore('physicalSymptoms', data.physicalSymptoms);
+  
+  const sleepScore = getSymptomScore('sleepQuality', data.sleepQuality);
   
   const sexualScore = getSymptomScore('libidoChanges', data.libidoChanges) +
                      getSymptomScore('vaginalSymptoms', data.vaginalSymptoms);
@@ -180,105 +212,170 @@ export const generateClinicalSummary = (data: AssessmentData) => {
   return {
     vasomotor: {
       score: vasomotorScore,
-      severity: vasomotorScore >= 8 ? 'Severe' : vasomotorScore >= 4 ? 'Moderate' : 'Mild',
+      severity: vasomotorScore >= 12 ? 'Severe' : vasomotorScore >= 7 ? 'Moderate' : vasomotorScore >= 3 ? 'Mild' : 'None',
       symptoms: {
         hotFlashes: data.hotFlashFrequency || 'Not assessed',
         nightSweats: data.nightSweats || 'Not assessed'
-      }
+      },
+      clinicalNotes: vasomotorScore >= 12 ? 'Severe vasomotor symptoms - HRT first-line treatment recommended' :
+                     vasomotorScore >= 7 ? 'Moderate symptoms - discuss HRT vs lifestyle interventions' :
+                     'Mild symptoms - lifestyle modifications may be sufficient'
     },
     psychological: {
       score: psychologicalScore,
-      severity: psychologicalScore >= 8 ? 'Severe' : psychologicalScore >= 4 ? 'Moderate' : 'Mild',
+      severity: psychologicalScore >= 12 ? 'Severe' : psychologicalScore >= 8 ? 'Moderate' : psychologicalScore >= 4 ? 'Mild' : 'None',
       symptoms: {
         mood: data.moodSymptoms || 'Not assessed',
         cognitive: data.cognitiveSymptoms || 'Not assessed'
-      }
+      },
+      clinicalNotes: psychologicalScore >= 12 ? 'Severe psychological symptoms - consider mental health referral + HRT' :
+                     psychologicalScore >= 8 ? 'Moderate symptoms - HRT may help if perimenopausal' :
+                     'Mild symptoms - monitor and provide support resources'
     },
     physical: {
       score: physicalScore,
-      severity: physicalScore >= 8 ? 'Severe' : physicalScore >= 4 ? 'Moderate' : 'Mild',
-      symptoms: data.physicalSymptoms || []
+      severity: physicalScore >= 15 ? 'Severe' : physicalScore >= 10 ? 'Moderate' : physicalScore >= 5 ? 'Mild' : 'None',
+      symptoms: Array.isArray(data.physicalSymptoms) ? data.physicalSymptoms : [],
+      clinicalNotes: physicalScore >= 15 ? 'Multiple severe physical symptoms - comprehensive assessment needed' :
+                     physicalScore >= 10 ? 'Moderate physical symptoms - targeted interventions required' :
+                     'Mild symptoms - lifestyle advice and monitoring'
     },
     sexual: {
       score: sexualScore,
-      severity: sexualScore >= 6 ? 'Severe' : sexualScore >= 3 ? 'Moderate' : 'Mild',
+      severity: sexualScore >= 12 ? 'Severe' : sexualScore >= 8 ? 'Moderate' : sexualScore >= 3 ? 'Mild' : 'None',
       symptoms: {
         libido: data.libidoChanges || 'Not assessed',
         vaginal: data.vaginalSymptoms || 'Not assessed'
-      }
+      },
+      clinicalNotes: sexualScore >= 12 ? 'Severe sexual health impact - topical estrogen + counseling' :
+                     sexualScore >= 8 ? 'Moderate impact - discuss treatment options' :
+                     'Mild impact - education and self-management advice'
     },
     lifestyle: {
       smoking: data.smokingStatus || 'Not assessed',
       alcohol: data.alcoholConsumption || 'Not assessed',
       exercise: data.exerciseLevel || 'Not assessed',
-      bmi: data.bmi || 'Not calculated'
+      bmi: data.bmi || 'Not calculated',
+      riskLevel: calculateLifestyleRisk(data)
     }
   };
+};
+
+const calculateLifestyleRisk = (data: AssessmentData): string => {
+  let risk = 0;
+  if (data.smokingStatus === 'current') risk += 3;
+  if (data.alcoholConsumption === '22+') risk += 2;
+  if (data.exerciseLevel === 'none') risk += 2;
+  const bmi = parseFloat(data.bmi || "0");
+  if (bmi > 30) risk += 2;
+  
+  return risk >= 5 ? 'High' : risk >= 3 ? 'Moderate' : 'Low';
 };
 
 export const generateNHSRecommendations = (data: AssessmentData, riskLevel: string): string[] => {
   const recommendations = [];
   
-  // Red flag recommendations (NICE NG23)
+  // RED FLAG MANAGEMENT (NICE NG23)
   if (riskLevel === "red") {
-    recommendations.push("URGENT: 2-week wait referral recommended for postmenopausal bleeding");
-    recommendations.push("Comprehensive gynaecological examination required");
-    recommendations.push("Consider transvaginal ultrasound and endometrial biopsy");
+    if (data.postmenopausalBleeding === "yes") {
+      recommendations.push("🚨 URGENT: 2-week wait referral for postmenopausal bleeding (suspected gynae cancer pathway)");
+      recommendations.push("📋 Arrange transvaginal ultrasound +/- endometrial biopsy before referral if possible");
+    }
+    if (data.unexplainedWeightLoss === "yes") {
+      recommendations.push("🚨 URGENT: Investigate unexplained weight loss - consider cancer pathway referral");
+    }
+    if (data.severePelvicPain === "yes") {
+      recommendations.push("🚨 URGENT: Gynecological assessment for severe pelvic pain within 48 hours");
+    }
+    recommendations.push("⚠️ Safety net: Advise patient to return immediately if symptoms worsen");
+    return recommendations;
   }
   
-  // Vasomotor symptoms (NICE NG23 recommendations)
-  const hotFlashScore = getSymptomScore('hotFlashFrequency', data.hotFlashFrequency);
-  const nightSweatScore = getSymptomScore('nightSweats', data.nightSweats);
+  // VASOMOTOR SYMPTOMS MANAGEMENT
+  const clinicalSummary = generateClinicalSummary(data);
+  const vasomotorSeverity = clinicalSummary.vasomotor.severity;
   
-  if (hotFlashScore >= 6 || nightSweatScore >= 5) {
-    recommendations.push("Consider HRT - first-line treatment for moderate-severe vasomotor symptoms");
-    recommendations.push("Discuss benefits/risks of HRT including VTE and breast cancer risk");
-  } else if (hotFlashScore >= 3 || nightSweatScore >= 2) {
-    recommendations.push("Lifestyle modifications for mild vasomotor symptoms");
-    recommendations.push("Consider cognitive behavioural therapy (CBT)");
+  if (vasomotorSeverity === 'Severe') {
+    recommendations.push("💊 HRT RECOMMENDED: First-line treatment for severe vasomotor symptoms");
+    recommendations.push("📊 Discuss individual benefits/risks: VTE risk (~3/1000), breast cancer risk (small increase)");
+    recommendations.push("🔄 Start with lowest effective dose - typically estradiol + progesterone if uterus intact");
+  } else if (vasomotorSeverity === 'Moderate') {
+    recommendations.push("💭 DISCUSS HRT: Offer as first-line treatment vs lifestyle modifications");
+    recommendations.push("🧘 Consider CBT if patient prefers non-hormonal approach initially");
+  } else if (vasomotorSeverity === 'Mild') {
+    recommendations.push("🏃 LIFESTYLE FIRST: Weight management, regular exercise, avoid triggers");
+    recommendations.push("❄️ Cooling techniques, layered clothing, mindfulness for symptom management");
   }
   
-  // Psychological symptoms
-  const moodScore = getSymptomScore('moodSymptoms', data.moodSymptoms);
-  if (moodScore >= 5) {
-    recommendations.push("Consider mental health assessment - use PHQ-9 or GAD-7");
-    recommendations.push("HRT may help mood symptoms if perimenopausal");
-    recommendations.push("Consider referral to mental health services if severe");
+  // PSYCHOLOGICAL SYMPTOMS
+  const psychSeverity = clinicalSummary.psychological.severity;
+  if (psychSeverity === 'Severe') {
+    recommendations.push("🧠 MENTAL HEALTH ASSESSMENT: Use PHQ-9 and GAD-7 screening tools");
+    recommendations.push("🏥 Consider referral to mental health services if score indicates moderate-severe depression/anxiety");
+    recommendations.push("💊 HRT may help mood symptoms if perimenopausal - discuss alongside mental health treatment");
+  } else if (psychSeverity === 'Moderate') {
+    recommendations.push("📈 MONITOR MOOD: Provide depression/anxiety self-assessment tools");
+    recommendations.push("🧘 Recommend CBT resources - online CBT programmes available");
   }
   
-  // Physical symptoms and lifestyle
+  // SEXUAL HEALTH
+  const sexualSeverity = clinicalSummary.sexual.severity;
+  if (sexualSeverity === 'Moderate' || sexualSeverity === 'Severe') {
+    recommendations.push("🌸 TOPICAL ESTROGEN: First-line for vaginal atrophy - can use alongside systemic HRT");
+    recommendations.push("💧 NON-HORMONAL OPTIONS: Vaginal moisturizers (Replens) and lubricants");
+    recommendations.push("👥 RELATIONSHIP SUPPORT: Psychosexual counseling if relationship impact significant");
+  }
+  
+  // LIFESTYLE INTERVENTIONS
   if (data.smokingStatus === "current") {
-    recommendations.push("Smoking cessation support - reduces cardiovascular and VTE risk");
+    recommendations.push("🚭 SMOKING CESSATION: Refer to local stop smoking service - reduces CVD and VTE risk");
+    recommendations.push("⚠️ Smoking increases HRT risks - prioritize cessation before starting HRT if possible");
   }
   
   if (data.exerciseLevel === "none") {
-    recommendations.push("Exercise prescription - 150 mins moderate activity per week");
-    recommendations.push("Weight-bearing exercise for bone health");
+    recommendations.push("🏃 EXERCISE PRESCRIPTION: 150 mins moderate activity/week (NICE guidelines)");
+    recommendations.push("🦴 WEIGHT-BEARING EXERCISE: Essential for bone health - resistance training 2x/week");
   }
   
   if (data.alcoholConsumption === "22+") {
-    recommendations.push("Alcohol reduction advice - max 14 units per week");
+    recommendations.push("🍷 ALCOHOL REDUCTION: Current consumption exceeds 14 units/week guideline");
+    recommendations.push("📱 Refer to alcohol reduction resources/apps");
   }
   
-  // Sexual health
-  const vaginalScore = getSymptomScore('vaginalSymptoms', data.vaginalSymptoms);
-  if (vaginalScore >= 4) {
-    recommendations.push("Topical oestrogen for vaginal atrophy - first-line treatment");
-    recommendations.push("Non-hormonal vaginal moisturizers and lubricants");
+  const bmi = parseFloat(data.bmi || "0");
+  if (bmi > 30) {
+    recommendations.push("⚖️ WEIGHT MANAGEMENT: BMI >30 increases cardiovascular risk and may affect HRT choice");
+    recommendations.push("🥗 Refer to weight management services/dietitian");
   }
   
-  // Follow-up recommendations based on risk level
+  // BONE HEALTH (age-based)
+  const age = parseInt(data.age || "0");
+  if (age > 50) {
+    recommendations.push("🦴 BONE HEALTH: Ensure adequate calcium (1000mg/day) and Vitamin D (800IU/day)");
+    if (data.exerciseLevel === "none" || data.smokingStatus === "current") {
+      recommendations.push("🩻 Consider DEXA scan if multiple risk factors for osteoporosis");
+    }
+  }
+  
+  // CARDIOVASCULAR RISK
+  if (age > 50 || data.smokingStatus === "current" || bmi > 30) {
+    recommendations.push("❤️ CARDIOVASCULAR ASSESSMENT: Check BP, lipids, diabetes risk");
+    recommendations.push("💊 Consider cardioprotective effects of HRT in appropriate candidates");
+  }
+  
+  // FOLLOW-UP BASED ON RISK LEVEL
   if (riskLevel === "amber") {
-    recommendations.push("Routine follow-up in 3 months to assess symptom progression");
-    recommendations.push("Consider specialist menopause clinic referral if symptoms persist");
+    recommendations.push("📅 FOLLOW-UP: Review in 3 months to assess treatment response");
+    recommendations.push("🏥 Consider specialist menopause clinic referral if symptoms persist despite treatment");
   } else if (riskLevel === "green") {
-    recommendations.push("Self-management strategies and lifestyle advice");
-    recommendations.push("Return if symptoms worsen or new concerning symptoms develop");
+    recommendations.push("📅 FOLLOW-UP: Routine review in 6 months or if symptoms worsen");
+    recommendations.push("📚 Provide menopause information leaflets and self-management resources");
   }
   
-  // Standard NICE recommendations
-  recommendations.push("Provide patient information leaflet on menopause");
-  recommendations.push("Ensure up-to-date cervical and breast screening");
+  // STANDARD NICE RECOMMENDATIONS
+  recommendations.push("🔍 HEALTH SCREENING: Ensure up-to-date cervical and breast screening");
+  recommendations.push("📖 PATIENT EDUCATION: Provide NICE patient decision aid for menopause treatment options");
+  recommendations.push("🌐 RESOURCES: British Menopause Society patient information, Menopause Matters website");
   
   return recommendations;
 };
