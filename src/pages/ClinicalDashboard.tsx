@@ -89,6 +89,7 @@ const ClinicalDashboard = () => {
       return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
     });
     
+    console.log("Clinical dashboard loaded assessments:", storedAssessments);
     setAssessments(storedAssessments);
   };
 

@@ -43,7 +43,7 @@ const GPDashboard = () => {
             storedAssessments.push({
               id: assessment.sessionId,
               patientRef: assessment.patientRef,
-              completedAt: new Date(assessment.completedAt).toLocaleDateString('en-GB'),
+              completedAt: assessment.completedAt ? new Date(assessment.completedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
               riskLevel: assessment.riskLevel
             });
           } catch (error) {
@@ -52,8 +52,13 @@ const GPDashboard = () => {
         }
       }
     }
-    // Sort by completion date (most recent first)
-    storedAssessments.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+    // Sort by completion date (most recent first) - use the original completedAt for sorting
+    storedAssessments.sort((a, b) => {
+      const aTime = new Date(a.completedAt.split('/').reverse().join('-')).getTime();
+      const bTime = new Date(b.completedAt.split('/').reverse().join('-')).getTime();
+      return bTime - aTime;
+    });
+    console.log("Loaded assessments:", storedAssessments);
     setAssessments(storedAssessments);
   };
 
