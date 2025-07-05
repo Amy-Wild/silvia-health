@@ -102,7 +102,7 @@ export const getUrgentFlags = (data: AssessmentData): string[] => {
     flags.push("Severe pelvic pain requires urgent gynecological review");
   }
 
-  // Mental health red flags
+  // Mental health red flags - CRITICAL MAPPING
   if (data.selfHarmRisk === "frequent") {
     flags.push("Active suicidal ideation requires immediate mental health assessment");
   }
@@ -119,7 +119,7 @@ export const getUrgentFlags = (data: AssessmentData): string[] => {
 export const getAmberFlags = (data: AssessmentData): string[] => {
   const flags = [];
   
-  // Psychological amber flags
+  // Psychological amber flags - CRITICAL MAPPING
   if (data.selfHarmRisk === "occasional") {
     flags.push("Suicidal thoughts require mental health review and safety planning");
   }
@@ -194,6 +194,7 @@ export const getRedFlags = (data: AssessmentData): string[] => {
     flags.push("🚨 RED: Severe pelvic pain - urgent gynecological assessment required");
   }
 
+  // CRITICAL MENTAL HEALTH MAPPING
   if (data.selfHarmRisk === "frequent") {
     flags.push("🚨 RED: Active suicidal ideation - immediate mental health crisis assessment required");
   }
@@ -259,7 +260,7 @@ export const calculateBMI = (height?: string, weight?: string): number | null =>
   return null;
 };
 
-// Enhanced risk level calculation
+// Enhanced risk level calculation - FIXED PSYCHOLOGICAL MAPPING
 export const calculateRiskLevel = (data: AssessmentData): 'red' | 'amber' | 'yellow' | 'green' => {
   // RED - Immediate urgent care needed
   if (data.postmenopausalBleeding === "yes" || 
@@ -424,9 +425,16 @@ export const getSymptomScore = (questionId: string, answer: any): number => {
   return scores[questionId]?.[answer] || 0;
 };
 
+// FIXED CLINICAL SUMMARY GENERATION - PROPER PSYCHOLOGICAL MAPPING
 export const generateClinicalSummary = (data: AssessmentData) => {
   const bmi = calculateBMI(data.height, data.weight);
   const redFlags = getRedFlags(data);
+  
+  // Calculate psychological scores properly
+  const psychologicalScore = getSymptomScore('moodSymptoms', data.moodSymptoms) + 
+                            getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms) +
+                            getSymptomScore('selfHarmRisk', data.selfHarmRisk) +
+                            getSymptomScore('mentalWellbeing', data.mentalWellbeing);
   
   return {
     vasomotor: {
@@ -439,11 +447,13 @@ export const generateClinicalSummary = (data: AssessmentData) => {
       clinicalNotes: generateVasomotorNotes(data)
     },
     psychological: {
-      score: getSymptomScore('moodSymptoms', data.moodSymptoms) + getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms),
-      severity: calculateSeverity(getSymptomScore('moodSymptoms', data.moodSymptoms) + getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms), [0, 8, 12]),
+      score: psychologicalScore,
+      severity: calculatePsychologicalSeverity(data, psychologicalScore),
       symptoms: {
         mood: data.moodSymptoms || 'Not assessed',
-        cognitive: data.cognitiveSymptoms || 'Not assessed'
+        cognitive: data.cognitiveSymptoms || 'Not assessed',
+        selfHarm: data.selfHarmRisk || 'Not assessed',
+        wellbeing: data.mentalWellbeing || 'Not assessed'
       },
       clinicalNotes: generatePsychologicalNotes(data)
     },
@@ -471,6 +481,21 @@ export const generateClinicalSummary = (data: AssessmentData) => {
   };
 };
 
+// NEW FUNCTION - PROPER PSYCHOLOGICAL SEVERITY CALCULATION
+const calculatePsychologicalSeverity = (data: AssessmentData, psychScore: number): string => {
+  // Immediate severe if frequent self-harm thoughts
+  if (data.selfHarmRisk === "frequent") return 'Severe';
+  
+  // High severity for occasional self-harm or severe mood symptoms
+  if (data.selfHarmRisk === "occasional" || data.moodSymptoms === "severe") return 'Severe';
+  
+  // Score-based assessment for other cases
+  if (psychScore >= 12) return 'Severe';
+  if (psychScore >= 8) return 'Moderate';
+  if (psychScore >= 4) return 'Mild';
+  return 'None';
+};
+
 const calculateSeverity = (score: number, thresholds: number[]): string => {
   if (score >= thresholds[2]) return 'Severe';
   if (score >= thresholds[1]) return 'Moderate';
@@ -486,15 +511,31 @@ const generateVasomotorNotes = (data: AssessmentData): string => {
   return 'No significant vasomotor symptoms reported';
 };
 
+// UPDATED PSYCHOLOGICAL NOTES WITH PROPER SELF-HARM MAPPING
 const generatePsychologicalNotes = (data: AssessmentData): string => {
-  const score = getSymptomScore('moodSymptoms', data.moodSymptoms) + getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms);
+  const score = getSymptomScore('moodSymptoms', data.moodSymptoms) + 
+                getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms) +
+                getSymptomScore('selfHarmRisk', data.selfHarmRisk);
   const hasDepressionHistory = (data.personalMedicalHistory || []).includes('depression');
   
   let notes = '';
-  if (score >= 12) notes = 'Severe psychological symptoms - consider mental health referral';
-  else if (score >= 8) notes = 'Moderate symptoms - monitor closely, consider CBT referral';
-  else if (score >= 4) notes = 'Mild symptoms - provide support resources';
-  else notes = 'No significant psychological symptoms';
+  
+  // Critical mental health flags first
+  if (data.selfHarmRisk === "frequent") {
+    notes = 'CRITICAL: Frequent suicidal ideation - immediate crisis intervention required';
+  } else if (data.selfHarmRisk === "occasional") {
+    notes = 'HIGH PRIORITY: Occasional suicidal thoughts - urgent mental health review needed within 1 week';
+  } else if (data.moodSymptoms === "severe") {
+    notes = 'Severe mood symptoms - priority mental health assessment required';
+  } else if (score >= 12) {
+    notes = 'Severe psychological symptoms - consider mental health referral';
+  } else if (score >= 8) {
+    notes = 'Moderate symptoms - monitor closely, consider CBT referral';
+  } else if (score >= 4) {
+    notes = 'Mild symptoms - provide support resources';
+  } else {
+    notes = 'No significant psychological symptoms';
+  }
   
   if (hasDepressionHistory) {
     notes += '. Previous depression history - enhanced monitoring required';

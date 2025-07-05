@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +41,12 @@ const GPResults = () => {
     // Generate treatment options
     const treatmentOptions = generateTreatmentOptions(rawData, clinicalSummary, riskLevel);
     
+    // CORRECTED URGENCY SCORE CALCULATION
+    const urgencyScore = calculateCorrectUrgencyScore(rawData, calculateRiskLevel(rawData));
+    
+    // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
+    const psychologicalRisk = assessCorrectPsychologicalRisk(rawData);
+    
     return {
       patientRef: assessmentResult.patientRef,
       completedAt: new Date(assessmentResult.completedAt).toLocaleDateString('en-GB'),
@@ -58,12 +63,64 @@ const GPResults = () => {
         preferences: rawData.treatmentPreferences || []
       },
       analyticsData: {
-        urgencyScore: calculateUrgencyScore(rawData, calculateRiskLevel(rawData)),
+        urgencyScore: urgencyScore,
         qualityOfLifeImpact: assessQualityOfLifeImpact(clinicalSummary),
-        psychologicalRisk: assessPsychologicalRisk(rawData)
+        psychologicalRisk: psychologicalRisk
       },
       clinicalRecommendations: generateNHSRecommendations(rawData, calculateRiskLevel(rawData))
     };
+  };
+
+  // CORRECTED URGENCY SCORE CALCULATION
+  const calculateCorrectUrgencyScore = (rawData: any, riskLevel: string): number => {
+    let baseScore = 0;
+    
+    // Base score from risk level
+    if (riskLevel === 'red') baseScore = 10;
+    else if (riskLevel === 'amber') baseScore = 6;
+    else if (riskLevel === 'yellow') baseScore = 4;
+    else baseScore = 2;
+    
+    // CRITICAL: Additional scoring for psychological risk
+    if (rawData.selfHarmRisk === 'frequent') baseScore = 10; // Maximum urgency
+    else if (rawData.selfHarmRisk === 'occasional') baseScore = Math.max(baseScore, 8);
+    
+    if (rawData.moodSymptoms === 'severe') baseScore = Math.max(baseScore, 7);
+    
+    // Additional urgent medical conditions
+    if (rawData.postmenopausalBleeding === 'yes') baseScore = 10;
+    if (rawData.unexplainedWeightLoss === 'yes') baseScore = 10;
+    if (rawData.severePelvicPain === 'yes') baseScore = 10;
+    
+    return Math.min(baseScore, 10); // Cap at 10
+  };
+
+  // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
+  const assessCorrectPsychologicalRisk = (rawData: any): string => {
+    // CRITICAL mapping for self-harm risk
+    if (rawData.selfHarmRisk === 'frequent') {
+      return 'CRITICAL - Immediate intervention required (frequent suicidal ideation reported)';
+    }
+    if (rawData.selfHarmRisk === 'occasional') {
+      return 'HIGH - Urgent mental health review needed (occasional suicidal thoughts reported)';
+    }
+    
+    // Severe mood symptoms
+    if (rawData.moodSymptoms === 'severe') {
+      return 'MODERATE-HIGH - Mental health support recommended (severe mood symptoms)';
+    }
+    
+    // Moderate mood symptoms
+    if (rawData.moodSymptoms === 'moderate') {
+      return 'MODERATE - Mental health monitoring advised';
+    }
+    
+    // Poor mental wellbeing
+    if (rawData.mentalWellbeing === 'poor') {
+      return 'MODERATE - Support recommended for poor mental wellbeing';
+    }
+    
+    return 'LOW - No immediate psychological concerns identified';
   };
 
   const generateTreatmentOptions = (rawData: any, clinicalSummary: any, riskLevel: string) => {
@@ -175,23 +232,6 @@ const GPResults = () => {
     return factors;
   };
 
-  const calculateUrgencyScore = (rawData: any, riskLevel: string): number => {
-    let baseScore = 0;
-    
-    // Base score from risk level
-    if (riskLevel === 'red') baseScore = 10;
-    else if (riskLevel === 'amber') baseScore = 6;
-    else baseScore = 3;
-    
-    // Additional scoring for psychological risk
-    if (rawData.selfHarmRisk === 'frequent') baseScore = 10;
-    else if (rawData.selfHarmRisk === 'occasional') baseScore = Math.max(baseScore, 8);
-    
-    if (rawData.moodSymptoms === 'severe') baseScore = Math.max(baseScore, 7);
-    
-    return baseScore;
-  };
-
   const assessQualityOfLifeImpact = (clinicalSummary: any) => {
     const impacts = [];
     
@@ -204,13 +244,6 @@ const GPResults = () => {
     }
     
     return impacts;
-  };
-
-  const assessPsychologicalRisk = (rawData: any) => {
-    if (rawData.selfHarmRisk === 'frequent') return 'CRITICAL - Immediate intervention required';
-    if (rawData.selfHarmRisk === 'occasional') return 'HIGH - Urgent mental health review needed';
-    if (rawData.moodSymptoms === 'severe') return 'MODERATE - Mental health support recommended';
-    return 'LOW - No immediate psychological concerns';
   };
 
   const generateDemoResults = () => {
@@ -236,7 +269,7 @@ const GPResults = () => {
         considerations: ["Moderate symptoms - HRT recommended"]
       }],
       patientProfile: { age: 56, riskFactors: [], preferences: ['hrt'] },
-      analyticsData: { urgencyScore: 6, qualityOfLifeImpact: ["Moderate vasomotor impact"] },
+      analyticsData: { urgencyScore: 6, qualityOfLifeImpact: ["Moderate vasomotor impact"], psychologicalRisk: 'LOW - No immediate psychological concerns' },
       clinicalRecommendations: ["💊 DISCUSS HRT: First-line treatment recommended", "📅 FOLLOW-UP: Review in 6-8 weeks"]
     };
   };
