@@ -1,6 +1,7 @@
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
 
 interface MenstrualStatusSelectorProps {
   value: string;
@@ -8,10 +9,15 @@ interface MenstrualStatusSelectorProps {
 }
 
 const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelectorProps) => {
-  console.log("Current menstrual status value:", value);
+  const [selectedValue, setSelectedValue] = useState(value);
+  
+  useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
   
   const handleValueChange = (newValue: string) => {
     console.log("Radio group value changing to:", newValue);
+    setSelectedValue(newValue);
     onValueChange(newValue);
   };
   
@@ -21,7 +27,7 @@ const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelect
         Which best describes your periods currently?
       </Label>
       <RadioGroup 
-        value={value || ""} 
+        value={selectedValue || ""} 
         onValueChange={handleValueChange}
         className="space-y-4"
       >
