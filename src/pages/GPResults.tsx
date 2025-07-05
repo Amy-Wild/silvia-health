@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Download, Mail, ArrowLeft, Brain } from "lucide-react";
+import { AlertTriangle, Download, Mail, ArrowLeft, Brain, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
@@ -31,6 +31,8 @@ const GPResults = () => {
   const generateEnhancedGPResults = (assessmentResult: any) => {
     const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
     
+    console.log('Raw assessment data:', rawData); // Debug log
+    
     // Generate comprehensive clinical summary with proper psychological mapping
     const clinicalSummary = generateClinicalSummary(rawData);
     
@@ -46,6 +48,10 @@ const GPResults = () => {
     
     // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
     const psychologicalRisk = assessCorrectPsychologicalRisk(rawData);
+    
+    console.log('Generated clinical summary:', clinicalSummary); // Debug log
+    console.log('Psychological risk assessment:', psychologicalRisk); // Debug log
+    console.log('Urgency score:', urgencyScore); // Debug log
     
     return {
       patientRef: assessmentResult.patientRef,
@@ -256,9 +262,24 @@ const GPResults = () => {
       clinicalSummary: {
         vasomotor: { severity: 'Moderate' },
         psychological: { severity: 'Mild' },
-        medicalHistory: { riskLevel: 'Low', personal: [], family: [], clinicalNotes: 'No significant concerns' },
+        medicalHistory: { 
+          riskLevel: 'Low', 
+          personal: [], 
+          family: [], 
+          clinicalNotes: 'No medical history recorded - ensure contraindications are assessed' 
+        },
         treatmentPreferences: { selected: ['hrt'], educationNeeded: true, clinicalNotes: 'Patient interested in HRT education' },
-        lifestyle: { smoking: 'never', exercise: 'moderate', alcohol: '1-7', bmi: '24.5', riskLevel: 'Low', clinicalNotes: 'Good lifestyle profile' },
+        lifestyle: { 
+          smoking: 'never', 
+          exercise: 'moderate', 
+          alcohol: '1-7', 
+          bmi: '24.5', 
+          height: '165', 
+          weight: '67', 
+          riskLevel: 'Low', 
+          clinicalNotes: 'Good lifestyle profile' 
+        },
+        patientComments: '',
         overallComplexity: 'Low - Routine GP management appropriate'
       },
       treatmentOptions: [{
@@ -378,6 +399,23 @@ const GPResults = () => {
 
           {/* Enhanced GP Summary */}
           <GPClinicalSummary clinicalResults={clinicalResults} />
+          
+          {/* Patient Comments Section - NEW */}
+          {clinicalResults.clinicalSummary?.patientComments && (
+            <Card className="mt-6 border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center text-blue-900">
+                  <User className="w-5 h-5 mr-2" />
+                  Patient Additional Comments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-white p-4 rounded border-l-4 border-blue-500">
+                  <p className="text-gray-800 italic">"{clinicalResults.clinicalSummary.patientComments}"</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           {/* Detailed Treatment Options */}
           <div className="mt-8">

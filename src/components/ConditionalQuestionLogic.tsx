@@ -152,10 +152,15 @@ export const getAmberFlags = (data: AssessmentData): string[] => {
   return flags;
 };
 
-// Enhanced complex medical history assessment
+// Enhanced complex medical history assessment - FIXED TO ONLY CHECK ACTUAL SELECTIONS
 const hasComplexMedicalHistory = (data: AssessmentData): boolean => {
   const personalHistory = data.personalMedicalHistory || [];
   const familyHistory = data.familyHistory || [];
+  
+  // Only return true if there are ACTUAL selections, not empty arrays
+  if (personalHistory.length === 0 && familyHistory.length === 0) {
+    return false;
+  }
   
   // High-risk personal history
   const highRiskConditions = ['breast-cancer', 'blood-clots', 'liver-disease', 'heart-disease', 'stroke'];
@@ -425,7 +430,7 @@ export const getSymptomScore = (questionId: string, answer: any): number => {
   return scores[questionId]?.[answer] || 0;
 };
 
-// FIXED CLINICAL SUMMARY GENERATION - PROPER PSYCHOLOGICAL MAPPING
+// FIXED CLINICAL SUMMARY GENERATION - PROPER MEDICAL HISTORY MAPPING
 export const generateClinicalSummary = (data: AssessmentData) => {
   const bmi = calculateBMI(data.height, data.weight);
   const redFlags = getRedFlags(data);
@@ -473,9 +478,12 @@ export const generateClinicalSummary = (data: AssessmentData) => {
       alcohol: data.alcoholConsumption || 'Not assessed',
       exercise: data.exerciseLevel || 'Not assessed',
       bmi: bmi ? bmi.toFixed(1) : 'Not calculated',
+      height: data.height || 'Not recorded',
+      weight: data.weight || 'Not recorded',
       riskLevel: calculateLifestyleRisk(data),
       clinicalNotes: generateLifestyleNotes(data, bmi)
     },
+    patientComments: data.additionalInfo || data.comments || '',
     redFlags: redFlags,
     overallComplexity: calculateOverallComplexity(data, redFlags)
   };
@@ -567,19 +575,43 @@ const assessMedicalHistoryRisk = (personal?: string[], family?: string[]): strin
 const generateMedicalHistoryNotes = (personal?: string[], family?: string[]): string => {
   const notes = [];
   
-  if (personal && personal.includes('breast-cancer')) {
-    notes.push('Personal breast cancer history - specialist menopause clinic referral recommended');
+  // Only add notes if there are actual selections (not empty arrays)
+  if (personal && personal.length > 0) {
+    if (personal.includes('breast-cancer')) {
+      notes.push('Personal breast cancer history - specialist menopause clinic referral recommended');
+    }
+    
+    if (personal.includes('blood-clots')) {
+      notes.push('VTE history - avoid oral HRT, consider transdermal options with thrombophilia screen');
+    }
+    
+    if (personal.includes('liver-disease')) {
+      notes.push('Liver disease history - avoid oral HRT, hepatology review required');
+    }
+    
+    if (personal.includes('heart-disease')) {
+      notes.push('Cardiovascular disease - cardiology input for HRT suitability');
+    }
   }
   
-  if (personal && personal.includes('blood-clots')) {
-    notes.push('VTE history - avoid oral HRT, consider transdermal options with thrombophilia screen');
+  if (family && family.length > 0) {
+    if (family.includes('breast-cancer') || family.includes('ovarian-cancer')) {
+      notes.push('Strong family cancer history - genetic counseling consideration');
+    }
+    
+    if (family.includes('blood-clots')) {
+      notes.push('Family VTE history - enhanced thrombosis risk assessment');
+    }
   }
   
-  if (family && (family.includes('breast-cancer') || family.includes('ovarian-cancer'))) {
-    notes.push('Strong family cancer history - genetic counseling consideration');
+  // Return appropriate message based on actual selections
+  if (notes.length > 0) {
+    return notes.join('. ');
+  } else if ((personal && personal.length === 0) && (family && family.length === 0)) {
+    return 'No medical history recorded - ensure contraindications are assessed';
+  } else {
+    return 'No significant medical history concerns identified';
   }
-  
-  return notes.length > 0 ? notes.join('. ') : 'No significant medical history concerns identified';
 };
 
 const generateTreatmentPreferenceNotes = (preferences?: string[]): string => {
@@ -588,7 +620,7 @@ const generateTreatmentPreferenceNotes = (preferences?: string[]): string => {
   }
   
   const preferenceMap: { [key: string]: string } = {
-    'hrt': 'Patient interested in HRT - provide comprehensive education and risk-benefit discussion',
+    'hrt': 'Patient interested in HRT - provide comprehensive information and risk-benefit discussion',
     'cbt': 'Patient interested in CBT - routine mental health referral for psychological therapy',
     'non-hormonal': 'Patient prefers non-hormonal approaches - focus on lifestyle and alternative treatments'
   };

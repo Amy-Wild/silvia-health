@@ -152,8 +152,14 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
                   </Badge>
                 ))
               ) : (
-                <span className="text-green-600">✅ No significant risk factors</span>
+                <span className="text-green-600">✅ No significant risk factors identified</span>
               )}
+              
+              {/* Show medical history status */}
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                <p><strong>Personal History:</strong> {clinicalResults.clinicalSummary?.medicalHistory?.personal?.length > 0 ? clinicalResults.clinicalSummary.medicalHistory.personal.join(', ') : 'None recorded'}</p>
+                <p><strong>Family History:</strong> {clinicalResults.clinicalSummary?.medicalHistory?.family?.length > 0 ? clinicalResults.clinicalSummary.medicalHistory.family.join(', ') : 'None recorded'}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -178,6 +184,30 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
                 <span className={clinicalResults.clinicalSummary?.lifestyle?.exercise === 'none' ? 'text-amber-600 ml-1' : 'ml-1'}>
                   {clinicalResults.clinicalSummary?.lifestyle?.exercise || 'Unknown'}
                 </span>
+              </div>
+              <div>
+                <span className="font-medium">BMI:</span>
+                <span className={parseFloat(clinicalResults.clinicalSummary?.lifestyle?.bmi || '0') > 30 ? 'text-amber-600 ml-1' : 'ml-1'}>
+                  {clinicalResults.clinicalSummary?.lifestyle?.bmi || 'Not calculated'}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium">Alcohol:</span>
+                <span className={clinicalResults.clinicalSummary?.lifestyle?.alcohol === '22+' ? 'text-amber-600 ml-1' : 'ml-1'}>
+                  {clinicalResults.clinicalSummary?.lifestyle?.alcohol || 'Unknown'} units/week
+                </span>
+              </div>
+            </div>
+            
+            {/* Physical measurements */}
+            <div className="mt-3 pt-2 border-t grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="font-medium">Height:</span>
+                <span className="ml-1">{clinicalResults.clinicalSummary?.lifestyle?.height || 'Not recorded'} cm</span>
+              </div>
+              <div>
+                <span className="font-medium">Weight:</span>
+                <span className="ml-1">{clinicalResults.clinicalSummary?.lifestyle?.weight || 'Not recorded'} kg</span>
               </div>
             </div>
           </CardContent>
