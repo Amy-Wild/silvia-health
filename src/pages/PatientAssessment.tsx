@@ -12,46 +12,34 @@ import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
-
-interface AssessmentData {
-  patientRef?: string;
-  age?: string;
-  menstrualStatus?: string;
-  periodsStopped?: string;
-  postmenopausalBleeding?: string;
-  unexplainedWeightLoss?: string;
-  severePelvicPain?: string;
-  hotFlashFrequency?: string;
-  nightSweats?: string;
-  physicalSymptoms?: string[];
-  moodSymptoms?: string;
-  libidoChanges?: string;
-  smokingStatus?: string;
-  alcoholConsumption?: string;
-  exerciseLevel?: string;
-  bmi?: string;
-  treatmentPreferences?: string[];
-  personalMedicalHistory?: string[];
-  familyHistory?: string[];
-  height?: string;
-  weight?: string;
-  sleepQuality?: string;
-  vaginalSymptoms?: string;
-  cognitiveSymptoms?: string;
-  vasomotorImpact?: string;
-  moodImpact?: string;
-  primaryConcern?: string;
-  occupation?: string;
-  additionalInfo?: string;
-  [key: string]: any;
-}
+import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
 const PatientAssessment = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
+  const [assessmentData, setAssessmentData] = useState<PatientAssessmentData>({
+    age: "", // Initialize required field
+    menstrualStatus: "unknown",
+    postmenopausalBleeding: "unsure",
+    unexplainedWeightLoss: "unsure",
+    severePelvicPain: "unsure",
+    hotFlashFrequency: "none",
+    nightSweats: "none",
+    physicalSymptoms: [],
+    moodSymptoms: "none",
+    cognitiveSymptoms: "none",
+    sleepQuality: "good",
+    libidoChanges: "none",
+    vaginalSymptoms: "none",
+    personalMedicalHistory: [],
+    familyHistory: [],
+    smokingStatus: "never",
+    alcoholConsumption: "none",
+    exerciseLevel: "none",
+    treatmentPreferences: []
+  });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [riskLevel, setRiskLevel] = useState("low");
@@ -141,9 +129,9 @@ const PatientAssessment = () => {
     }
   };
 
-  const handleDataChange = (data: AssessmentData) => {
+  const handleDataChange = (data: PatientAssessmentData) => {
     setAssessmentData(data);
-    setIsValid(Object.keys(data).length > 0);
+    setIsValid(Object.keys(data).length > 0 && data.age.length > 0);
   };
 
   const getRiskBadge = () => {
