@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { calculateRiskLevel, getUrgentFlags } from "@/components/ConditionalQuestionLogic";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
@@ -8,9 +7,15 @@ export const useAssessmentState = () => {
   const [assessmentData, setAssessmentData] = useState<PatientAssessmentData>({
     age: "",
     menstrualStatus: "unknown",
+    periodsStopped: "",
     postmenopausalBleeding: "unsure",
+    lastPeriodDate: "",
+    menopauseType: "",
+    cycleChanges: [],
+    periodChanges: "",
     unexplainedWeightLoss: "unsure",
     severePelvicPain: "unsure",
+    utiHistory: "",
     hotFlashFrequency: "none",
     nightSweats: "none",
     physicalSymptoms: [],
