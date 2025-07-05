@@ -21,7 +21,6 @@ const PostmenopausalQuestions = ({
 }: PostmenopausalQuestionsProps) => {
   return (
     <>
-      {/* NICE Guideline: Detailed timing assessment */}
       <div>
         <Label className="text-base font-medium mb-3 block">
           How long ago did your periods stop completely?
@@ -30,7 +29,7 @@ const PostmenopausalQuestions = ({
           <div className="flex items-start space-x-2">
             <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-blue-800">
-              NICE NG23: Natural menopause is confirmed after 12 months without periods
+              Natural menopause is confirmed after 12 months without periods
             </p>
           </div>
         </div>
@@ -49,7 +48,6 @@ const PostmenopausalQuestions = ({
         </Select>
       </div>
 
-      {/* Type of menopause - NICE guideline requirement */}
       <div>
         <Label className="text-base font-medium mb-3 block">
           How did your menopause occur?
@@ -61,43 +59,42 @@ const PostmenopausalQuestions = ({
         >
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="natural" id="natural-menopause" />
-            <Label htmlFor="natural-menopause" className="cursor-pointer">
+            <Label htmlFor="natural-menopause" className="cursor-pointer flex-1">
               Natural menopause (periods gradually stopped)
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="surgical" id="surgical-menopause" />
-            <Label htmlFor="surgical-menopause" className="cursor-pointer">
+            <Label htmlFor="surgical-menopause" className="cursor-pointer flex-1">
               Surgical menopause (ovaries removed)
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="medical" id="medical-menopause" />
-            <Label htmlFor="medical-menopause" className="cursor-pointer">
+            <Label htmlFor="medical-menopause" className="cursor-pointer flex-1">
               Medical menopause (treatment-induced)
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="unknown" id="unknown-menopause" />
-            <Label htmlFor="unknown-menopause" className="cursor-pointer">
+            <Label htmlFor="unknown-menopause" className="cursor-pointer flex-1">
               I'm not sure
             </Label>
           </div>
         </RadioGroup>
       </div>
 
-      {/* Critical red flag question - postmenopausal bleeding (NICE NG23) */}
       {(periodsStopped === "12-24months" || periodsStopped === "2-5years" || periodsStopped === "5-10years" || periodsStopped === "more-than-10years") && (
         <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded">
           <div className="flex items-start space-x-3">
             <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <Label className="text-base font-medium mb-3 block text-red-800">
-                🚨 RED FLAG SCREENING (NICE NG23): Have you had any bleeding or spotting since your periods stopped completely?
+                🚨 Important Health Question: Have you had any bleeding or spotting since your periods stopped completely?
               </Label>
               <div className="bg-red-100 p-2 rounded mb-3">
                 <p className="text-xs text-red-700">
-                  Any bleeding after 12+ months without periods requires urgent investigation
+                  Any bleeding after 12+ months without periods requires urgent medical attention
                 </p>
               </div>
               <RadioGroup 
@@ -107,19 +104,19 @@ const PostmenopausalQuestions = ({
               >
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="no" id="no-bleeding" />
-                  <Label htmlFor="no-bleeding" className="cursor-pointer">
+                  <Label htmlFor="no-bleeding" className="cursor-pointer flex-1">
                     No, no bleeding or spotting at all
                   </Label>
                 </div>
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="yes" id="yes-bleeding" />
-                  <Label htmlFor="yes-bleeding" className="cursor-pointer font-medium text-red-700">
+                  <Label htmlFor="yes-bleeding" className="cursor-pointer flex-1 font-medium text-red-700">
                     ⚠️ Yes, I have had bleeding or spotting
                   </Label>
                 </div>
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="unsure" id="unsure-bleeding" />
-                  <Label htmlFor="unsure-bleeding" className="cursor-pointer">
+                  <Label htmlFor="unsure-bleeding" className="cursor-pointer flex-1">
                     I'm not sure / can't remember
                   </Label>
                 </div>
@@ -129,7 +126,6 @@ const PostmenopausalQuestions = ({
         </div>
       )}
 
-      {/* Additional probing for early menopause - NICE guideline */}
       {menopauseType === "natural" && (periodsStopped === "less-than-12months" || periodsStopped === "12-24months") && (
         <div className="bg-amber-50 border border-amber-200 p-4 rounded">
           <div className="flex items-start space-x-3">

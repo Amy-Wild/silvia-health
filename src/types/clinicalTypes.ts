@@ -1,4 +1,3 @@
-
 // Enhanced TypeScript definitions for NHS-compliant clinical data
 export interface PatientAssessmentData {
   // Core Demographics
@@ -7,7 +6,7 @@ export interface PatientAssessmentData {
   occupation?: string;
   
   // Clinical History
-  menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'perimenopause' | 'unknown';
+  menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'unknown';
   periodsStopped?: string;
   lastPeriodDate?: string;
   menopauseType?: string;

@@ -31,7 +31,7 @@ const PerimenopauseQuestions = ({
           <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
             <Label className="text-base font-medium mb-2 block text-blue-800">
-              Perimenopause Assessment (NICE NG23)
+              Perimenopause Assessment
             </Label>
             <p className="text-sm text-blue-700">
               Perimenopause typically begins with changes to menstrual cycle length and flow, 
@@ -60,7 +60,7 @@ const PerimenopauseQuestions = ({
                 checked={cycleChanges?.includes(change.id) || false}
                 onCheckedChange={(checked) => handleCycleChangesUpdate(change.id, checked as boolean)}
               />
-              <Label htmlFor={change.id} className="cursor-pointer">
+              <Label htmlFor={change.id} className="cursor-pointer flex-1">
                 {change.label}
               </Label>
             </div>
@@ -79,25 +79,25 @@ const PerimenopauseQuestions = ({
         >
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="less-than-6months" id="changes-recent" />
-            <Label htmlFor="changes-recent" className="cursor-pointer">
+            <Label htmlFor="changes-recent" className="cursor-pointer flex-1">
               Less than 6 months
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="6-12months" id="changes-moderate" />
-            <Label htmlFor="changes-moderate" className="cursor-pointer">
+            <Label htmlFor="changes-moderate" className="cursor-pointer flex-1">
               6-12 months
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="1-2years" id="changes-established" />
-            <Label htmlFor="changes-established" className="cursor-pointer">
+            <Label htmlFor="changes-established" className="cursor-pointer flex-1">
               1-2 years
             </Label>
           </div>
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="more-than-2years" id="changes-long" />
-            <Label htmlFor="changes-long" className="cursor-pointer">
+            <Label htmlFor="changes-long" className="cursor-pointer flex-1">
               More than 2 years
             </Label>
           </div>
