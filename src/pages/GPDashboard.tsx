@@ -88,7 +88,7 @@ const GPDashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                 <Activity className="w-4 h-4 mr-1" />
                 System Active
               </Badge>
@@ -128,7 +128,7 @@ const GPDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Completed: {assessment.completedAt}</p>
-                  <Badge className={`mt-2 ${assessment.riskLevel === 'red' ? 'bg-red-500 text-white' : assessment.riskLevel === 'amber' ? 'bg-amber-500 text-white' : 'bg-green-500 text-white'}`}>
+                  <Badge className={`mt-2 ${assessment.riskLevel === 'red' ? 'bg-red-500 text-white' : assessment.riskLevel === 'amber' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'}`}>
                     {assessment.riskLevel} Risk
                   </Badge>
                   <Button onClick={() => navigateToResults(assessment.id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">

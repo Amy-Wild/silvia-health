@@ -118,11 +118,51 @@ const Step6SleepIntimacy = ({ data, onUpdate }: Step6SleepIntimacyProps) => {
         </CardContent>
       </Card>
 
-      {/* Treatment Preferences */}
+      {/* Treatment Approach Preference */}
+      <Card className="bg-purple-50 border-purple-200">
+        <CardHeader>
+          <CardTitle className="text-lg text-gray-800">Treatment Approach Preference</CardTitle>
+          <p className="text-sm text-gray-600">This helps us understand what type of support you're most interested in:</p>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup 
+            value={data.treatmentApproachPreference} 
+            onValueChange={(value) => onUpdate('treatmentApproachPreference', value)}
+            className="space-y-3"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="hrt" id="approach-hrt" />
+              <Label htmlFor="approach-hrt" className="text-sm">
+                <strong>Hormone treatments (HRT)</strong> - I'm interested in learning about hormonal options
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="non-hrt" id="approach-non-hrt" />
+              <Label htmlFor="approach-non-hrt" className="text-sm">
+                <strong>Non-hormonal treatments</strong> - I prefer non-hormonal approaches
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="self-care" id="approach-self-care" />
+              <Label htmlFor="approach-self-care" className="text-sm">
+                <strong>Self-care focus</strong> - I want to try lifestyle changes and self-management first
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="unsure" id="approach-unsure" />
+              <Label htmlFor="approach-unsure" className="text-sm">
+                <strong>I'm unsure</strong> - I'd like help understanding my options
+              </Label>
+            </div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
+      {/* Specific Treatment Learning Preferences */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-gray-800">Treatment Preferences</CardTitle>
-          <p className="text-sm text-gray-600">Please select which treatment approaches you would like to learn more about:</p>
+          <CardTitle className="text-lg text-gray-800">What Would You Like to Learn About?</CardTitle>
+          <p className="text-sm text-gray-600">Select all topics you'd like educational resources for:</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">

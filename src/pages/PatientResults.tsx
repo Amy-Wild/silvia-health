@@ -14,7 +14,7 @@ const PatientResults = () => {
     needsGPAppointment: true,
     keyFindings: [
       "Moderate menopause symptoms affecting daily life",
-      "Some cardiovascular risk factors present",
+      "Some cardiovascular risk factors present", 
       "Bone health may need attention"
     ],
     recommendations: [
@@ -46,7 +46,7 @@ const PatientResults = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
@@ -67,14 +67,14 @@ const PatientResults = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {/* Completion Message */}
-          <Card className="mb-8 bg-gradient-to-r from-green-500 to-teal-600 text-white">
+          <Card className="mb-8 bg-green-100 border-green-200">
             <CardContent className="p-8 text-center">
-              <CheckCircle className="w-16 h-16 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-4">Thank You!</h2>
-              <p className="text-lg opacity-90 mb-4">
+              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
+              <h2 className="text-2xl font-bold mb-4 text-green-800">Thank You!</h2>
+              <p className="text-lg mb-4 text-green-700">
                 Your health assessment has been completed and sent to your GP.
               </p>
-              <p className="opacity-80 text-sm">
+              <p className="text-green-600 text-sm">
                 Completed on {results.completedAt} • Session: {sessionId?.slice(-8)}
               </p>
             </CardContent>
@@ -84,7 +84,7 @@ const PatientResults = () => {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Heart className="w-5 h-5 mr-2 text-pink-500" />
+                <Heart className="w-5 h-5 mr-2 text-purple-500" />
                 Your Health Summary
               </CardTitle>
             </CardHeader>
@@ -92,7 +92,7 @@ const PatientResults = () => {
               <div className="space-y-3">
                 {results.keyFindings.map((finding, index) => (
                   <div key={index} className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-pink-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-gray-700">{finding}</p>
                   </div>
                 ))}
@@ -126,7 +126,7 @@ const PatientResults = () => {
           </Card>
 
           {/* Educational Resources Integration */}
-          <Card className="mb-6 border-blue-200 bg-blue-50">
+          <Card className="mb-6 bg-blue-50 border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center text-blue-800">
                 <BookOpen className="w-5 h-5 mr-2" />
@@ -162,7 +162,7 @@ const PatientResults = () => {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2 text-amber-500" />
+                <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
                 What Happens Next
               </CardTitle>
             </CardHeader>
@@ -170,7 +170,7 @@ const PatientResults = () => {
               <div className="space-y-3">
                 {results.nextSteps.map((step, index) => (
                   <div key={index} className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    <div className="w-6 h-6 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                       {index + 1}
                     </div>
                     <p className="text-gray-700">{step}</p>
@@ -199,7 +199,7 @@ const PatientResults = () => {
           </div>
 
           {/* Footer Info */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg text-center">
+          <div className="mt-8 p-4 bg-gray-100 rounded-lg text-center">
             <p className="text-sm text-gray-600">
               Your responses are secure and confidential. Only your GP will have access to the detailed results.
               If you have urgent concerns, please contact your GP directly.
