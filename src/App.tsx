@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import PatientAssessment from "./pages/PatientAssessment";
-import Results from "./pages/Results";
 import PatientResults from "./pages/PatientResults";
 import GPDashboard from "./pages/GPDashboard";
 import GPResults from "./pages/GPResults";
@@ -30,8 +29,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
-          <Route path="/results" element={<Results />} />
-          <Route path="/results/:sessionId" element={<Results />} />
           <Route path="/patient-results/:sessionId" element={<PatientResults />} />
           <Route path="/gp-dashboard" element={<GPDashboard />} />
           <Route path="/gp-results/:sessionId" element={<GPResults />} />
