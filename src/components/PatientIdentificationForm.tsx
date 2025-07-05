@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { UserPlus, Copy, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -117,11 +117,25 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
 
   const copyToClipboard = async () => {
     if (createdLink) {
-      await navigator.clipboard.writeText(createdLink);
-      toast({
-        title: "Link Copied",
-        description: "Assessment link copied to clipboard",
-      });
+      try {
+        await navigator.clipboard.writeText(createdLink);
+        toast({
+          title: "Link Copied",
+          description: "Assessment link copied to clipboard",
+        });
+      } catch (err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = createdLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toast({
+          title: "Link Copied",
+          description: "Assessment link copied to clipboard",
+        });
+      }
     }
   };
 
@@ -143,34 +157,62 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
   if (createdLink) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              <span>Assessment Link Created</span>
+              <span>Assessment Link Created Successfully</span>
             </DialogTitle>
+            <DialogDescription>
+              Share this secure link with your patient to begin their assessment
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm text-green-800 mb-2">
-                <strong>Patient:</strong> {patientReference}
-              </p>
-              <p className="text-xs text-green-600 break-all mb-3">
-                {createdLink}
-              </p>
-              <Button onClick={copyToClipboard} className="w-full bg-green-600 hover:bg-green-700">
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Link
+          <div className="space-y-6">
+            <div className="p-6 bg-green-50 rounded-lg border border-green-200">
+              <div className="mb-4">
+                <p className="text-sm font-medium text-green-800 mb-1">
+                  <strong>Patient:</strong> {patientReference}
+                </p>
+                <p className="text-sm text-green-700 mb-4">
+                  Assessment link generated at {new Date().toLocaleString()}
+                </p>
+              </div>
+              
+              <div className="bg-white p-4 rounded border border-green-300 mb-4">
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Assessment Link:</Label>
+                <div className="flex items-center space-x-2">
+                  <Input 
+                    value={createdLink} 
+                    readOnly 
+                    className="flex-1 text-sm font-mono bg-gray-50"
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                  <Button onClick={copyToClipboard} size="sm" className="bg-green-600 hover:bg-green-700 shrink-0">
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h4 className="font-medium text-blue-900 mb-2">Security & Usage Notes:</h4>
+              <div className="text-sm text-blue-800 space-y-1">
+                <p>• Share this link securely with your patient via SMS, email, or patient portal</p>
+                <p>• Link is unique and expires after assessment completion</p>
+                <p>• Patient results will appear in your dashboard automatically</p>
+                <p>• Link contains no personal information for security</p>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button onClick={handleClose} variant="outline" className="flex-1">
+                Create Another Assessment
+              </Button>
+              <Button onClick={handleClose} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                Return to Dashboard
               </Button>
             </div>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>• Share this link securely with your patient</p>
-              <p>• Link expires after assessment completion</p>
-              <p>• Results will appear in your dashboard</p>
-            </div>
-            <Button onClick={handleClose} variant="outline" className="w-full">
-              Create Another Assessment
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -185,6 +227,9 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
             <UserPlus className="w-5 h-5 text-blue-600" />
             <span>Create Patient Assessment</span>
           </DialogTitle>
+          <DialogDescription>
+            Securely identify your patient to generate a personalized assessment link
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">

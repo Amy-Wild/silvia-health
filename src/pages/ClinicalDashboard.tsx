@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Eye, Mail, Search, Filter, Download, Clock, CheckCircle } from "lucide-react";
+import { AlertTriangle, Eye, Mail, Search, Filter, Download, Clock, CheckCircle, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
 const ClinicalDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
+  const [showPatientForm, setShowPatientForm] = useState(false);
   const navigate = useNavigate();
 
   // Mock assessment data
@@ -68,6 +70,11 @@ const ClinicalDashboard = () => {
     }
   ];
 
+  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
+    // In a real app, this would refresh the assessments list
+    setShowPatientForm(false);
+  };
+
   const getRiskBadge = (level: string | null) => {
     if (!level) return <Badge variant="outline">Pending</Badge>;
     const colors = {
@@ -117,9 +124,17 @@ const ClinicalDashboard = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Export Data
               </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button variant="outline" size="sm">
                 <Mail className="w-4 h-4 mr-2" />
                 Bulk Email
+              </Button>
+              <Button 
+                onClick={() => setShowPatientForm(true)} 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Assessment
               </Button>
             </div>
           </div>
@@ -313,6 +328,13 @@ const ClinicalDashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* Patient Identification Form Modal */}
+      <PatientIdentificationForm
+        isOpen={showPatientForm}
+        onClose={() => setShowPatientForm(false)}
+        onAssessmentCreated={handleAssessmentCreated}
+      />
     </div>
   );
 };
