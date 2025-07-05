@@ -26,7 +26,7 @@ export const useAssessmentState = () => {
     exerciseLevel: "none",
     treatmentPreferences: []
   });
-  const [isValid, setIsValid] = useState(false);
+  const [isValid, setIsValid] = useState(true); // Always valid to remove blocking
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [riskLevel, setRiskLevel] = useState("low");
 
@@ -50,9 +50,8 @@ export const useAssessmentState = () => {
 
   const handleDataChange = (data: PatientAssessmentData) => {
     setAssessmentData(data);
-    // More permissive validation - only require age if it's provided and valid
-    const ageValid = !data.age || (data.age.length > 0 && parseInt(data.age) > 0);
-    setIsValid(ageValid);
+    // Remove validation to prevent blocking navigation
+    setIsValid(true);
   };
 
   const getRiskBadge = () => {

@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,6 +17,7 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
   );
 
   const handleMenstrualStatusChange = (value: string) => {
+    console.log("Menstrual status changing to:", value);
     onUpdate("menstrualStatus", value);
     setShowPostmenopausalQuestions(value === "stopped");
     // Clear related fields when status changes
@@ -34,27 +34,27 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
           <CardTitle>Your Menstrual History</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Current menstrual status */}
+          {/* Current menstrual status with improved clickability */}
           <div>
-            <Label className="text-base font-medium mb-3 block">
+            <Label className="text-base font-medium mb-4 block">
               Which best describes your periods currently?
             </Label>
             <RadioGroup 
               value={data.menstrualStatus || ""} 
               onValueChange={handleMenstrualStatusChange}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="regular" id="regular" />
-                <Label htmlFor="regular">Regular (monthly cycles)</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="regular" id="regular" className="cursor-pointer" />
+                <Label htmlFor="regular" className="cursor-pointer flex-1">Regular (monthly cycles)</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="irregular" id="irregular" />
-                <Label htmlFor="irregular">Irregular (unpredictable timing)</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="irregular" id="irregular" className="cursor-pointer" />
+                <Label htmlFor="irregular" className="cursor-pointer flex-1">Irregular (unpredictable timing)</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="stopped" id="stopped" />
-                <Label htmlFor="stopped">Stopped completely</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="stopped" id="stopped" className="cursor-pointer" />
+                <Label htmlFor="stopped" className="cursor-pointer flex-1">Stopped completely</Label>
               </div>
             </RadioGroup>
           </div>
@@ -95,13 +95,13 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
                         onValueChange={(value) => onUpdate("postmenopausalBleeding", value)}
                         className="space-y-3"
                       >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="no" id="no-bleeding" />
-                          <Label htmlFor="no-bleeding">No, no bleeding or spotting</Label>
+                        <div className="flex items-center space-x-3 p-2 rounded hover:bg-red-100 cursor-pointer">
+                          <RadioGroupItem value="no" id="no-bleeding" className="cursor-pointer" />
+                          <Label htmlFor="no-bleeding" className="cursor-pointer flex-1">No, no bleeding or spotting</Label>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="yes" id="yes-bleeding" />
-                          <Label htmlFor="yes-bleeding">Yes, I have had bleeding or spotting</Label>
+                        <div className="flex items-center space-x-3 p-2 rounded hover:bg-red-100 cursor-pointer">
+                          <RadioGroupItem value="yes" id="yes-bleeding" className="cursor-pointer" />
+                          <Label htmlFor="yes-bleeding" className="cursor-pointer flex-1">Yes, I have had bleeding or spotting</Label>
                         </div>
                       </RadioGroup>
                     </div>
@@ -124,13 +124,13 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
                   onValueChange={(value) => onUpdate("unexplainedWeightLoss", value)}
                   className="space-y-3"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="no-weight-loss" />
-                    <Label htmlFor="no-weight-loss">No</Label>
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-amber-100 cursor-pointer">
+                    <RadioGroupItem value="no" id="no-weight-loss" className="cursor-pointer" />
+                    <Label htmlFor="no-weight-loss" className="cursor-pointer flex-1">No</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="yes-weight-loss" />
-                    <Label htmlFor="yes-weight-loss">Yes</Label>
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-amber-100 cursor-pointer">
+                    <RadioGroupItem value="yes" id="yes-weight-loss" className="cursor-pointer" />
+                    <Label htmlFor="yes-weight-loss" className="cursor-pointer flex-1">Yes</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -150,17 +150,17 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
                   onValueChange={(value) => onUpdate("severePelvicPain", value)}
                   className="space-y-3"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="no-pelvic-pain" />
-                    <Label htmlFor="no-pelvic-pain">No</Label>
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-amber-100 cursor-pointer">
+                    <RadioGroupItem value="no" id="no-pelvic-pain" className="cursor-pointer" />
+                    <Label htmlFor="no-pelvic-pain" className="cursor-pointer flex-1">No</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mild" id="mild-pelvic-pain" />
-                    <Label htmlFor="mild-pelvic-pain">Mild discomfort</Label>
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-amber-100 cursor-pointer">
+                    <RadioGroupItem value="mild" id="mild-pelvic-pain" className="cursor-pointer" />
+                    <Label htmlFor="mild-pelvic-pain" className="cursor-pointer flex-1">Mild discomfort</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="yes-pelvic-pain" />
-                    <Label htmlFor="yes-pelvic-pain">Yes, severe or persistent pain</Label>
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-amber-100 cursor-pointer">
+                    <RadioGroupItem value="yes" id="yes-pelvic-pain" className="cursor-pointer" />
+                    <Label htmlFor="yes-pelvic-pain" className="cursor-pointer flex-1">Yes, severe or persistent pain</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -177,17 +177,17 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
               onValueChange={(value) => onUpdate("utiHistory", value)}
               className="space-y-3"
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="no-uti" />
-                <Label htmlFor="no-uti">No recent UTIs</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="no" id="no-uti" className="cursor-pointer" />
+                <Label htmlFor="no-uti" className="cursor-pointer flex-1">No recent UTIs</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="occasional" id="occasional-uti" />
-                <Label htmlFor="occasional-uti">Occasional UTIs (1-2 per year)</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="occasional" id="occasional-uti" className="cursor-pointer" />
+                <Label htmlFor="occasional-uti" className="cursor-pointer flex-1">Occasional UTIs (1-2 per year)</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="frequent" id="frequent-uti" />
-                <Label htmlFor="frequent-uti">Frequent UTIs (3+ per year)</Label>
+              <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="frequent" id="frequent-uti" className="cursor-pointer" />
+                <Label htmlFor="frequent-uti" className="cursor-pointer flex-1">Frequent UTIs (3+ per year)</Label>
               </div>
             </RadioGroup>
           </div>

@@ -9,11 +9,8 @@ import Step6SleepIntimacy from "./assessment-steps/Step6SleepIntimacy";
 import Step7Lifestyle from "./assessment-steps/Step7Lifestyle";
 import Step8Complete from "./assessment-steps/Step8Complete";
 import PatientConsentForm from "./PatientConsentForm";
-import { validateClinicalData } from "@/utils/securityValidation";
 import { validateClinicalAssessment } from "@/utils/clinicalValidation";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
 import type { PatientAssessmentData, ConsentData } from "@/types/clinicalTypes";
 
 interface PatientAssessmentFormProps {
@@ -24,25 +21,11 @@ interface PatientAssessmentFormProps {
 
 const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFormProps) => {
   const [formData, setFormData] = useState<PatientAssessmentData>(data);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showConsent, setShowConsent] = useState(!data.consentData);
   const { toast } = useToast();
 
   const updateData = (key: string, value: any) => {
     const newData = { ...formData, [key]: value };
-    
-    // Real-time validation
-    const validation = validateClinicalData(newData);
-    setValidationErrors(validation.errors);
-    
-    if (validation.errors.length > 0) {
-      toast({
-        title: "Validation Warning",
-        description: validation.errors[0],
-        variant: "destructive"
-      });
-    }
-    
     setFormData(newData);
     onDataChange(newData);
   };
@@ -99,21 +82,6 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
 
   return (
     <div>
-      {/* Validation Errors Display */}
-      {validationErrors.length > 0 && (
-        <Alert className="mb-4 border-orange-200 bg-orange-50">
-          <AlertTriangle className="w-4 h-4 text-orange-600" />
-          <AlertDescription>
-            <p className="font-medium text-orange-800">Please check the following:</p>
-            <ul className="mt-1 text-sm text-orange-700">
-              {validationErrors.map((error, index) => (
-                <li key={index}>• {error}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
-      
       {renderStep()}
     </div>
   );
