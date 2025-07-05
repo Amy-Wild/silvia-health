@@ -7,9 +7,11 @@ import AssessmentHeader from "@/components/assessment/AssessmentHeader";
 import AssessmentProgress from "@/components/assessment/AssessmentProgress";
 import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 import WelcomeMessage from "@/components/assessment/WelcomeMessage";
-import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
+import { generatePatientGuidance, calculateRiskLevel, getUrgentFlags } from "@/components/ConditionalQuestionLogic";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle } from "lucide-react";
 
 interface AssessmentData {
   patientRef?: string;
@@ -36,6 +38,11 @@ interface AssessmentData {
   sleepQuality?: string;
   vaginalSymptoms?: string;
   cognitiveSymptoms?: string;
+  vasomotorImpact?: string;
+  moodImpact?: string;
+  primaryConcern?: string;
+  occupation?: string;
+  additionalInfo?: string;
   [key: string]: any;
 }
 
@@ -47,6 +54,7 @@ const PatientAssessment = () => {
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({});
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [riskLevel, setRiskLevel] = useState("low");
 
   const totalSteps = 8;
   const steps = [
@@ -65,6 +73,12 @@ const PatientAssessment = () => {
       navigate('/');
     }
   }, [sessionId, navigate]);
+
+  // Calculate risk level in real-time as data changes
+  useEffect(() => {
+    const currentRisk = calculateRiskLevel(assessmentData);
+    setRiskLevel(currentRisk);
+  }, [assessmentData]);
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
@@ -132,13 +146,59 @@ const PatientAssessment = () => {
     setIsValid(Object.keys(data).length > 0);
   };
 
+  const getRiskBadge = () => {
+    const urgentFlags = getUrgentFlags(assessmentData);
+    
+    if (urgentFlags.length > 0) {
+      return <Badge className="bg-red-500 text-white">Urgent Review Recommended</Badge>;
+    }
+    
+    switch (riskLevel) {
+      case "urgent":
+        return <Badge className="bg-red-500 text-white">Urgent Care Needed</Badge>;
+      case "high":
+        return <Badge className="bg-orange-500 text-white">High Priority</Badge>;
+      case "medium":
+        return <Badge className="bg-yellow-500 text-white">Routine Care</Badge>;
+      default:
+        return <Badge className="bg-green-500 text-white">Low Risk</Badge>;
+    }
+  };
+
+  const showUrgentWarning = () => {
+    const urgentFlags = getUrgentFlags(assessmentData);
+    return urgentFlags.length > 0;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
       <AssessmentHeader />
 
+      {/* Risk Level Display */}
+      <div className="container mx-auto px-4 py-2">
+        <div className="max-w-3xl mx-auto flex justify-end">
+          {getRiskBadge()}
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <WelcomeMessage show={currentStep === 1} />
+
+          {/* Urgent Warning */}
+          {showUrgentWarning() && (
+            <Card className="mb-6 bg-red-50 border-red-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <div>
+                    <p className="text-red-800 font-medium">Important Medical Review Needed</p>
+                    <p className="text-red-600 text-sm">Based on your responses, we recommend discussing these symptoms with your GP soon.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <AssessmentProgress 
             currentStep={currentStep}
