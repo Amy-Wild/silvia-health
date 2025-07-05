@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen } from "lucide-react";
+import TrackerIntegration from "@/components/TrackerIntegration";
 
 const PatientResults = () => {
   const { sessionId } = useParams();
@@ -125,7 +126,7 @@ const PatientResults = () => {
             </CardContent>
           </Card>
 
-          {/* Educational Resources Integration */}
+          {/* Enhanced Educational Resources Integration */}
           <Card className="mb-6 bg-blue-50 border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center text-blue-800">
@@ -157,6 +158,12 @@ const PatientResults = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* NEW: Symptom Tracker Integration */}
+          <TrackerIntegration 
+            sessionId={sessionId}
+            patientResults={results}
+          />
 
           {/* Next Steps */}
           <Card className="mb-6">

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Download, Mail, ArrowLeft, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import GPResultsSummary from "@/components/GPResultsSummary";
+import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
 import { generateClinicalSummary, generateNHSRecommendations, getRedFlags } from "@/components/ConditionalQuestionLogic";
 import { useState, useEffect } from "react";
@@ -287,8 +287,8 @@ const GPResults = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          {/* Main GP Summary - Optimized for 2-minute read */}
-          <GPResultsSummary clinicalResults={clinicalResults} />
+          {/* Enhanced GP Summary - Optimized for 2-minute read */}
+          <GPClinicalSummary clinicalResults={clinicalResults} />
           
           {/* Detailed Treatment Options - Expandable */}
           <div className="mt-8">
