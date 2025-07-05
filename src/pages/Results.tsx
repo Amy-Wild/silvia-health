@@ -1,15 +1,47 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Download, Printer, Share2, ArrowLeft, CheckCircle, Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Results = () => {
   const navigate = useNavigate();
+  const { sessionId } = useParams();
   const [reportType, setReportType] = useState("clinical");
+
+  // If no sessionId, show message to go back to assessment
+  if (!sessionId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertTriangle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Assessment Found</h1>
+          <p className="text-gray-600 mb-6">
+            You need to complete an assessment first to view results. Please start a new assessment or return to the dashboard.
+          </p>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => navigate('/assessment')}
+              size="lg"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Start New Assessment
+            </Button>
+            <Button 
+              onClick={() => navigate('/')}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              Return to Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Mock assessment data for demonstration
   const assessmentData = {
