@@ -19,7 +19,8 @@ interface PatientIdentificationFormProps {
 const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: PatientIdentificationFormProps) => {
   const [selectedTab, setSelectedTab] = useState("name");
   const [isCreating, setIsCreating] = useState(false);
-  const [createdLink, setCreatedLink] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdLink, setCreatedLink] = useState<string>("");
   const [patientReference, setPatientReference] = useState<string>("");
   const { toast } = useToast();
 
@@ -34,9 +35,7 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
   };
 
   const formatNHSNumber = (value: string) => {
-    // Remove all non-digits
     const digits = value.replace(/\D/g, '');
-    // Format as XXX XXX XXXX
     return digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3').substring(0, 12);
   };
 
@@ -100,12 +99,12 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     const sessionId = generateSessionId();
     const assessmentLink = `${window.location.origin}/patient-assessment/${sessionId}`;
     
-    // Store patient reference with session
     localStorage.setItem(`patient_ref_${sessionId}`, patientRef);
     
     setCreatedLink(assessmentLink);
     setPatientReference(patientRef);
     setIsCreating(false);
+    setShowSuccessModal(true);
     
     onAssessmentCreated(sessionId, patientRef);
 
@@ -120,11 +119,10 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
       try {
         await navigator.clipboard.writeText(createdLink);
         toast({
-          title: "Link Copied",
-          description: "Assessment link copied to clipboard",
+          title: "Link Copied!",
+          description: "Assessment link copied to clipboard successfully",
         });
       } catch (err) {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = createdLink;
         document.body.appendChild(textArea);
@@ -132,8 +130,8 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
         document.execCommand('copy');
         document.body.removeChild(textArea);
         toast({
-          title: "Link Copied",
-          description: "Assessment link copied to clipboard",
+          title: "Link Copied!",
+          description: "Assessment link copied to clipboard successfully",
         });
       }
     }
@@ -144,9 +142,10 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     setDobForm({ dateOfBirth: "" });
     setNhsForm({ nhsNumber: "" });
     setCustomForm({ customId: "" });
-    setCreatedLink(null);
+    setCreatedLink("");
     setPatientReference("");
     setSelectedTab("name");
+    setShowSuccessModal(false);
   };
 
   const handleClose = () => {
@@ -154,9 +153,129 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     onClose();
   };
 
-  if (createdLink) {
-    return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    resetForm();
+    onClose();
+  };
+
+  return (
+    <>
+      {/* Main Form Dialog */}
+      <Dialog open={isOpen && !showSuccessModal} onOpenChange={handleClose}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <UserPlus className="w-5 h-5 text-blue-600" />
+              <span>Create Patient Assessment</span>
+            </DialogTitle>
+            <DialogDescription>
+              Securely identify your patient to generate a personalized assessment link
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-blue-600" />
+              <p className="text-sm text-blue-800">
+                Please identify the patient using one of the secure methods below
+              </p>
+            </div>
+
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="name" className="text-xs">Name</TabsTrigger>
+                <TabsTrigger value="dob" className="text-xs">DOB</TabsTrigger>
+                <TabsTrigger value="nhs" className="text-xs">NHS</TabsTrigger>
+                <TabsTrigger value="custom" className="text-xs">ID</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="name" className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={nameForm.firstName}
+                      onChange={(e) => setNameForm({...nameForm, firstName: e.target.value})}
+                      placeholder="Sarah"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="surname">Surname</Label>
+                    <Input
+                      id="surname"
+                      value={nameForm.surname}
+                      onChange={(e) => setNameForm({...nameForm, surname: e.target.value})}
+                      placeholder="Smith"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="dob" className="space-y-3">
+                <div>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dobForm.dateOfBirth}
+                    onChange={(e) => setDobForm({...dobForm, dateOfBirth: e.target.value})}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                  {dobForm.dateOfBirth && !validateDateOfBirth(dobForm.dateOfBirth) && (
+                    <p className="text-xs text-red-600 mt-1">Please enter a valid date of birth</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="nhs" className="space-y-3">
+                <div>
+                  <Label htmlFor="nhsNumber">NHS Number</Label>
+                  <Input
+                    id="nhsNumber"
+                    value={nhsForm.nhsNumber}
+                    onChange={(e) => setNhsForm({...nhsForm, nhsNumber: formatNHSNumber(e.target.value)})}
+                    placeholder="123 456 7890"
+                    maxLength={12}
+                  />
+                  {nhsForm.nhsNumber && !validateNHSNumber(nhsForm.nhsNumber) && (
+                    <p className="text-xs text-red-600 mt-1">NHS number must be 10 digits</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="custom" className="space-y-3">
+                <div>
+                  <Label htmlFor="customId">Practice ID / Reference</Label>
+                  <Input
+                    id="customId"
+                    value={customForm.customId}
+                    onChange={(e) => setCustomForm({...customForm, customId: e.target.value})}
+                    placeholder="Your practice reference"
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex space-x-2 pt-4">
+              <Button onClick={handleClose} variant="outline" className="flex-1">
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleCreateAssessment} 
+                disabled={isCreating}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                {isCreating ? "Creating..." : "Create Assessment"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={handleSuccessClose}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
@@ -167,6 +286,7 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
               Share this secure link with your patient to begin their assessment
             </DialogDescription>
           </DialogHeader>
+          
           <div className="space-y-6">
             <div className="p-6 bg-green-50 rounded-lg border border-green-200">
               <div className="mb-4">
@@ -206,131 +326,17 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
             </div>
             
             <div className="flex space-x-3">
-              <Button onClick={handleClose} variant="outline" className="flex-1">
+              <Button onClick={handleSuccessClose} variant="outline" className="flex-1">
                 Create Another Assessment
               </Button>
-              <Button onClick={handleClose} className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSuccessClose} className="flex-1 bg-blue-600 hover:bg-blue-700">
                 Return to Dashboard
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    );
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <UserPlus className="w-5 h-5 text-blue-600" />
-            <span>Create Patient Assessment</span>
-          </DialogTitle>
-          <DialogDescription>
-            Securely identify your patient to generate a personalized assessment link
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-blue-600" />
-            <p className="text-sm text-blue-800">
-              Please identify the patient using one of the secure methods below
-            </p>
-          </div>
-
-          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="name" className="text-xs">Name</TabsTrigger>
-              <TabsTrigger value="dob" className="text-xs">DOB</TabsTrigger>
-              <TabsTrigger value="nhs" className="text-xs">NHS</TabsTrigger>
-              <TabsTrigger value="custom" className="text-xs">ID</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="name" className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={nameForm.firstName}
-                    onChange={(e) => setNameForm({...nameForm, firstName: e.target.value})}
-                    placeholder="Sarah"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="surname">Surname</Label>
-                  <Input
-                    id="surname"
-                    value={nameForm.surname}
-                    onChange={(e) => setNameForm({...nameForm, surname: e.target.value})}
-                    placeholder="Smith"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="dob" className="space-y-3">
-              <div>
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={dobForm.dateOfBirth}
-                  onChange={(e) => setDobForm({...dobForm, dateOfBirth: e.target.value})}
-                  max={new Date().toISOString().split('T')[0]}
-                />
-                {dobForm.dateOfBirth && !validateDateOfBirth(dobForm.dateOfBirth) && (
-                  <p className="text-xs text-red-600 mt-1">Please enter a valid date of birth</p>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="nhs" className="space-y-3">
-              <div>
-                <Label htmlFor="nhsNumber">NHS Number</Label>
-                <Input
-                  id="nhsNumber"
-                  value={nhsForm.nhsNumber}
-                  onChange={(e) => setNhsForm({...nhsForm, nhsNumber: formatNHSNumber(e.target.value)})}
-                  placeholder="123 456 7890"
-                  maxLength={12}
-                />
-                {nhsForm.nhsNumber && !validateNHSNumber(nhsForm.nhsNumber) && (
-                  <p className="text-xs text-red-600 mt-1">NHS number must be 10 digits</p>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="custom" className="space-y-3">
-              <div>
-                <Label htmlFor="customId">Practice ID / Reference</Label>
-                <Input
-                  id="customId"
-                  value={customForm.customId}
-                  onChange={(e) => setCustomForm({...customForm, customId: e.target.value})}
-                  placeholder="Your practice reference"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex space-x-2 pt-4">
-            <Button onClick={handleClose} variant="outline" className="flex-1">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCreateAssessment} 
-              disabled={isCreating}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
-            >
-              {isCreating ? "Creating..." : "Create Assessment"}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    </>
   );
 };
 
