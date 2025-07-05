@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,13 +100,27 @@ const ClinicalDashboard = () => {
 
   const getRiskBadge = (level: string | null) => {
     if (!level) return <Badge variant="outline">Pending</Badge>;
-    const colors = {
-      red: "bg-red-500 text-white",
-      amber: "bg-amber-500 text-white", 
-      yellow: "bg-yellow-500 text-white",
-      green: "bg-green-500 text-white"
+    
+    const getBadgeProps = (level: string) => {
+      switch (level.toLowerCase()) {
+        case 'red':
+        case 'urgent':
+        case 'high':
+          return { className: "bg-red-500 hover:bg-red-600 text-white border-red-600", label: "HIGH RISK" };
+        case 'amber':
+        case 'moderate': 
+        case 'medium':
+          return { className: "bg-amber-500 hover:bg-amber-600 text-white border-amber-600", label: "MODERATE RISK" };
+        case 'green':
+        case 'low':
+        case 'mild':
+        default:
+          return { className: "bg-green-500 hover:bg-green-600 text-white border-green-600", label: "LOW RISK" };
+      }
     };
-    return <Badge className={colors[level as keyof typeof colors]}>{level.toUpperCase()}</Badge>;
+    
+    const { className, label } = getBadgeProps(level);
+    return <Badge className={className}>{label}</Badge>;
   };
 
   const getPriorityIcon = (priority: string | null) => {

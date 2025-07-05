@@ -85,15 +85,15 @@ const GPDashboard = () => {
       case 'red':
       case 'urgent':
       case 'high':
-        return 'bg-red-500 text-white border-red-600';
+        return 'bg-red-500 hover:bg-red-600 text-white border-red-600';
       case 'amber':
       case 'moderate':
       case 'medium':
-        return 'bg-amber-500 text-white border-amber-600';
+        return 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600';
       case 'green':
       case 'low':
       default:
-        return 'bg-green-500 text-white border-green-600';
+        return 'bg-green-500 hover:bg-green-600 text-white border-green-600';
     }
   };
 
@@ -102,15 +102,15 @@ const GPDashboard = () => {
       case 'red':
       case 'urgent':
       case 'high':
-        return 'Urgent Risk';
+        return 'HIGH RISK';
       case 'amber':
       case 'moderate':
       case 'medium':
-        return 'Moderate Risk';
+        return 'MODERATE RISK';
       case 'green':
       case 'low':
       default:
-        return 'Low Risk';
+        return 'LOW RISK';
     }
   };
 

@@ -1,3 +1,4 @@
+
 import { calculateBMI } from "@/utils/assessmentProcessor";
 
 // Function to determine the appropriate care path based on assessment data
@@ -148,14 +149,19 @@ export const calculateRiskLevel = (data: any): string => {
     return 'red';
   }
 
-  // Check for severe symptoms
-  if (data.moodSymptoms === 'severe') {
+  // Check for severe mental health symptoms
+  if (data.moodSymptoms === 'severe' || data.selfHarmRisk === 'frequent') {
+    return 'red';
+  }
+
+  // Check for moderate mental health symptoms  
+  if (data.moodSymptoms === 'moderate' || data.selfHarmRisk === 'occasional') {
     return 'amber';
   }
 
-   // Check for moderate symptoms
-   if (data.moodSymptoms === 'moderate') {
-    return 'yellow';
+  // Check for mild symptoms
+  if (data.moodSymptoms === 'mild') {
+    return 'green';
   }
 
   // Default to low risk
@@ -167,19 +173,27 @@ export const getUrgentFlags = (data: any): string[] => {
   const urgentFlags: string[] = [];
 
   if (data.postmenopausalBleeding === 'yes') {
-    urgentFlags.push("Postmenopausal bleeding");
+    urgentFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
   }
 
   if (data.unexplainedWeightLoss === 'yes') {
-    urgentFlags.push("Unexplained weight loss");
+    urgentFlags.push("🚨 RED FLAG: Unexplained weight loss");
   }
 
   if (data.severePelvicPain === 'yes') {
-    urgentFlags.push("Severe pelvic pain");
+    urgentFlags.push("🚨 RED FLAG: Severe pelvic pain");
   }
 
   if (data.selfHarmRisk === 'frequent') {
-    urgentFlags.push("Patient reports frequent thoughts of self-harm");
+    urgentFlags.push("🚨 RED FLAG: Patient reports frequent thoughts of self-harm");
+  }
+
+  if (data.moodSymptoms === 'severe') {
+    urgentFlags.push("🟠 AMBER FLAG: Severe mood symptoms requiring urgent support");
+  }
+
+  if (data.selfHarmRisk === 'occasional') {
+    urgentFlags.push("🟠 AMBER FLAG: Patient reports occasional thoughts of self-harm");
   }
 
   return urgentFlags;
@@ -190,15 +204,19 @@ export const getRedFlags = (data: any): string[] => {
     const redFlags: string[] = [];
   
     if (data.postmenopausalBleeding === 'yes') {
-      redFlags.push("Postmenopausal bleeding");
+      redFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
     }
   
     if (data.unexplainedWeightLoss === 'yes') {
-      redFlags.push("Unexplained weight loss");
+      redFlags.push("🚨 RED FLAG: Unexplained weight loss");
     }
   
     if (data.severePelvicPain === 'yes') {
-      redFlags.push("Severe pelvic pain");
+      redFlags.push("🚨 RED FLAG: Severe pelvic pain");
+    }
+
+    if (data.selfHarmRisk === 'frequent') {
+      redFlags.push("🚨 RED FLAG: Frequent thoughts of self-harm");
     }
   
     return redFlags;
