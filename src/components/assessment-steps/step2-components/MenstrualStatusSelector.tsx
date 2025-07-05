@@ -25,21 +25,21 @@ const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelect
         onValueChange={handleValueChange}
         className="space-y-4"
       >
-        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("regular")}>
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="regular" id="regular" />
           <Label htmlFor="regular" className="cursor-pointer text-sm flex-1">
             Regular (monthly cycles, 21-35 day intervals)
           </Label>
         </div>
         
-        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("irregular")}>
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="irregular" id="irregular" />
           <Label htmlFor="irregular" className="cursor-pointer text-sm flex-1">
             Irregular (unpredictable timing, varying cycle length)
           </Label>
         </div>
         
-        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("stopped")}>
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="stopped" id="stopped" />
           <Label htmlFor="stopped" className="cursor-pointer text-sm flex-1">
             Stopped completely (no periods for 12+ months)
