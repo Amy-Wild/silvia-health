@@ -5,11 +5,15 @@ interface AssessmentData {
   postmenopausalBleeding?: string;
   unexplainedWeightLoss?: string;
   severePelvicPain?: string;
+  utiHistory?: string;
+  selfHarmRisk?: string;
+  mentalWellbeing?: string;
   hotFlashFrequency?: string;
   nightSweats?: string;
   physicalSymptoms?: string[];
   moodSymptoms?: string;
   cognitiveSymptoms?: string;
+  moodImpact?: string;
   sleepQuality?: string;
   libidoChanges?: string;
   vaginalSymptoms?: string;
@@ -22,6 +26,10 @@ interface AssessmentData {
   familyHistory?: string[];
   personalMedicalHistory?: string[];
   treatmentPreferences?: string[];
+  vasomotorImpact?: string;
+  primaryConcern?: string;
+  occupation?: string;
+  additionalInfo?: string;
   [key: string]: any;
 }
 
@@ -79,6 +87,14 @@ export const getUrgentFlags = (data: AssessmentData): string[] => {
   if (data.severePelvicPain === "yes") {
     flags.push("Your pelvic discomfort would benefit from a GP review");
   }
+
+  if (data.selfHarmRisk === "frequent" || data.selfHarmRisk === "occasional") {
+    flags.push("Your mental wellbeing is important - we recommend speaking with your GP about support options");
+  }
+
+  if (data.utiHistory === "frequent") {
+    flags.push("Frequent UTIs can be related to hormonal changes - your GP can help address this");
+  }
   
   return flags;
 };
@@ -98,6 +114,14 @@ export const getRedFlags = (data: AssessmentData): string[] => {
   
   if (data.severePelvicPain === "yes") {
     flags.push("🚨 URGENT: Severe pelvic pain - urgent gynecological assessment required");
+  }
+
+  if (data.selfHarmRisk === "frequent") {
+    flags.push("🚨 URGENT: Active suicidal ideation - immediate mental health assessment required");
+  }
+
+  if (data.selfHarmRisk === "occasional") {
+    flags.push("⚠️ CAUTION: Suicidal thoughts reported - mental health review and safety planning needed");
   }
   
   // Personal medical history red flags
@@ -122,6 +146,11 @@ export const getRedFlags = (data: AssessmentData): string[] => {
   
   if (familyHistory.includes('blood-clots')) {
     flags.push("⚠️ GENETICS: Family history of VTE - increased thrombotic risk for HRT");
+  }
+  
+  // UTI-related flags
+  if (data.utiHistory === "frequent") {
+    flags.push("⚠️ REVIEW: Frequent UTIs - consider estrogen deficiency, investigate underlying causes");
   }
   
   // High-risk lifestyle factors
@@ -355,6 +384,28 @@ export const getSymptomScore = (questionId: string, answer: any): number => {
       mild: 2,
       moderate: 5,
       severe: 8
+    },
+    moodImpact: {
+      none: 0,
+      mild: 2,
+      moderate: 5,
+      severe: 8
+    },
+    mentalWellbeing: {
+      excellent: 0,
+      good: 1,
+      fair: 4,
+      poor: 8
+    },
+    selfHarmRisk: {
+      no: 0,
+      occasional: 6,
+      frequent: 10
+    },
+    utiHistory: {
+      no: 0,
+      occasional: 3,
+      frequent: 6
     },
     sleepQuality: {
       good: 0,

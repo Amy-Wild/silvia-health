@@ -59,11 +59,11 @@ const PatientAssessment = () => {
   const totalSteps = 8;
   const steps = [
     "About You",
-    "Your Periods", 
+    "Your Periods & Health", 
     "Hot Flashes & Night Sweats",
     "Physical Symptoms",
-    "Mood & Memory",
-    "Sleep & Treatment Preferences",
+    "Mental Health & Wellbeing",
+    "Sleep & Intimacy",
     "Medical History & Lifestyle",
     "Complete"
   ];

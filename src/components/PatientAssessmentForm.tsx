@@ -4,7 +4,7 @@ import Step1AboutYou from "./assessment-steps/Step1AboutYou";
 import Step2YourPeriods from "./assessment-steps/Step2YourPeriods";
 import Step3HotFlashes from "./assessment-steps/Step3HotFlashes";
 import Step4PhysicalSymptoms from "./assessment-steps/Step4PhysicalSymptoms";
-import Step5MoodMemory from "./assessment-steps/Step5MoodMemory";
+import Step5MentalHealth from "./assessment-steps/Step5MentalHealth";
 import Step6SleepIntimacy from "./assessment-steps/Step6SleepIntimacy";
 import Step7Lifestyle from "./assessment-steps/Step7Lifestyle";
 import Step8Complete from "./assessment-steps/Step8Complete";
@@ -35,7 +35,7 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
       case 4:
         return <Step4PhysicalSymptoms data={formData} onUpdate={updateData} />;
       case 5:
-        return <Step5MoodMemory data={formData} onUpdate={updateData} />;
+        return <Step5MentalHealth data={formData} onUpdate={updateData} />;
       case 6:
         return <Step6SleepIntimacy data={formData} onUpdate={updateData} />;
       case 7:
