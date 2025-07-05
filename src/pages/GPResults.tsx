@@ -183,8 +183,9 @@ const GPResults = () => {
       considerations.push("Moderate symptoms - HRT recommended");
     }
     
-    // Adjust for risk factors
+    // Only add contraindications that are actually present in patient history
     const personalHistory = rawData.personalMedicalHistory || [];
+    
     if (personalHistory.includes('breast-cancer')) {
       probability = 30;
       suitability = 40;
@@ -195,6 +196,18 @@ const GPResults = () => {
       probability = 40;
       suitability = 50;
       considerations.push("VTE history - transdermal route preferred");
+    }
+    
+    if (personalHistory.includes('liver-disease')) {
+      probability = 35;
+      suitability = 45;
+      considerations.push("Liver disease history - contraindication to HRT");
+    }
+    
+    // If no contraindications, add positive note
+    if (personalHistory.length === 0 || !personalHistory.some(condition => 
+      ['breast-cancer', 'blood-clots', 'liver-disease'].includes(condition))) {
+      considerations.push("No major contraindications identified");
     }
     
     return {
