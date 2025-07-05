@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import MenstrualStatusSelector from "./step2-components/MenstrualStatusSelector";
 import PostmenopausalQuestions from "./step2-components/PostmenopausalQuestions";
@@ -18,6 +18,8 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
 
   const handleMenstrualStatusChange = (value: string) => {
     console.log("Menstrual status changing to:", value);
+    
+    // Update the parent state immediately
     onUpdate("menstrualStatus", value);
     
     // Show/hide relevant sections
@@ -32,6 +34,11 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
     }
   };
 
+  // Update showPostmenopausalQuestions when data.menstrualStatus changes
+  useEffect(() => {
+    setShowPostmenopausalQuestions(data.menstrualStatus === "stopped");
+  }, [data.menstrualStatus]);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -43,7 +50,7 @@ const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
         </CardHeader>
         <CardContent className="space-y-6">
           <MenstrualStatusSelector 
-            value={data.menstrualStatus}
+            value={data.menstrualStatus || ""}
             onValueChange={handleMenstrualStatusChange}
           />
 
