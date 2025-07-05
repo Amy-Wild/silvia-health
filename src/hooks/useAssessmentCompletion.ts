@@ -1,4 +1,5 @@
 
+
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
@@ -14,7 +15,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
 
       // Route based on care pathway - Updated to redirect to educational website
-      if (determinedPath === 'self-care' || determinedPath === 'education-first') {
+      if (determinedPath === 'self-care' || determinedPath === 'education') {
         const treatmentPreferences = normalizedData.treatmentPreferences || [];
         const educationUrl = treatmentPreferences.length > 0 
           ? `/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}&source=assessment`
@@ -34,11 +35,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         return;
       } else {
         // Show patient guidance for GP appointments
-        const patientGuidance = generatePatientGuidance(determinedPath, normalizedData);
+        const patientGuidance = generatePatientGuidance(normalizedData);
         
         toast({
-          title: patientGuidance.title,
-          description: patientGuidance.nextSteps[0],
+          title: "GP consultation recommended",
+          description: patientGuidance,
           duration: 5000
         });
         
@@ -55,3 +56,4 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   return { processAssessmentCompletion };
 };
+
