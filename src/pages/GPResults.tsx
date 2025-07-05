@@ -29,10 +29,14 @@ const GPResults = () => {
   }, [sessionId]);
 
   const generateEnhancedGPResults = (assessmentResult: any) => {
-    const { rawData, riskLevel, recommendations, redFlags } = assessmentResult;
+    const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
     
-    // Generate comprehensive clinical summary
+    // Generate comprehensive clinical summary with proper psychological mapping
     const clinicalSummary = generateClinicalSummary(rawData);
+    
+    // Ensure urgent flags are properly captured
+    const allRedFlags = getRedFlags(rawData);
+    const allUrgentFlags = getUrgentFlags(rawData);
     
     // Generate treatment options
     const treatmentOptions = generateTreatmentOptions(rawData, clinicalSummary, riskLevel);
@@ -41,21 +45,23 @@ const GPResults = () => {
       patientRef: assessmentResult.patientRef,
       completedAt: new Date(assessmentResult.completedAt).toLocaleDateString('en-GB'),
       sessionId: sessionId,
-      riskLevel: riskLevel,
-      redFlags: redFlags,
+      riskLevel: calculateRiskLevel(rawData), // Recalculate to ensure accuracy
+      redFlags: allRedFlags,
+      urgentFlags: allUrgentFlags,
       clinicalSummary: clinicalSummary,
       treatmentOptions: treatmentOptions,
-      rawData: rawData, // Pass through raw data
+      rawData: rawData,
       patientProfile: {
         age: parseInt(rawData.age || "0"),
         riskFactors: generateRiskFactors(rawData),
         preferences: rawData.treatmentPreferences || []
       },
       analyticsData: {
-        urgencyScore: calculateUrgencyScore(rawData, riskLevel),
-        qualityOfLifeImpact: assessQualityOfLifeImpact(clinicalSummary)
+        urgencyScore: calculateUrgencyScore(rawData, calculateRiskLevel(rawData)),
+        qualityOfLifeImpact: assessQualityOfLifeImpact(clinicalSummary),
+        psychologicalRisk: assessPsychologicalRisk(rawData)
       },
-      clinicalRecommendations: recommendations
+      clinicalRecommendations: generateNHSRecommendations(rawData, calculateRiskLevel(rawData))
     };
   };
 
@@ -169,9 +175,20 @@ const GPResults = () => {
   };
 
   const calculateUrgencyScore = (rawData: any, riskLevel: string): number => {
-    if (riskLevel === 'red') return 10;
-    if (riskLevel === 'amber') return 6;
-    return 3;
+    let baseScore = 0;
+    
+    // Base score from risk level
+    if (riskLevel === 'red') baseScore = 10;
+    else if (riskLevel === 'amber') baseScore = 6;
+    else baseScore = 3;
+    
+    // Additional scoring for psychological risk
+    if (rawData.selfHarmRisk === 'frequent') baseScore = 10;
+    else if (rawData.selfHarmRisk === 'occasional') baseScore = Math.max(baseScore, 8);
+    
+    if (rawData.moodSymptoms === 'severe') baseScore = Math.max(baseScore, 7);
+    
+    return baseScore;
   };
 
   const assessQualityOfLifeImpact = (clinicalSummary: any) => {
@@ -186,6 +203,13 @@ const GPResults = () => {
     }
     
     return impacts;
+  };
+
+  const assessPsychologicalRisk = (rawData: any) => {
+    if (rawData.selfHarmRisk === 'frequent') return 'CRITICAL - Immediate intervention required';
+    if (rawData.selfHarmRisk === 'occasional') return 'HIGH - Urgent mental health review needed';
+    if (rawData.moodSymptoms === 'severe') return 'MODERATE - Mental health support recommended';
+    return 'LOW - No immediate psychological concerns';
   };
 
   const generateDemoResults = () => {
@@ -287,10 +311,41 @@ const GPResults = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          {/* Enhanced GP Summary - Optimized for 2-minute read */}
+          {/* Critical Alerts - Show psychological risks prominently */}
+          {clinicalResults.analyticsData.psychologicalRisk.startsWith('CRITICAL') && (
+            <Card className="mb-6 border-red-500 bg-red-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <div>
+                    <h3 className="font-bold text-red-800">URGENT MENTAL HEALTH ALERT</h3>
+                    <p className="text-red-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
+                    <p className="text-sm text-red-600 mt-1">Patient reported frequent thoughts of self-harm - immediate crisis intervention required</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {clinicalResults.analyticsData.psychologicalRisk.startsWith('HIGH') && (
+            <Card className="mb-6 border-orange-500 bg-orange-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className="w-6 h-6 text-orange-500" />
+                  <div>
+                    <h3 className="font-bold text-orange-800">HIGH PRIORITY MENTAL HEALTH CONCERN</h3>
+                    <p className="text-orange-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
+                    <p className="text-sm text-orange-600 mt-1">Patient reported occasional thoughts of self-harm - urgent mental health review required</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Enhanced GP Summary */}
           <GPClinicalSummary clinicalResults={clinicalResults} />
           
-          {/* Detailed Treatment Options - Expandable */}
+          {/* Detailed Treatment Options */}
           <div className="mt-8">
             <Card>
               <CardHeader>
@@ -315,10 +370,12 @@ const GPResults = () => {
                 <div>
                   <p><strong>Session:</strong> {sessionId}</p>
                   <p><strong>Assessment:</strong> NHS NICE NG23 + AI Enhanced</p>
+                  <p><strong>Psychological Risk:</strong> {clinicalResults.analyticsData.psychologicalRisk}</p>
                 </div>
                 <div>
                   <p><strong>Urgency Score:</strong> {clinicalResults.analyticsData.urgencyScore}/10</p>
                   <p><strong>Confidence:</strong> 94%</p>
+                  <p><strong>Red Flags:</strong> {clinicalResults.redFlags.length}</p>
                 </div>
               </div>
             </CardContent>
