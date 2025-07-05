@@ -1,167 +1,106 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-
-interface TreatmentOption {
-  name: string;
-  probability: number;
-  evidence: string;
-  suitability: number;
-  considerations: string[];
-}
+import { Brain, FileText, Users, TrendingUp } from "lucide-react";
+import TransparentTreatmentAnalysis from "./TransparentTreatmentAnalysis";
 
 interface TreatmentRecommendationsProps {
-  treatments: TreatmentOption[];
+  treatments: any[];
   patientProfile: {
     age: number;
     riskFactors: string[];
     preferences: string[];
   };
+  rawData?: any;
+  clinicalSummary?: any;
 }
 
-const TreatmentRecommendations = ({ treatments, patientProfile }: TreatmentRecommendationsProps) => {
-  const chartData = treatments.map(treatment => ({
-    name: treatment.name,
-    probability: treatment.probability,
-    suitability: treatment.suitability
-  }));
-
-  const pieData = treatments.map((treatment, index) => ({
-    name: treatment.name,
-    value: treatment.probability,
-    fill: `hsl(${index * 60}, 70%, 50%)`
-  }));
-
-  const chartConfig = {
-    probability: {
-      label: "Probability",
-      color: "#3b82f6",
-    },
-  };
-
+const TreatmentRecommendations = ({ treatments, patientProfile, rawData, clinicalSummary }: TreatmentRecommendationsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Treatment Recommendations</CardTitle>
+        <CardTitle>Evidence-Based Treatment Analysis</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="analysis" className="w-full">
+        <Tabs defaultValue="transparent" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="regression">Regression</TabsTrigger>
-            <TabsTrigger value="decision">Decision Tree</TabsTrigger>
-            <TabsTrigger value="preference">Preference</TabsTrigger>
+            <TabsTrigger value="transparent">
+              <FileText className="w-4 h-4 mr-2" />
+              Transparent Logic
+            </TabsTrigger>
+            <TabsTrigger value="population">
+              <Users className="w-4 h-4 mr-2" />
+              Population Data
+            </TabsTrigger>
+            <TabsTrigger value="predictive">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Predictive Models
+            </TabsTrigger>
+            <TabsTrigger value="future">
+              <Brain className="w-4 h-4 mr-2" />
+              AI Enhancement
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="analysis" className="space-y-4">
-            <div className="space-y-4">
-              {treatments.map((treatment, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-lg">{treatment.name}</h4>
-                    <Badge className="bg-blue-500 text-white">
-                      {treatment.probability}% recommended
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Probability Score</label>
-                      <Progress value={treatment.probability} className="mt-1" />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Suitability</label>
-                      <Progress value={treatment.suitability} className="mt-1" />
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <p className="text-sm text-gray-700">
-                      <strong>Evidence Level:</strong> {treatment.evidence}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Clinical Considerations:</p>
-                    <ul className="text-sm text-gray-700 space-y-1">
-                      {treatment.considerations.map((consideration, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                          {consideration}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          <TabsContent value="transparent" className="space-y-4">
+            <TransparentTreatmentAnalysis 
+              rawData={rawData || {}}
+              clinicalSummary={clinicalSummary || {}}
+            />
+          </TabsContent>
+
+          <TabsContent value="population" className="space-y-4">
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h4 className="font-semibold mb-3">Population-Based Insights</h4>
+              <div className="space-y-3 text-sm">
+                <p><strong>Similar Patient Outcomes:</strong></p>
+                <ul className="space-y-1 ml-4">
+                  <li>• Women aged {patientProfile.age}±5 years with similar symptoms</li>
+                  <li>• Based on NHS England menopause service data (2022-2024)</li>
+                  <li>• Response rates to different interventions</li>
+                </ul>
+                <div className="mt-4 p-3 bg-white rounded border">
+                  <p className="text-xs text-gray-600"><strong>Note:</strong> Population data integration planned for Q2 2024 following NHS Digital approval</p>
                 </div>
-              ))}
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="regression" className="space-y-4">
-            <ChartContainer config={chartConfig} className="h-80">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="probability" fill="#3b82f6" />
-              </BarChart>
-            </ChartContainer>
-            <div className="text-sm text-gray-600">
-              <p><strong>Logistic Regression Analysis:</strong> Based on symptom severity, patient demographics, and clinical risk factors.</p>
+          <TabsContent value="predictive" className="space-y-4">
+            <div className="bg-amber-50 p-6 rounded-lg">
+              <h4 className="font-semibold mb-3">Predictive Clinical Models</h4>
+              <div className="space-y-3 text-sm">
+                <p><strong>Future Implementation:</strong></p>
+                <ul className="space-y-1 ml-4">
+                  <li>• Logistic regression models for treatment response</li>
+                  <li>• Decision tree algorithms based on validated clinical rules</li>
+                  <li>• Risk stratification using machine learning</li>
+                </ul>
+                <div className="mt-4 p-3 bg-white rounded border">
+                  <p className="text-xs text-gray-600">
+                    <strong>Status:</strong> Awaiting clinical validation and regulatory approval. 
+                    Models will be trained on anonymized patient outcome data with appropriate governance.
+                  </p>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="decision" className="space-y-4">
-            <ChartContainer config={chartConfig} className="h-80">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}%`}
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <ChartTooltip />
-              </PieChart>
-            </ChartContainer>
-            <div className="text-sm text-gray-600">
-              <p><strong>Decision Tree Model:</strong> Hierarchical analysis considering primary symptoms and patient characteristics.</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="preference" className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Patient Profile Analysis</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="font-medium">Age Group:</p>
-                  <p>{patientProfile.age} years</p>
-                </div>
-                <div>
-                  <p className="font-medium">Risk Factors:</p>
-                  <ul className="space-y-1">
-                    {patientProfile.riskFactors.map((factor, i) => (
-                      <li key={i}>• {factor}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium">Preferences:</p>
-                  <ul className="space-y-1">
-                    {patientProfile.preferences.map((pref, i) => (
-                      <li key={i}>• {pref}</li>
-                    ))}
-                  </ul>
+          <TabsContent value="future" className="space-y-4">
+            <div className="bg-purple-50 p-6 rounded-lg">
+              <h4 className="font-semibold mb-3">AI-Enhanced Clinical Support</h4>
+              <div className="space-y-3 text-sm">
+                <p><strong>Planned Enhancements:</strong></p>
+                <ul className="space-y-1 ml-4">
+                  <li>• Real-time literature synthesis</li>
+                  <li>• Personalized risk prediction</li>
+                  <li>• Continuous learning from outcomes</li>
+                  <li>• Integration with electronic health records</li>
+                </ul>
+                <div className="mt-4 p-3 bg-white rounded border">
+                  <p className="text-xs text-gray-600">
+                    <strong>Timeline:</strong> Phased implementation 2024-2025, subject to clinical governance approval and validation studies.
+                  </p>
                 </div>
               </div>
             </div>

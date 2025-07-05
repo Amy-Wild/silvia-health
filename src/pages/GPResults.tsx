@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +45,7 @@ const GPResults = () => {
       redFlags: redFlags,
       clinicalSummary: clinicalSummary,
       treatmentOptions: treatmentOptions,
+      rawData: rawData, // Pass through raw data
       patientProfile: {
         age: parseInt(rawData.age || "0"),
         riskFactors: generateRiskFactors(rawData),
@@ -294,13 +294,15 @@ const GPResults = () => {
           <div className="mt-8">
             <Card>
               <CardHeader>
-                <CardTitle>Detailed Treatment Analysis</CardTitle>
-                <p className="text-sm text-gray-600">Comprehensive treatment options with evidence base</p>
+                <CardTitle>Clinical Decision Support</CardTitle>
+                <p className="text-sm text-gray-600">Evidence-based treatment analysis with transparent reasoning</p>
               </CardHeader>
               <CardContent>
                 <TreatmentRecommendations 
                   treatments={clinicalResults.treatmentOptions}
                   patientProfile={clinicalResults.patientProfile}
+                  rawData={clinicalResults.rawData}
+                  clinicalSummary={clinicalResults.clinicalSummary}
                 />
               </CardContent>
             </Card>
