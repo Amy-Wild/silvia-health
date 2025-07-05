@@ -8,6 +8,8 @@ interface MenstrualStatusSelectorProps {
 }
 
 const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelectorProps) => {
+  console.log("Current menstrual status value:", value);
+  
   return (
     <div>
       <Label className="text-base font-medium mb-4 block">
@@ -15,29 +17,32 @@ const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelect
       </Label>
       <RadioGroup 
         value={value || ""} 
-        onValueChange={onValueChange}
+        onValueChange={(newValue) => {
+          console.log("Radio group value changing to:", newValue);
+          onValueChange(newValue);
+        }}
         className="space-y-4"
       >
-        <Label htmlFor="regular" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-          <RadioGroupItem value="regular" id="regular" className="cursor-pointer" />
-          <span className="flex-1 text-sm">
+        <div className="flex items-center space-x-3">
+          <RadioGroupItem value="regular" id="regular" />
+          <Label htmlFor="regular" className="cursor-pointer text-sm">
             Regular (monthly cycles, 21-35 day intervals)
-          </span>
-        </Label>
+          </Label>
+        </div>
         
-        <Label htmlFor="irregular" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-          <RadioGroupItem value="irregular" id="irregular" className="cursor-pointer" />
-          <span className="flex-1 text-sm">
+        <div className="flex items-center space-x-3">
+          <RadioGroupItem value="irregular" id="irregular" />
+          <Label htmlFor="irregular" className="cursor-pointer text-sm">
             Irregular (unpredictable timing, varying cycle length)
-          </span>
-        </Label>
+          </Label>
+        </div>
         
-        <Label htmlFor="stopped" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-          <RadioGroupItem value="stopped" id="stopped" className="cursor-pointer" />
-          <span className="flex-1 text-sm">
+        <div className="flex items-center space-x-3">
+          <RadioGroupItem value="stopped" id="stopped" />
+          <Label htmlFor="stopped" className="cursor-pointer text-sm">
             Stopped completely (no periods for 12+ months)
-          </span>
-        </Label>
+          </Label>
+        </div>
       </RadioGroup>
     </div>
   );
