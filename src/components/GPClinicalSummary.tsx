@@ -16,11 +16,32 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
 
   const getRiskBadgeColor = (level: string) => {
     const colors = {
-      red: "bg-red-100 text-red-800 border-red-200",
-      amber: "bg-amber-100 text-amber-800 border-amber-200", 
-      green: "bg-green-100 text-green-800 border-green-200"
+      red: "bg-red-500 text-white border-red-500",
+      urgent: "bg-red-500 text-white border-red-500",
+      high: "bg-red-500 text-white border-red-500",
+      amber: "bg-amber-500 text-white border-amber-500", 
+      medium: "bg-amber-500 text-white border-amber-500",
+      moderate: "bg-amber-500 text-white border-amber-500",
+      green: "bg-green-500 text-white border-green-500",
+      low: "bg-green-500 text-white border-green-500",
+      mild: "bg-green-500 text-white border-green-500"
     };
     return colors[level as keyof typeof colors] || colors.green;
+  };
+
+  const getRiskLabel = (level: string) => {
+    const labels = {
+      red: "HIGH RISK - URGENT",
+      urgent: "HIGH RISK - URGENT", 
+      high: "HIGH RISK - URGENT",
+      amber: "MODERATE RISK",
+      medium: "MODERATE RISK",
+      moderate: "MODERATE RISK", 
+      green: "LOW RISK",
+      low: "LOW RISK",
+      mild: "LOW RISK"
+    };
+    return labels[level as keyof typeof labels] || "LOW RISK";
   };
 
   return (
@@ -58,7 +79,7 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
             <div className="flex items-center space-x-2">
               <div className={`w-4 h-4 rounded-full ${getUrgencyColor(clinicalResults.analyticsData?.urgencyScore || 0)}`}></div>
               <Badge className={getRiskBadgeColor(clinicalResults.riskLevel)}>
-                {clinicalResults.riskLevel?.toUpperCase()} RISK
+                {getRiskLabel(clinicalResults.riskLevel)}
               </Badge>
             </div>
           </div>
@@ -91,10 +112,10 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
         </CardContent>
       </Card>
 
-      {/* TOP 3 CLINICAL ACTIONS - Action focused */}
-      <Card className="border-green-200 bg-green-50">
+      {/* TOP 3 CLINICAL ACTIONS - Color coded by priority */}
+      <Card className={`${clinicalResults.riskLevel === 'red' || clinicalResults.riskLevel === 'urgent' || clinicalResults.riskLevel === 'high' ? 'border-red-200 bg-red-50' : clinicalResults.riskLevel === 'amber' || clinicalResults.riskLevel === 'moderate' || clinicalResults.riskLevel === 'medium' ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-green-900">
+          <CardTitle className={`flex items-center ${clinicalResults.riskLevel === 'red' || clinicalResults.riskLevel === 'urgent' || clinicalResults.riskLevel === 'high' ? 'text-red-900' : clinicalResults.riskLevel === 'amber' || clinicalResults.riskLevel === 'moderate' || clinicalResults.riskLevel === 'medium' ? 'text-amber-900' : 'text-green-900'}`}>
             <Shield className="w-5 h-5 mr-2" />
             🎯 Priority Actions (Next 2 Weeks)
           </CardTitle>
@@ -102,11 +123,11 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
         <CardContent>
           <div className="space-y-2">
             {clinicalResults.clinicalRecommendations?.slice(0, 3).map((rec: string, index: number) => (
-              <div key={index} className="flex items-start space-x-3 p-2 bg-white rounded border-l-4 border-green-500">
-                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+              <div key={index} className={`flex items-start space-x-3 p-2 bg-white rounded border-l-4 ${clinicalResults.riskLevel === 'red' || clinicalResults.riskLevel === 'urgent' || clinicalResults.riskLevel === 'high' ? 'border-red-500' : clinicalResults.riskLevel === 'amber' || clinicalResults.riskLevel === 'moderate' || clinicalResults.riskLevel === 'medium' ? 'border-amber-500' : 'border-green-500'}`}>
+                <div className={`w-6 h-6 rounded-full text-white flex items-center justify-center text-sm font-bold flex-shrink-0 ${clinicalResults.riskLevel === 'red' || clinicalResults.riskLevel === 'urgent' || clinicalResults.riskLevel === 'high' ? 'bg-red-500' : clinicalResults.riskLevel === 'amber' || clinicalResults.riskLevel === 'moderate' || clinicalResults.riskLevel === 'medium' ? 'bg-amber-500' : 'bg-green-500'}`}>
                   {index + 1}
                 </div>
-                <span className="text-green-800 font-medium text-sm">{rec}</span>
+                <span className={`font-medium text-sm ${clinicalResults.riskLevel === 'red' || clinicalResults.riskLevel === 'urgent' || clinicalResults.riskLevel === 'high' ? 'text-red-800' : clinicalResults.riskLevel === 'amber' || clinicalResults.riskLevel === 'moderate' || clinicalResults.riskLevel === 'medium' ? 'text-amber-800' : 'text-green-800'}`}>{rec}</span>
               </div>
             ))}
           </div>
@@ -126,7 +147,7 @@ const GPClinicalSummary = ({ clinicalResults }: GPClinicalSummaryProps) => {
             <div className="space-y-2 text-xs">
               {clinicalResults.patientProfile?.riskFactors?.length > 0 ? (
                 clinicalResults.patientProfile.riskFactors.map((factor: string, index: number) => (
-                  <Badge key={index} variant="outline" className="mr-1 text-xs">
+                  <Badge key={index} variant="outline" className="mr-1 text-xs border-red-300 text-red-700">
                     ⚠️ {factor}
                   </Badge>
                 ))

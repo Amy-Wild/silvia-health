@@ -10,47 +10,39 @@ interface Step4Props {
 }
 
 const Step4PhysicalSymptoms = ({ data, onUpdate }: Step4Props) => {
-  // Enhanced symptom list with clinical evidence
+  // Simplified symptom list without clinical evidence
   const physicalSymptomOptions = [
     { 
       id: "joint-pain", 
-      label: "Joint aches and pains",
-      evidence: "NICE NG23: Common in perimenopause - affects 60% of women"
+      label: "Joint aches and pains"
     },
     { 
       id: "muscle-pain", 
-      label: "Muscle aches",
-      evidence: "Related to declining estrogen levels affecting muscle function"
+      label: "Muscle aches"
     },
     { 
       id: "headaches", 
-      label: "Headaches or migraines",
-      evidence: "Hormonal headaches common in menopause transition"
+      label: "Headaches or migraines"
     },
     { 
       id: "fatigue", 
-      label: "Tiredness or fatigue",
-      evidence: "Affects 80% of menopausal women - multifactorial causes"
+      label: "Tiredness or fatigue"
     },
     { 
       id: "weight-gain", 
-      label: "Weight gain",
-      evidence: "Metabolic changes during menopause - average 5-10% increase"
+      label: "Weight gain"
     },
     { 
       id: "bloating", 
-      label: "Bloating or digestive issues",
-      evidence: "Estrogen affects gut microbiome and digestive function"
+      label: "Bloating or digestive issues"
     },
     { 
       id: "breast-tenderness", 
-      label: "Breast tenderness",
-      evidence: "Hormonal fluctuations - usually improves post-menopause"
+      label: "Breast tenderness"
     },
     { 
       id: "skin-changes", 
-      label: "Dry skin or hair changes",
-      evidence: "Collagen production decreases by 30% in first 5 years post-menopause"
+      label: "Dry skin or hair changes"
     },
   ];
 
@@ -59,12 +51,6 @@ const Step4PhysicalSymptoms = ({ data, onUpdate }: Step4Props) => {
     const updated = checked
       ? [...current, symptomId]
       : current.filter((item: string) => item !== symptomId);
-    
-    // Validate selection
-    if (updated.length > 8) {
-      // Prevent over-selection which might indicate indiscriminate clicking
-      return;
-    }
     
     onUpdate("physicalSymptoms", updated);
   };
@@ -85,40 +71,30 @@ const Step4PhysicalSymptoms = ({ data, onUpdate }: Step4Props) => {
           {physicalSymptomOptions.map((symptom) => (
             <div 
               key={symptom.id} 
-              className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
             >
               <Checkbox
                 id={symptom.id}
                 checked={data.physicalSymptoms?.includes(symptom.id) || false}
                 onCheckedChange={(checked) => handleSymptomChange(symptom.id, checked as boolean)}
-                aria-describedby={`${symptom.id}-description`}
               />
-              <div className="flex-1">
-                <Label 
-                  htmlFor={symptom.id} 
-                  className="font-medium cursor-pointer"
-                >
-                  {symptom.label}
-                </Label>
-                <p 
-                  id={`${symptom.id}-description`}
-                  className="text-xs text-gray-500 mt-1"
-                >
-                  {symptom.evidence}
-                </p>
-              </div>
+              <Label 
+                htmlFor={symptom.id} 
+                className="font-medium cursor-pointer flex-1"
+              >
+                {symptom.label}
+              </Label>
             </div>
           ))}
         </div>
         
         {selectedCount > 5 && (
-          <Alert className="mt-4 border-amber-200 bg-amber-50">
-            <Info className="w-4 h-4 text-amber-600" />
-            <AlertDescription className="text-amber-800">
+          <Alert className="mt-4 border-blue-200 bg-blue-50">
+            <Info className="w-4 h-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
               <p className="font-medium">Multiple Symptoms Selected</p>
               <p className="text-sm mt-1">
-                You've selected {selectedCount} symptoms. This suggests significant impact on your quality of life. 
-                Your GP will discuss comprehensive management options with you.
+                You've selected {selectedCount} symptoms. This information will help your GP provide the best care for you.
               </p>
             </AlertDescription>
           </Alert>

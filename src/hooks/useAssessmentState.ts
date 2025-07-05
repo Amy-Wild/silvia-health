@@ -50,7 +50,9 @@ export const useAssessmentState = () => {
 
   const handleDataChange = (data: PatientAssessmentData) => {
     setAssessmentData(data);
-    setIsValid(Object.keys(data).length > 0 && data.age.length > 0);
+    // More permissive validation - only require age if it's provided and valid
+    const ageValid = !data.age || (data.age.length > 0 && parseInt(data.age) > 0);
+    setIsValid(ageValid);
   };
 
   const getRiskBadge = () => {

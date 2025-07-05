@@ -1,8 +1,9 @@
+
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen } from "lucide-react";
+import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen, Calendar } from "lucide-react";
 import TrackerIntegration from "@/components/TrackerIntegration";
 
 const PatientResults = () => {
@@ -13,26 +14,27 @@ const PatientResults = () => {
     completedAt: new Date().toLocaleDateString(),
     riskLevel: "moderate",
     needsGPAppointment: true,
+    hasRedFlags: false, // This would be determined from assessment
     keyFindings: [
-      "Moderate menopause symptoms affecting daily life",
-      "Some cardiovascular risk factors present", 
-      "Bone health may need attention"
+      "You're experiencing some common menopause symptoms",
+      "Your symptoms are affecting your daily life", 
+      "There are effective treatments available to help"
     ],
     recommendations: [
-      "Discuss hormone replacement therapy options with your GP",
-      "Consider lifestyle changes for better symptom management",
-      "Ask about bone density screening",
-      "Explore stress management techniques"
+      "Discuss treatment options that might work for you",
+      "Explore lifestyle changes that can help with symptoms",
+      "Ask about ways to support your bone health",
+      "Learn about stress management techniques"
     ],
     nextSteps: [
-      "Your GP will review these results before your appointment",
-      "Prepare questions about treatment options",
-      "Consider keeping a symptom diary until your appointment"
+      "Your GP will review your assessment before your appointment",
+      "Think about questions you'd like to ask about treatment options",
+      "Consider keeping a diary of your symptoms"
     ],
     educationalTopics: [
-      "Understanding HRT options",
-      "Lifestyle modifications for symptom relief",
-      "Bone health in menopause",
+      "Understanding your treatment options",
+      "Lifestyle tips for feeling better",
+      "Supporting your bone health",
       "Preparing for your GP appointment"
     ]
   };
@@ -58,7 +60,7 @@ const PatientResults = () => {
               </div>
               <div className="text-center">
                 <h1 className="text-xl font-bold text-gray-900">Assessment Complete</h1>
-                <p className="text-sm text-gray-600">Your Silvia health assessment results</p>
+                <p className="text-sm text-gray-600">Your health assessment results</p>
               </div>
             </div>
           </div>
@@ -73,13 +75,34 @@ const PatientResults = () => {
               <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
               <h2 className="text-2xl font-bold mb-4 text-green-800">Thank You!</h2>
               <p className="text-lg mb-4 text-green-700">
-                Your health assessment has been completed and sent to your GP.
+                Your health assessment has been completed and shared with your GP.
               </p>
               <p className="text-green-600 text-sm">
                 Completed on {results.completedAt} • Session: {sessionId?.slice(-8)}
               </p>
             </CardContent>
           </Card>
+
+          {/* Gentle Red Flag Message */}
+          {results.hasRedFlags && (
+            <Card className="mb-6 bg-blue-100 border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center text-blue-800">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  We'd Like You to See Your GP Soon
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-blue-700 mb-4">
+                  Based on your responses, it would be helpful for you to have a conversation with your GP about your symptoms. 
+                  This is quite common and nothing to worry about - your GP just wants to make sure you get the best care possible.
+                </p>
+                <p className="text-sm text-blue-600">
+                  Your GP has all the information from your assessment and will be ready to discuss the next steps with you.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Key Findings */}
           <Card className="mb-6">
@@ -106,13 +129,13 @@ const PatientResults = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Info className="w-5 h-5 mr-2 text-blue-500" />
-                What This Means For You
+                Things to Discuss with Your GP
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Things to discuss with your GP:</h3>
+                  <h3 className="font-semibold mb-2">Conversation topics for your appointment:</h3>
                   <ul className="space-y-2">
                     {results.recommendations.map((rec, index) => (
                       <li key={index} className="flex items-start space-x-2">
@@ -126,7 +149,7 @@ const PatientResults = () => {
             </CardContent>
           </Card>
 
-          {/* Enhanced Educational Resources Integration */}
+          {/* Educational Resources Integration */}
           <Card className="mb-6 bg-blue-50 border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center text-blue-800">
@@ -136,11 +159,11 @@ const PatientResults = () => {
             </CardHeader>
             <CardContent>
               <p className="text-blue-700 mb-4">
-                Explore educational resources tailored to your assessment results. 
-                Understanding your condition better will help you have more informed conversations with your GP.
+                Explore helpful resources about your symptoms and treatment options. 
+                The more you know, the better conversations you can have with your GP.
               </p>
               <div className="space-y-2 mb-4">
-                <h4 className="font-medium text-blue-800">Recommended topics for you:</h4>
+                <h4 className="font-medium text-blue-800">Topics that might interest you:</h4>
                 <div className="flex flex-wrap gap-2">
                   {results.educationalTopics.map((topic, index) => (
                     <Badge key={index} variant="outline" className="border-blue-300 text-blue-700">
@@ -154,12 +177,12 @@ const PatientResults = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Explore Educational Resources
+                Explore Helpful Resources
               </Button>
             </CardContent>
           </Card>
 
-          {/* NEW: Symptom Tracker Integration */}
+          {/* Symptom Tracker Integration */}
           <TrackerIntegration 
             sessionId={sessionId}
             patientResults={results}
@@ -209,7 +232,7 @@ const PatientResults = () => {
           <div className="mt-8 p-4 bg-gray-100 rounded-lg text-center">
             <p className="text-sm text-gray-600">
               Your responses are secure and confidential. Only your GP will have access to the detailed results.
-              If you have urgent concerns, please contact your GP directly.
+              If you have urgent concerns, please contact your GP directly or call 111.
             </p>
           </div>
         </div>
