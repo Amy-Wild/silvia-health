@@ -7,13 +7,20 @@ export interface PatientAssessmentData {
   occupation?: string;
   
   // Clinical History
-  menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'unknown';
+  menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'perimenopause' | 'unknown';
   periodsStopped?: string;
+  lastPeriodDate?: string;
+  menopauseType?: string;
+  cycleChanges?: string[];
+  periodChanges?: string;
   
   // Red Flag Symptoms (NICE NG23)
   postmenopausalBleeding: 'yes' | 'no' | 'unsure';
   unexplainedWeightLoss: 'yes' | 'no' | 'unsure';
   severePelvicPain: 'yes' | 'no' | 'unsure';
+  
+  // UTI History
+  utiHistory?: string;
   
   // Vasomotor Symptoms
   hotFlashFrequency: 'none' | 'mild' | 'moderate' | 'severe';
