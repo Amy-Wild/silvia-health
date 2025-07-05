@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen, Calendar } from "lucide-react";
+import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen, Calendar, Clock, Activity } from "lucide-react";
 import TrackerIntegration from "@/components/TrackerIntegration";
 
 const PatientResults = () => {
@@ -36,6 +36,27 @@ const PatientResults = () => {
       "Lifestyle tips for feeling better",
       "Supporting your bone health",
       "Preparing for your GP appointment"
+    ],
+    // New section for embedded recommendations
+    personalizedActions: [
+      {
+        icon: <Calendar className="w-4 h-4" />,
+        title: "Book a GP appointment",
+        description: "Discuss your symptoms and treatment options with your doctor",
+        priority: "high"
+      },
+      {
+        icon: <Activity className="w-4 h-4" />,
+        title: "Increase physical activity",
+        description: "Regular exercise can help manage menopause symptoms",
+        priority: "medium"
+      },
+      {
+        icon: <Clock className="w-4 h-4" />,
+        title: "Track your symptoms",
+        description: "Keep a diary to identify patterns and triggers",
+        priority: "medium"
+      }
     ]
   };
 
@@ -104,7 +125,7 @@ const PatientResults = () => {
             </Card>
           )}
 
-          {/* Key Findings */}
+          {/* Key Findings with Embedded Personalized Actions */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -113,13 +134,62 @@ const PatientResults = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {results.keyFindings.map((finding, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-gray-700">{finding}</p>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  {results.keyFindings.map((finding, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-gray-700">{finding}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Embedded Personalized Actions */}
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">Recommended Actions for You:</h3>
+                  <div className="space-y-3">
+                    {results.personalizedActions.map((action, index) => (
+                      <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                        action.priority === 'high' 
+                          ? 'bg-red-50 border-red-500' 
+                          : 'bg-blue-50 border-blue-500'
+                      }`}>
+                        <div className="flex items-start space-x-3">
+                          <div className={`p-1 rounded ${
+                            action.priority === 'high' 
+                              ? 'bg-red-100 text-red-600' 
+                              : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            {action.icon}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className={`font-medium ${
+                              action.priority === 'high' 
+                                ? 'text-red-800' 
+                                : 'text-blue-800'
+                            }`}>
+                              {action.title}
+                            </h4>
+                            <p className={`text-sm ${
+                              action.priority === 'high' 
+                                ? 'text-red-700' 
+                                : 'text-blue-700'
+                            }`}>
+                              {action.description}
+                            </p>
+                          </div>
+                          <Badge className={
+                            action.priority === 'high' 
+                              ? 'bg-red-500 text-white' 
+                              : 'bg-blue-500 text-white'
+                          }>
+                            {action.priority}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>

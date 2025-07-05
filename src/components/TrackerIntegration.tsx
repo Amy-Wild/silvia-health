@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Download, Share2, Calendar, AlertCircle } from "lucide-react";
+import { TrendingUp, Calendar } from "lucide-react";
 
 interface TrackerIntegrationProps {
   sessionId?: string;
@@ -14,11 +14,6 @@ const TrackerIntegration = ({ sessionId, patientResults }: TrackerIntegrationPro
     // Generate link to educational website symptom tracker with session data
     const trackerUrl = `https://silvia-education.com/symptom-tracker?session=${sessionId}&source=assessment`;
     window.open(trackerUrl, '_blank');
-  };
-
-  const handleImportFromTracker = () => {
-    // Future: Import symptom data from tracker to pre-populate assessment
-    console.log("Import from tracker functionality");
   };
 
   const generateTrackerRecommendations = () => {
@@ -101,44 +96,6 @@ const TrackerIntegration = ({ sessionId, patientResults }: TrackerIntegrationPro
               <Calendar className="w-4 h-4 mr-2" />
               Learn About Tracking
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Future Integration Features */}
-      <Card className="bg-gray-50 border-gray-200">
-        <CardHeader>
-          <CardTitle className="flex items-center text-gray-700">
-            <Share2 className="w-5 h-5 mr-2" />
-            Future GP Appointment Preparation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm text-gray-600">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>Export tracking data as PDF for your next GP appointment</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Pre-populate future assessments with tracked symptom patterns</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>Get personalized educational content based on your tracking data</span>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-500">
-            <div className="flex items-start space-x-2">
-              <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm text-blue-800 font-medium">Privacy First</p>
-                <p className="text-xs text-blue-700">
-                  Your tracking data is kept separate and only shared when you choose to export it.
-                </p>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
