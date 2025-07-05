@@ -5,9 +5,42 @@ import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { TrendingUp, TrendingDown, AlertCircle, Lightbulb } from "lucide-react";
 
+interface SymptomEntry {
+  date: string;
+  symptoms: {
+    vasomotor: {
+      hotFlashes: number;
+      nightSweats: number;
+    };
+    physical: {
+      fatigue: number;
+      jointPain: number;
+    };
+    psychological: {
+      moodRating: number;
+      anxiety: number;
+    };
+    sleep: {
+      sleepQuality: number;
+    };
+    lifestyle: {
+      stressLevel: number;
+    };
+  };
+  triggers?: string[];
+  notes?: string;
+}
+
+interface Insight {
+  type: 'warning' | 'info' | 'tip';
+  title: string;
+  description: string;
+  icon: any;
+}
+
 const TrackerAnalytics = () => {
-  const [entries, setEntries] = useState<any[]>([]);
-  const [insights, setInsights] = useState<any[]>([]);
+  const [entries, setEntries] = useState<SymptomEntry[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
 
   useEffect(() => {
     // Load entries from localStorage
@@ -18,36 +51,46 @@ const TrackerAnalytics = () => {
     generateInsights(savedEntries);
   }, []);
 
-  const generateInsights = (data: any[]) => {
+  const generateInsights = (data: SymptomEntry[]) => {
     if (data.length < 3) return;
 
-    const generatedInsights = [];
+    const generatedInsights: Insight[] = [];
     
     // Hot flash pattern analysis
-    const hotFlashData = data.map(entry => entry.symptoms.vasomotor.hotFlashes);
-    const avgHotFlashes = hotFlashData.reduce((a, b) => a + b, 0) / hotFlashData.length;
+    const hotFlashData = data
+      .map(entry => entry.symptoms?.vasomotor?.hotFlashes)
+      .filter((value): value is number => typeof value === 'number');
     
-    if (avgHotFlashes > 5) {
-      generatedInsights.push({
-        type: 'warning',
-        title: 'High Hot Flash Frequency',
-        description: `Your average hot flash frequency is ${avgHotFlashes.toFixed(1)}/10. Consider discussing this pattern with your GP.`,
-        icon: AlertCircle
-      });
+    if (hotFlashData.length > 0) {
+      const avgHotFlashes = hotFlashData.reduce((a, b) => a + b, 0) / hotFlashData.length;
+      
+      if (avgHotFlashes > 5) {
+        generatedInsights.push({
+          type: 'warning',
+          title: 'High Hot Flash Frequency',
+          description: `Your average hot flash frequency is ${avgHotFlashes.toFixed(1)}/10. Consider discussing this pattern with your GP.`,
+          icon: AlertCircle
+        });
+      }
     }
 
     // Sleep pattern analysis
-    const sleepData = data.map(entry => entry.symptoms.sleep.sleepQuality);
-    const recentSleep = sleepData.slice(-7);
-    const avgRecentSleep = recentSleep.reduce((a, b) => a + b, 0) / recentSleep.length;
+    const sleepData = data
+      .map(entry => entry.symptoms?.sleep?.sleepQuality)
+      .filter((value): value is number => typeof value === 'number');
     
-    if (avgRecentSleep < 5) {
-      generatedInsights.push({
-        type: 'info',
-        title: 'Sleep Quality Concern',
-        description: `Your sleep quality has averaged ${avgRecentSleep.toFixed(1)}/10 this week. Poor sleep can worsen other menopause symptoms.`,
-        icon: Lightbulb
-      });
+    if (sleepData.length > 0) {
+      const recentSleep = sleepData.slice(-7);
+      const avgRecentSleep = recentSleep.reduce((a, b) => a + b, 0) / recentSleep.length;
+      
+      if (avgRecentSleep < 5) {
+        generatedInsights.push({
+          type: 'info',
+          title: 'Sleep Quality Concern',
+          description: `Your sleep quality has averaged ${avgRecentSleep.toFixed(1)}/10 this week. Poor sleep can worsen other menopause symptoms.`,
+          icon: Lightbulb
+        });
+      }
     }
 
     // Trigger pattern analysis
@@ -74,11 +117,11 @@ const TrackerAnalytics = () => {
     return entries.slice(-14).map((entry, index) => ({
       day: `Day ${index + 1}`,
       date: entry.date,
-      hotFlashes: entry.symptoms.vasomotor.hotFlashes,
-      mood: entry.symptoms.psychological.moodRating,
-      sleep: entry.symptoms.sleep.sleepQuality,
-      fatigue: entry.symptoms.physical.fatigue,
-      stress: entry.symptoms.lifestyle.stressLevel
+      hotFlashes: entry.symptoms?.vasomotor?.hotFlashes || 0,
+      mood: entry.symptoms?.psychological?.moodRating || 5,
+      sleep: entry.symptoms?.sleep?.sleepQuality || 5,
+      fatigue: entry.symptoms?.physical?.fatigue || 0,
+      stress: entry.symptoms?.lifestyle?.stressLevel || 5
     }));
   };
 
@@ -93,6 +136,12 @@ const TrackerAnalytics = () => {
       .sort(([,a], [,b]) => b - a)
       .slice(0, 8)
       .map(([trigger, count]) => ({ trigger, count }));
+  };
+
+  const calculateAverage = (values: (number | undefined)[]): number => {
+    const validValues = values.filter((value): value is number => typeof value === 'number');
+    if (validValues.length === 0) return 0;
+    return validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
   };
 
   if (entries.length === 0) {
@@ -184,7 +233,7 @@ const TrackerAnalytics = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <h3 className="text-2xl font-bold text-red-500">
-              {entries.length > 0 ? (entries.reduce((sum, entry) => sum + entry.symptoms.vasomotor.hotFlashes, 0) / entries.length).toFixed(1) : '0'}
+              {calculateAverage(entries.map(entry => entry.symptoms?.vasomotor?.hotFlashes)).toFixed(1)}
             </h3>
             <p className="text-sm text-gray-600">Avg Hot Flashes</p>
           </CardContent>
@@ -193,7 +242,7 @@ const TrackerAnalytics = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <h3 className="text-2xl font-bold text-purple-500">
-              {entries.length > 0 ? (entries.reduce((sum, entry) => sum + entry.symptoms.psychological.moodRating, 0) / entries.length).toFixed(1) : '0'}
+              {calculateAverage(entries.map(entry => entry.symptoms?.psychological?.moodRating)).toFixed(1)}
             </h3>
             <p className="text-sm text-gray-600">Avg Mood</p>
           </CardContent>
@@ -202,7 +251,7 @@ const TrackerAnalytics = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <h3 className="text-2xl font-bold text-blue-500">
-              {entries.length > 0 ? (entries.reduce((sum, entry) => sum + entry.symptoms.sleep.sleepQuality, 0) / entries.length).toFixed(1) : '0'}
+              {calculateAverage(entries.map(entry => entry.symptoms?.sleep?.sleepQuality)).toFixed(1)}
             </h3>
             <p className="text-sm text-gray-600">Avg Sleep Quality</p>
           </CardContent>
