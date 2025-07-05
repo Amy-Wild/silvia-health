@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { AlertTriangle, Download, Mail, ArrowLeft, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
-import { generateClinicalSummary, generateNHSRecommendations, getRedFlags } from "@/components/ConditionalQuestionLogic";
+import { generateClinicalSummary, generateNHSRecommendations, getRedFlags, getUrgentFlags, calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
 import { useState, useEffect } from "react";
 
 const GPResults = () => {
