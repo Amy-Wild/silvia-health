@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,7 +57,7 @@ const PatientResults = () => {
               </div>
               <div className="text-center">
                 <h1 className="text-xl font-bold text-gray-900">Assessment Complete</h1>
-                <p className="text-sm text-gray-600">Your results are ready</p>
+                <p className="text-sm text-gray-600">Your Silvia health assessment results</p>
               </div>
             </div>
           </div>

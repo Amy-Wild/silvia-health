@@ -11,8 +11,8 @@ const AssessmentHeader = () => {
               <Heart className="w-6 h-6 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-bold text-gray-900">Your Health Assessment</h1>
-              <p className="text-sm text-gray-600">Understanding your menopause journey</p>
+              <h1 className="text-xl font-bold text-gray-900">Silvia Health Assessment</h1>
+              <p className="text-sm text-gray-600">Your digital health companion</p>
             </div>
           </div>
         </div>

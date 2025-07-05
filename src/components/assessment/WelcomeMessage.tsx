@@ -11,12 +11,12 @@ const WelcomeMessage = ({ show }: WelcomeMessageProps) => {
   return (
     <Card className="mb-8 bg-gradient-to-r from-pink-500 to-purple-600 text-white">
       <CardContent className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Welcome!</h2>
+        <h2 className="text-2xl font-bold mb-4">Welcome to Silvia!</h2>
         <p className="text-lg opacity-90 mb-4">
           Your GP has asked you to complete this health assessment to better understand your symptoms and provide the best care possible.
         </p>
         <p className="opacity-80">
-          This assessment is completely anonymous and secure. Your responses will help create a personalized care plan for you.
+          Silvia is a digital triage assistant that provides <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment — helping you prepare and your GP prioritise.
         </p>
       </CardContent>
     </Card>
