@@ -18,24 +18,26 @@ const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelect
         onValueChange={onValueChange}
         className="space-y-4"
       >
-        <div className="flex items-center space-x-3 cursor-pointer">
+        <Label htmlFor="regular" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="regular" id="regular" className="cursor-pointer" />
-          <Label htmlFor="regular" className="cursor-pointer flex-1 text-sm">
+          <span className="flex-1 text-sm">
             Regular (monthly cycles, 21-35 day intervals)
-          </Label>
-        </div>
-        <div className="flex items-center space-x-3 cursor-pointer">
+          </span>
+        </Label>
+        
+        <Label htmlFor="irregular" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="irregular" id="irregular" className="cursor-pointer" />
-          <Label htmlFor="irregular" className="cursor-pointer flex-1 text-sm">
+          <span className="flex-1 text-sm">
             Irregular (unpredictable timing, varying cycle length)
-          </Label>
-        </div>
-        <div className="flex items-center space-x-3 cursor-pointer">
+          </span>
+        </Label>
+        
+        <Label htmlFor="stopped" className="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-gray-50">
           <RadioGroupItem value="stopped" id="stopped" className="cursor-pointer" />
-          <Label htmlFor="stopped" className="cursor-pointer flex-1 text-sm">
+          <span className="flex-1 text-sm">
             Stopped completely (no periods for 12+ months)
-          </Label>
-        </div>
+          </span>
+        </Label>
       </RadioGroup>
     </div>
   );
