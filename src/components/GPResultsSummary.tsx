@@ -12,12 +12,14 @@ const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {
     const colors = {
       red: "bg-red-500 text-white",
       amber: "bg-amber-500 text-white", 
+      yellow: "bg-yellow-500 text-white",
       green: "bg-green-500 text-white"
     };
     const labels = {
-      red: "HIGH RISK - URGENT",
-      amber: "MODERATE RISK",
-      green: "LOW RISK"
+      red: "🚨 URGENT - RED",
+      amber: "🟠 HIGH PRIORITY - AMBER",
+      yellow: "🟡 ROUTINE PRIORITY - YELLOW", 
+      green: "🟢 LOW RISK - GREEN"
     };
     return <Badge className={colors[level as keyof typeof colors]}>{labels[level as keyof typeof labels]}</Badge>;
   };
@@ -25,7 +27,15 @@ const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {
   const getUrgencyIcon = (urgencyScore: number) => {
     if (urgencyScore >= 8) return <AlertTriangle className="w-5 h-5 text-red-500" />;
     if (urgencyScore >= 5) return <Clock className="w-5 h-5 text-amber-500" />;
+    if (urgencyScore >= 3) return <Clock className="w-5 h-5 text-yellow-500" />;
     return <Clock className="w-5 h-5 text-green-500" />;
+  };
+
+  const getFlagColor = (flag: string) => {
+    if (flag.includes('🚨 RED')) return 'text-red-800 bg-red-100 border-red-200';
+    if (flag.includes('🟠 AMBER')) return 'text-amber-800 bg-amber-100 border-amber-200';
+    if (flag.includes('🟡 YELLOW')) return 'text-yellow-800 bg-yellow-100 border-yellow-200';
+    return 'text-blue-800 bg-blue-100 border-blue-200';
   };
 
   return (
@@ -82,26 +92,30 @@ const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {
         </CardContent>
       </Card>
 
-      {/* Red Flags - Immediate attention */}
+      {/* Color-Coded Clinical Flags */}
       {clinicalResults.redFlags.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-red-900">
-              <AlertTriangle className="w-5 h-5 mr-2" />
-              IMMEDIATE CLINICAL ATTENTION REQUIRED
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {clinicalResults.redFlags.map((flag: string, index: number) => (
-                <div key={index} className="flex items-start space-x-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                  <p className="text-red-800 text-sm font-medium">{flag}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          {clinicalResults.redFlags.map((flag: string, index: number) => {
+            const flagColor = getFlagColor(flag);
+            const isUrgent = flag.includes('🚨 RED');
+            
+            return (
+              <Card key={index} className={`border-2 ${flagColor}`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className={`flex items-center ${isUrgent ? 'text-red-900' : ''}`}>
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    {flag.includes('🚨 RED') && 'IMMEDIATE CLINICAL ATTENTION REQUIRED'}
+                    {flag.includes('🟠 AMBER') && 'HIGH PRIORITY CLINICAL ACTION'}
+                    {flag.includes('🟡 YELLOW') && 'ROUTINE PRIORITY CONSIDERATION'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-medium text-sm">{flag}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
 
       {/* Medical History Summary */}
@@ -197,17 +211,17 @@ const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {
         </Card>
       </div>
 
-      {/* Top 3 Clinical Actions */}
+      {/* Priority Clinical Actions */}
       <Card className="border-green-200 bg-green-50">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center text-green-900">
             <Shield className="w-5 h-5 mr-2" />
-            Priority Clinical Actions (Next 2 Weeks)
+            Priority Clinical Actions (Next Steps)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {clinicalResults.clinicalRecommendations.slice(0, 3).map((rec: string, index: number) => (
+            {clinicalResults.clinicalRecommendations.slice(0, 5).map((rec: string, index: number) => (
               <div key={index} className="flex items-start space-x-2">
                 <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
                   {index + 1}
@@ -219,27 +233,38 @@ const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {
         </CardContent>
       </Card>
 
-      {/* Treatment Preferences Summary */}
+      {/* Treatment Preferences Summary with CBT Mapping */}
       {clinicalResults.clinicalSummary.treatmentPreferences.educationNeeded && (
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center text-blue-900">
               <Brain className="w-5 h-5 mr-2" />
-              Patient Education Completed
+              Patient Treatment Preferences & Clinical Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-blue-800 text-sm">
+            <p className="text-blue-800 text-sm mb-3">
               {clinicalResults.clinicalSummary.treatmentPreferences.clinicalNotes}
             </p>
-            <div className="mt-2">
-              <p className="text-xs font-medium text-blue-700 mb-1">Patient has reviewed educational resources for:</p>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-blue-700 mb-1">Patient preferences reviewed:</p>
               <div className="flex flex-wrap gap-1">
-                {clinicalResults.clinicalSummary.treatmentPreferences.selected.map((pref: string, index: number) => (
-                  <Badge key={index} className="bg-blue-500 text-white text-xs">
-                    {pref.replace('-', ' ').toUpperCase()}
-                  </Badge>
-                ))}
+                {clinicalResults.clinicalSummary.treatmentPreferences.selected.map((pref: string, index: number) => {
+                  let badgeColor = "bg-blue-500 text-white";
+                  let prefLabel = pref.replace('-', ' ').toUpperCase();
+                  
+                  // Special handling for CBT - show as routine priority, not urgent
+                  if (pref === 'cbt') {
+                    badgeColor = "bg-yellow-500 text-white";
+                    prefLabel = "CBT - ROUTINE MH REFERRAL";
+                  }
+                  
+                  return (
+                    <Badge key={index} className={`text-xs ${badgeColor}`}>
+                      {prefLabel}
+                    </Badge>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

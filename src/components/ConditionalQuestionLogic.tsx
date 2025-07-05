@@ -33,37 +33,50 @@ interface AssessmentData {
   [key: string]: any;
 }
 
-// Enhanced care pathway determination with gentle language
+// Enhanced care pathway determination with NHS/NICE NG23 compliance
 export const determineCarePath = (data: AssessmentData): 'gp-urgent' | 'gp-routine' | 'self-care' | 'education-first' => {
   const urgentFlags = getUrgentFlags(data);
   const riskFactors = assessRiskFactors(data);
   const preferences = data.treatmentPreferences || [];
   
-  // Urgent GP appointment needed (but with gentle messaging)
+  // URGENT GP appointment needed - RED FLAGS (NICE NG23)
   if (urgentFlags.length > 0) {
     return 'gp-urgent';
   }
   
-  // Check if patient prefers self-management approaches
-  if (preferences.includes('non-hormonal') || preferences.includes('cbt')) {
-    const symptomSeverity = calculateSymptomSeverity(data);
-    const hasComplicatingFactors = riskFactors.length > 2;
-    
-    // Even with preferences, some cases need GP input
-    if (symptomSeverity === 'severe' || hasComplicatingFactors) {
-      return 'gp-routine';
-    }
-    
-    // Safe for education-first approach
-    return 'education-first';
+  // HIGH PRIORITY - AMBER FLAGS
+  const amberFlags = getAmberFlags(data);
+  if (amberFlags.length > 0) {
+    return 'gp-routine';
   }
   
-  // HRT interest - needs GP discussion
+  // CBT preference with psychological symptoms - ROUTINE GP
+  if (preferences.includes('cbt') && (data.moodSymptoms === 'moderate' || data.moodSymptoms === 'severe')) {
+    return 'gp-routine';
+  }
+  
+  // HRT interest - ROUTINE GP
   if (preferences.includes('hrt')) {
     return 'gp-routine';
   }
   
-  // No preferences specified - assess based on symptoms and risk
+  // Moderate to severe vasomotor symptoms - ROUTINE GP
+  if (data.hotFlashFrequency === 'severe' || data.nightSweats === 'severe') {
+    return 'gp-routine';
+  }
+  
+  // Complex medical history - ROUTINE GP
+  if (hasComplexMedicalHistory(data)) {
+    return 'gp-routine';
+  }
+  
+  // Self-care preferences with mild symptoms
+  if (preferences.includes('non-hormonal') || preferences.includes('lifestyle')) {
+    const symptomSeverity = calculateSymptomSeverity(data);
+    return symptomSeverity === 'mild' ? 'education-first' : 'gp-routine';
+  }
+  
+  // Default pathway based on overall complexity
   const overallComplexity = calculateOverallComplexity(data, getRedFlags(data));
   if (overallComplexity.includes('Low') && riskFactors.length === 0) {
     return 'self-care';
@@ -72,165 +85,170 @@ export const determineCarePath = (data: AssessmentData): 'gp-urgent' | 'gp-routi
   return 'gp-routine';
 };
 
-// Gentle urgent flags - no alarming language
+// URGENT RED FLAGS - NHS/NICE NG23 Compliant
 export const getUrgentFlags = (data: AssessmentData): string[] => {
   const flags = [];
   
+  // Cancer red flags
   if (data.postmenopausalBleeding === "yes") {
-    flags.push("We'd like your GP to review your bleeding pattern to ensure you get the right care");
+    flags.push("Postmenopausal bleeding requires urgent gynecological assessment");
   }
   
   if (data.unexplainedWeightLoss === "yes") {
-    flags.push("Your weight changes are something your GP should discuss with you");
+    flags.push("Unexplained weight loss requires urgent investigation");
   }
   
   if (data.severePelvicPain === "yes") {
-    flags.push("Your pelvic discomfort would benefit from a GP review");
+    flags.push("Severe pelvic pain requires urgent gynecological review");
   }
 
-  if (data.selfHarmRisk === "frequent" || data.selfHarmRisk === "occasional") {
-    flags.push("Your mental wellbeing is important - we recommend speaking with your GP about support options");
+  // Mental health red flags
+  if (data.selfHarmRisk === "frequent") {
+    flags.push("Active suicidal ideation requires immediate mental health assessment");
   }
 
-  if (data.utiHistory === "frequent") {
-    flags.push("Frequent UTIs can be related to hormonal changes - your GP can help address this");
+  // Recurrent infections
+  if (data.utiHistory === "frequent" && data.vaginalSymptoms === "severe") {
+    flags.push("Frequent UTIs with severe symptoms may indicate serious pathology");
   }
   
   return flags;
 };
 
-// GP-facing red flags (clinical language for healthcare professionals)
-export const getRedFlags = (data: AssessmentData): string[] => {
+// AMBER FLAGS - High priority but not urgent
+export const getAmberFlags = (data: AssessmentData): string[] => {
   const flags = [];
   
-  // Urgent red flags requiring immediate referral
-  if (data.postmenopausalBleeding === "yes") {
-    flags.push("🚨 URGENT: Postmenopausal bleeding - 2-week wait gynae cancer referral required");
-  }
-  
-  if (data.unexplainedWeightLoss === "yes") {
-    flags.push("🚨 URGENT: Unexplained weight loss - investigate for malignancy");
-  }
-  
-  if (data.severePelvicPain === "yes") {
-    flags.push("🚨 URGENT: Severe pelvic pain - urgent gynecological assessment required");
-  }
-
-  if (data.selfHarmRisk === "frequent") {
-    flags.push("🚨 URGENT: Active suicidal ideation - immediate mental health assessment required");
-  }
-
+  // Psychological amber flags
   if (data.selfHarmRisk === "occasional") {
-    flags.push("⚠️ CAUTION: Suicidal thoughts reported - mental health review and safety planning needed");
+    flags.push("Suicidal thoughts require mental health review and safety planning");
   }
   
-  // Personal medical history red flags
+  if (data.moodSymptoms === "severe") {
+    flags.push("Severe mood symptoms require priority mental health assessment");
+  }
+  
+  // Early menopause
+  const age = parseInt(data.age || "50");
+  if (age < 45 && data.menstrualStatus === "stopped") {
+    flags.push("Premature menopause requires specialist endocrine assessment");
+  }
+  
+  // High-risk medical history
   const personalHistory = data.personalMedicalHistory || [];
   if (personalHistory.includes('breast-cancer')) {
-    flags.push("⚠️ CAUTION: Personal history of breast cancer - specialist menopause clinic referral recommended");
+    flags.push("Breast cancer history requires specialist menopause clinic referral");
   }
   
   if (personalHistory.includes('blood-clots')) {
-    flags.push("⚠️ CAUTION: Personal history of VTE - thrombophilia screen and hematology input advised");
+    flags.push("VTE history requires thrombophilia assessment before HRT");
+  }
+  
+  // Severe vasomotor symptoms affecting quality of life
+  if ((data.hotFlashFrequency === 'severe' || data.nightSweats === 'severe') && data.vasomotorImpact === 'severe') {
+    flags.push("Severe vasomotor symptoms significantly impacting quality of life");
+  }
+  
+  return flags;
+};
+
+// Enhanced complex medical history assessment
+const hasComplexMedicalHistory = (data: AssessmentData): boolean => {
+  const personalHistory = data.personalMedicalHistory || [];
+  const familyHistory = data.familyHistory || [];
+  
+  // High-risk personal history
+  const highRiskConditions = ['breast-cancer', 'blood-clots', 'liver-disease', 'heart-disease', 'stroke'];
+  if (personalHistory.some(condition => highRiskConditions.includes(condition))) {
+    return true;
+  }
+  
+  // Multiple conditions
+  if (personalHistory.length >= 3) {
+    return true;
+  }
+  
+  // Strong family history
+  const strongFamilyHistory = ['breast-cancer', 'ovarian-cancer', 'blood-clots'];
+  if (familyHistory.some(condition => strongFamilyHistory.includes(condition))) {
+    return true;
+  }
+  
+  return false;
+};
+
+// GP-facing clinical red flags with proper color coding
+export const getRedFlags = (data: AssessmentData): string[] => {
+  const flags = [];
+  
+  // 🚨 RED - URGENT (within 24-48 hours)
+  if (data.postmenopausalBleeding === "yes") {
+    flags.push("🚨 RED: Postmenopausal bleeding - 2-week wait gynae cancer referral required (NICE NG23)");
+  }
+  
+  if (data.unexplainedWeightLoss === "yes") {
+    flags.push("🚨 RED: Unexplained weight loss - urgent investigation for malignancy required");
+  }
+  
+  if (data.severePelvicPain === "yes") {
+    flags.push("🚨 RED: Severe pelvic pain - urgent gynecological assessment required");
+  }
+
+  if (data.selfHarmRisk === "frequent") {
+    flags.push("🚨 RED: Active suicidal ideation - immediate mental health crisis assessment required");
+  }
+
+  // 🟠 AMBER - HIGH PRIORITY (within 1-2 weeks)
+  if (data.selfHarmRisk === "occasional") {
+    flags.push("🟠 AMBER: Suicidal thoughts - mental health review and safety planning within 1 week");
+  }
+  
+  const age = parseInt(data.age || "50");
+  if (age < 45 && data.menstrualStatus === "stopped") {
+    flags.push("🟠 AMBER: Premature menopause - specialist endocrine referral required");
+  }
+  
+  if (data.moodSymptoms === "severe") {
+    flags.push("🟠 AMBER: Severe mood symptoms - priority mental health assessment required");
+  }
+  
+  // Personal medical history amber flags
+  const personalHistory = data.personalMedicalHistory || [];
+  if (personalHistory.includes('breast-cancer')) {
+    flags.push("🟠 AMBER: Breast cancer history - specialist menopause clinic referral recommended");
+  }
+  
+  if (personalHistory.includes('blood-clots')) {
+    flags.push("🟠 AMBER: VTE history - thrombophilia screen and hematology input before HRT");
   }
   
   if (personalHistory.includes('liver-disease')) {
-    flags.push("⚠️ CAUTION: Liver disease history - avoid oral HRT, consider transdermal options");
+    flags.push("🟠 AMBER: Liver disease - avoid oral HRT, hepatology review if considering hormones");
   }
   
-  // Family history considerations
-  const familyHistory = data.familyHistory || [];
-  if (familyHistory.includes('breast-cancer') || familyHistory.includes('ovarian-cancer')) {
-    flags.push("⚠️ GENETICS: Strong family history of breast/ovarian cancer - consider genetic counseling");
-  }
-  
-  if (familyHistory.includes('blood-clots')) {
-    flags.push("⚠️ GENETICS: Family history of VTE - increased thrombotic risk for HRT");
-  }
-  
-  // UTI-related flags
+  // 🟡 YELLOW - MODERATE PRIORITY (routine)
   if (data.utiHistory === "frequent") {
-    flags.push("⚠️ REVIEW: Frequent UTIs - consider estrogen deficiency, investigate underlying causes");
+    flags.push("🟡 YELLOW: Frequent UTIs - investigate underlying causes, consider vaginal estrogen");
   }
   
-  // High-risk lifestyle factors
   if (data.smokingStatus === 'current') {
-    flags.push("⚠️ RISK: Current smoker - significantly increases VTE and cardiovascular risks");
+    flags.push("🟡 YELLOW: Current smoker - cessation priority, affects all treatment safety profiles");
   }
   
   const bmi = calculateBMI(data.height, data.weight);
   if (bmi && bmi > 35) {
-    flags.push("⚠️ RISK: BMI >35 - significantly increased VTE risk, weight management priority");
+    flags.push("🟡 YELLOW: BMI >35 - weight management priority, affects treatment choices");
+  }
+  
+  // CBT mapping - NOT urgent, routine priority
+  if (data.treatmentPreferences?.includes('cbt') && (data.moodSymptoms === 'moderate' || data.moodSymptoms === 'severe')) {
+    flags.push("🟡 YELLOW: CBT requested for psychological symptoms - routine mental health referral appropriate");
   }
   
   return flags;
 };
 
-// Generate patient-friendly guidance messages
-export const generatePatientGuidance = (carePath: string, data: AssessmentData): {
-  title: string;
-  description: string;
-  nextSteps: string[];
-  urgency: 'low' | 'medium' | 'high';
-} => {
-  const preferences = data.treatmentPreferences || [];
-  
-  switch (carePath) {
-    case 'gp-urgent':
-      return {
-        title: "We recommend booking an appointment with your GP",
-        description: "Based on your answers, it would be helpful for your GP to review your symptoms and provide personalized guidance.",
-        nextSteps: [
-          "Contact your GP practice to book an appointment",
-          "Mention you've completed a menopause assessment",
-          "Take a note of your main concerns to discuss"
-        ],
-        urgency: 'high'
-      };
-      
-    case 'gp-routine':
-      return {
-        title: preferences.includes('hrt') 
-          ? "Great choice exploring HRT - let's get you the right support"
-          : "A GP appointment would be helpful for your next steps",
-        description: preferences.includes('hrt')
-          ? "Since you're interested in hormone replacement therapy, your GP can discuss options that might work well for you."
-          : "Your symptoms and preferences suggest a conversation with your GP would help create the right plan for you.",
-        nextSteps: [
-          "Book a routine appointment with your GP",
-          "You've already learned about your preferred treatment options",
-          "Prepare questions about what you'd like to try first"
-        ],
-        urgency: 'medium'
-      };
-      
-    case 'education-first':
-      return {
-        title: "You're taking a great approach to managing your symptoms",
-        description: "Based on your preferences for natural approaches, we have resources that can help you get started right away.",
-        nextSteps: [
-          "Explore the educational resources for your chosen approaches",
-          "Try the suggested lifestyle changes and techniques",
-          "Consider booking a routine GP appointment in 2-3 months to review progress"
-        ],
-        urgency: 'low'
-      };
-      
-    case 'self-care':
-    default:
-      return {
-        title: "You have options to start managing your symptoms today",
-        description: "Your assessment suggests several self-care approaches that could help improve how you're feeling.",
-        nextSteps: [
-          "Review the lifestyle and wellness resources available",
-          "Track your symptoms to see what helps most",
-          "Book a GP appointment if you'd like to discuss treatment options"
-        ],
-        urgency: 'low'
-      };
-  }
-};
-
+// Calculate BMI utility
 export const calculateBMI = (height?: string, weight?: string): number | null => {
   if (!height || !weight) return null;
   const h = parseFloat(height) / 100;
@@ -241,82 +259,37 @@ export const calculateBMI = (height?: string, weight?: string): number | null =>
   return null;
 };
 
-export const calculateRiskLevel = (data: AssessmentData): string => {
-  // Immediate urgent care needed
+// Enhanced risk level calculation
+export const calculateRiskLevel = (data: AssessmentData): 'red' | 'amber' | 'yellow' | 'green' => {
+  // RED - Immediate urgent care needed
   if (data.postmenopausalBleeding === "yes" || 
       data.unexplainedWeightLoss === "yes" || 
-      data.severePelvicPain === "yes") {
-    return "urgent";
+      data.severePelvicPain === "yes" ||
+      data.selfHarmRisk === "frequent") {
+    return "red";
   }
   
-  // Personal history red flags
-  const personalHistory = data.personalMedicalHistory || [];
-  if (personalHistory.includes('breast-cancer') || 
-      personalHistory.includes('blood-clots') || 
-      personalHistory.includes('liver-disease')) {
-    return "high";
+  // AMBER - High priority
+  const age = parseInt(data.age || "50");
+  if (age < 45 && data.menstrualStatus === "stopped" ||
+      data.selfHarmRisk === "occasional" ||
+      data.moodSymptoms === "severe" ||
+      (data.personalMedicalHistory || []).includes('breast-cancer') ||
+      (data.personalMedicalHistory || []).includes('blood-clots')) {
+    return "amber";
   }
   
-  // Calculate symptom-based score
-  let totalScore = 0;
-  
-  // Vasomotor symptoms (weighted highly)
-  const vasomotorScore = (getSymptomScore('hotFlashFrequency', data.hotFlashFrequency) + 
-                         getSymptomScore('nightSweats', data.nightSweats)) * 1.3;
-  totalScore += vasomotorScore;
-  
-  // Psychological symptoms with depression history consideration
-  const psychScore = (getSymptomScore('moodSymptoms', data.moodSymptoms) + 
-                     getSymptomScore('cognitiveSymptoms', data.cognitiveSymptoms)) * 1.2;
-  if (personalHistory.includes('depression')) {
-    totalScore += psychScore * 1.5;
-  } else {
-    totalScore += psychScore;
+  // YELLOW - Moderate priority
+  if (data.hotFlashFrequency === "severe" ||
+      data.nightSweats === "severe" ||
+      data.utiHistory === "frequent" ||
+      data.smokingStatus === 'current' ||
+      (calculateBMI(data.height, data.weight) || 0) > 35) {
+    return "yellow";
   }
   
-  // Physical symptoms
-  totalScore += getSymptomScore('physicalSymptoms', data.physicalSymptoms);
-  
-  // Sleep and sexual health
-  totalScore += getSymptomScore('sleepQuality', data.sleepQuality);
-  totalScore += getSymptomScore('libidoChanges', data.libidoChanges) * 0.8;
-  totalScore += getSymptomScore('vaginalSymptoms', data.vaginalSymptoms) * 0.8;
-  
-  // Lifestyle and medical history risk factors
-  totalScore += getSymptomScore('smokingStatus', data.smokingStatus) * 1.5;
-  totalScore += getSymptomScore('alcoholConsumption', data.alcoholConsumption);
-  totalScore += getSymptomScore('exerciseLevel', data.exerciseLevel);
-  
-  // Age-based risk with enhanced weighting
-  const age = parseInt(data.age || "0");
-  if (age > 60) totalScore += 5;
-  else if (age > 55) totalScore += 3;
-  else if (age > 50) totalScore += 2;
-  else if (age > 45) totalScore += 1;
-  else if (age < 40) totalScore += 3;
-  
-  // BMI-based risk
-  const bmi = calculateBMI(data.height, data.weight);
-  if (bmi) {
-    if (bmi > 35) totalScore += 6;
-    else if (bmi > 30) totalScore += 4;
-    else if (bmi > 25) totalScore += 2;
-    else if (bmi < 18.5) totalScore += 3;
-  }
-  
-  // Family history risk adjustment
-  const familyHistory = data.familyHistory || [];
-  if (familyHistory.includes('breast-cancer') || familyHistory.includes('ovarian-cancer')) {
-    totalScore += 4;
-  }
-  if (familyHistory.includes('blood-clots') || familyHistory.includes('heart-disease')) {
-    totalScore += 3;
-  }
-  
-  // Risk stratification
-  if (totalScore >= 35) return "high";
-  if (totalScore >= 20) return "medium";
-  return "low";
+  // GREEN - Low risk
+  return "green";
 };
 
 const calculateSymptomSeverity = (data: AssessmentData): 'mild' | 'moderate' | 'severe' => {
@@ -507,7 +480,7 @@ const calculateSeverity = (score: number, thresholds: number[]): string => {
 
 const generateVasomotorNotes = (data: AssessmentData): string => {
   const score = getSymptomScore('hotFlashFrequency', data.hotFlashFrequency) + getSymptomScore('nightSweats', data.nightSweats);
-  if (score >= 12) return 'Severe vasomotor symptoms - HRT first-line treatment strongly recommended';
+  if (score >= 12) return 'Severe vasomotor symptoms - HRT first-line treatment strongly recommended (NICE NG23)';
   if (score >= 7) return 'Moderate symptoms - discuss HRT benefits/risks vs lifestyle interventions';
   if (score >= 3) return 'Mild symptoms - lifestyle modifications may be sufficient, monitor progression';
   return 'No significant vasomotor symptoms reported';
@@ -519,12 +492,17 @@ const generatePsychologicalNotes = (data: AssessmentData): string => {
   
   let notes = '';
   if (score >= 12) notes = 'Severe psychological symptoms - consider mental health referral';
-  else if (score >= 8) notes = 'Moderate symptoms - monitor closely';
+  else if (score >= 8) notes = 'Moderate symptoms - monitor closely, consider CBT referral';
   else if (score >= 4) notes = 'Mild symptoms - provide support resources';
   else notes = 'No significant psychological symptoms';
   
   if (hasDepressionHistory) {
     notes += '. Previous depression history - enhanced monitoring required';
+  }
+  
+  // CBT preference mapping
+  if (data.treatmentPreferences?.includes('cbt')) {
+    notes += '. Patient interested in CBT - routine mental health referral appropriate';
   }
   
   return notes;
@@ -570,7 +548,7 @@ const generateTreatmentPreferenceNotes = (preferences?: string[]): string => {
   
   const preferenceMap: { [key: string]: string } = {
     'hrt': 'Patient interested in HRT - provide comprehensive education and risk-benefit discussion',
-    'cbt': 'Patient interested in CBT - refer to psychological therapy resources',
+    'cbt': 'Patient interested in CBT - routine mental health referral for psychological therapy',
     'non-hormonal': 'Patient prefers non-hormonal approaches - focus on lifestyle and alternative treatments'
   };
   
@@ -612,8 +590,8 @@ const calculateLifestyleRisk = (data: AssessmentData): string => {
 };
 
 const calculateOverallComplexity = (data: AssessmentData, redFlags: string[]): string => {
-  if (redFlags.some(flag => flag.includes('🚨 URGENT'))) return 'High - Urgent referral required';
-  if (redFlags.some(flag => flag.includes('⚠️ CAUTION'))) return 'Moderate - Specialist input advised';
+  if (redFlags.some(flag => flag.includes('🚨 RED'))) return 'High - Urgent referral required';
+  if (redFlags.some(flag => flag.includes('🟠 AMBER'))) return 'Moderate - Specialist input advised';
   if (redFlags.length > 2) return 'Moderate - Multiple considerations required';
   return 'Low - Routine GP management appropriate';
 };
@@ -624,70 +602,120 @@ export const generateNHSRecommendations = (data: AssessmentData, riskLevel: stri
   const clinicalSummary = generateClinicalSummary(data);
   
   // Handle urgent red flags first
-  const urgentFlags = redFlags.filter(flag => flag.includes('🚨 URGENT'));
+  const urgentFlags = redFlags.filter(flag => flag.includes('🚨 RED'));
   if (urgentFlags.length > 0) {
-    urgentFlags.forEach(flag => recommendations.push(flag));
+    urgentFlags.forEach(flag => recommendations.push(flag.replace('🚨 RED:', '🚨 URGENT ACTION:')));
     recommendations.push("⚠️ SAFETY NET: Advise patient to return immediately if symptoms worsen");
-    recommendations.push("📅 URGENT FOLLOW-UP: Arrange within 48-72 hours or as clinically indicated");
+    recommendations.push("📅 URGENT FOLLOW-UP: Arrange within 24-48 hours or as clinically indicated");
     return recommendations;
   }
   
-  // Treatment preference-based recommendations
+  // Handle amber flags
+  const amberFlags = redFlags.filter(flag => flag.includes('🟠 AMBER'));
+  amberFlags.forEach(flag => recommendations.push(flag.replace('🟠 AMBER:', '🟠 HIGH PRIORITY:')));
+  
+  // Treatment recommendations based on preferences and symptoms
   const preferences = data.treatmentPreferences || [];
   if (preferences.includes('hrt')) {
-    recommendations.push("📚 EDUCATION PRIORITY: Patient interested in HRT - provide comprehensive information pack");
-    recommendations.push("⚖️ RISK-BENEFIT: Detailed discussion of individual risks and benefits required");
+    recommendations.push("📚 HRT EDUCATION: Patient interested in HRT - provide comprehensive information and risk-benefit discussion");
+    if (clinicalSummary.vasomotor.severity === 'Severe') {
+      recommendations.push("💊 HRT RECOMMENDED: First-line treatment for severe vasomotor symptoms (NICE NG23)");
+    }
   }
   
   if (preferences.includes('cbt')) {
-    recommendations.push("🧠 CBT REFERRAL: Patient interested in psychological approaches - refer to appropriate services");
-    recommendations.push("📱 RESOURCES: Provide CBT self-help resources and apps");
+    recommendations.push("🧠 CBT REFERRAL: Patient interested in psychological approaches - routine mental health referral");
+    recommendations.push("📱 CBT RESOURCES: Provide self-help resources while awaiting formal therapy");
   }
   
-  if (preferences.includes('non-hormonal')) {
-    recommendations.push("🌿 NON-HORMONAL FOCUS: Patient prefers alternative approaches - lifestyle and complementary options");
+  // Core clinical recommendations
+  if (clinicalSummary.vasomotor.severity === 'Severe' && !preferences.includes('hrt')) {
+    recommendations.push("💭 DISCUSS HRT: Consider offering as first-line treatment for severe symptoms");
   }
   
-  // Medical history-based cautions
-  redFlags.filter(flag => flag.includes('⚠️')).forEach(flag => recommendations.push(flag));
+  // Yellow flag recommendations
+  const yellowFlags = redFlags.filter(flag => flag.includes('🟡 YELLOW'));
+  yellowFlags.forEach(flag => recommendations.push(flag.replace('🟡 YELLOW:', '🟡 ROUTINE PRIORITY:')));
   
-  // Core clinical recommendations based on symptoms
-  if (clinicalSummary.vasomotor.severity === 'Severe') {
-    recommendations.push("💊 HRT RECOMMENDED: First-line treatment for severe vasomotor symptoms (NICE NG23)");
-    recommendations.push("🔄 MONITORING: Start with lowest effective dose, review at 3 months");
-  } else if (clinicalSummary.vasomotor.severity === 'Moderate') {
-    recommendations.push("💭 DISCUSS HRT: Offer as first-line treatment option vs lifestyle modifications");
-  }
-  
-  // Psychological health recommendations
-  if (clinicalSummary.psychological.severity === 'Severe') {
-    recommendations.push("🧠 MENTAL HEALTH: PHQ-9/GAD-7 screening and consider mental health referral");
-  }
-  
-  // Lifestyle interventions
-  if (data.smokingStatus === 'current') {
-    recommendations.push("🚭 PRIORITY: Smoking cessation - affects all treatment options and outcomes");
-  }
-  
-  if (clinicalSummary.lifestyle.riskLevel === 'High') {
-    recommendations.push("🏃 LIFESTYLE INTERVENTION: Comprehensive lifestyle modification program indicated");
-  }
-  
-  // Follow-up based on complexity
-  if (clinicalSummary.overallComplexity.includes('High')) {
-    recommendations.push("🏥 SPECIALIST REFERRAL: Consider menopause specialist clinic for complex case management");
-    recommendations.push("📅 FOLLOW-UP: Review in 2-4 weeks");
-  } else if (clinicalSummary.overallComplexity.includes('Moderate')) {
-    recommendations.push("📅 FOLLOW-UP: Structured review in 6-8 weeks");
+  // Standard follow-up
+  if (urgentFlags.length > 0) {
+    recommendations.push("📅 FOLLOW-UP: Review in 24-48 hours");
+  } else if (amberFlags.length > 0) {
+    recommendations.push("📅 FOLLOW-UP: Review in 1-2 weeks");
   } else {
-    recommendations.push("📅 FOLLOW-UP: Routine review in 3 months");
+    recommendations.push("📅 FOLLOW-UP: Routine review in 6-8 weeks");
   }
   
-  // Standard care recommendations
+  // Standard care
   recommendations.push("🔍 SCREENING: Ensure up-to-date cervical and breast screening");
-  recommendations.push("📖 PATIENT RESOURCES: Provide NICE patient decision aids and reputable information sources");
+  recommendations.push("📖 PATIENT RESOURCES: Provide NICE patient decision aids");
   
   return recommendations;
+};
+
+// Generate patient-friendly guidance messages
+export const generatePatientGuidance = (carePath: string, data: AssessmentData): {
+  title: string;
+  description: string;
+  nextSteps: string[];
+  urgency: 'low' | 'medium' | 'high';
+} => {
+  const preferences = data.treatmentPreferences || [];
+  
+  switch (carePath) {
+    case 'gp-urgent':
+      return {
+        title: "We recommend booking an appointment with your GP soon",
+        description: "Based on your answers, it would be helpful for your GP to review your symptoms and provide personalized guidance.",
+        nextSteps: [
+          "Contact your GP practice to book an appointment",
+          "Mention you've completed a menopause assessment",
+          "Take a note of your main concerns to discuss"
+        ],
+        urgency: 'high'
+      };
+      
+    case 'gp-routine':
+      return {
+        title: preferences.includes('hrt') 
+          ? "Great choice exploring HRT - let's get you the right support"
+          : "A GP appointment would be helpful for your next steps",
+        description: preferences.includes('hrt')
+          ? "Since you're interested in hormone replacement therapy, your GP can discuss options that might work well for you."
+          : "Your symptoms and preferences suggest a conversation with your GP would help create the right plan for you.",
+        nextSteps: [
+          "Book a routine appointment with your GP",
+          "You've already learned about your preferred treatment options",
+          "Prepare questions about what you'd like to try first"
+        ],
+        urgency: 'medium'
+      };
+      
+    case 'education-first':
+      return {
+        title: "You're taking a great approach to managing your symptoms",
+        description: "Based on your preferences for natural approaches, we have resources that can help you get started right away.",
+        nextSteps: [
+          "Explore the educational resources for your chosen approaches",
+          "Try the suggested lifestyle changes and techniques",
+          "Consider booking a routine GP appointment in 2-3 months to review progress"
+        ],
+        urgency: 'low'
+      };
+      
+    case 'self-care':
+    default:
+      return {
+        title: "You have options to start managing your symptoms today",
+        description: "Your assessment suggests several self-care approaches that could help improve how you're feeling.",
+        nextSteps: [
+          "Review the lifestyle and wellness resources available",
+          "Track your symptoms to see what helps most",
+          "Book a GP appointment if you'd like to discuss treatment options"
+        ],
+        urgency: 'low'
+      };
+  }
 };
 
 export const shouldShowQuestion = (questionId: string, data: AssessmentData): boolean => {

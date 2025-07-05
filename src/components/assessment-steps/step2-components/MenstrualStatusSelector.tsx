@@ -10,6 +10,11 @@ interface MenstrualStatusSelectorProps {
 const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelectorProps) => {
   console.log("Current menstrual status value:", value);
   
+  const handleValueChange = (newValue: string) => {
+    console.log("Radio group value changing to:", newValue);
+    onValueChange(newValue);
+  };
+  
   return (
     <div>
       <Label className="text-base font-medium mb-4 block">
@@ -17,29 +22,26 @@ const MenstrualStatusSelector = ({ value, onValueChange }: MenstrualStatusSelect
       </Label>
       <RadioGroup 
         value={value || ""} 
-        onValueChange={(newValue) => {
-          console.log("Radio group value changing to:", newValue);
-          onValueChange(newValue);
-        }}
+        onValueChange={handleValueChange}
         className="space-y-4"
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("regular")}>
           <RadioGroupItem value="regular" id="regular" />
-          <Label htmlFor="regular" className="cursor-pointer text-sm">
+          <Label htmlFor="regular" className="cursor-pointer text-sm flex-1">
             Regular (monthly cycles, 21-35 day intervals)
           </Label>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("irregular")}>
           <RadioGroupItem value="irregular" id="irregular" />
-          <Label htmlFor="irregular" className="cursor-pointer text-sm">
+          <Label htmlFor="irregular" className="cursor-pointer text-sm flex-1">
             Irregular (unpredictable timing, varying cycle length)
           </Label>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer" onClick={() => handleValueChange("stopped")}>
           <RadioGroupItem value="stopped" id="stopped" />
-          <Label htmlFor="stopped" className="cursor-pointer text-sm">
+          <Label htmlFor="stopped" className="cursor-pointer text-sm flex-1">
             Stopped completely (no periods for 12+ months)
           </Label>
         </div>
