@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,6 +75,40 @@ const GPDashboard = () => {
     setShowPatientForm(false);
   };
 
+  const getRiskBadgeClass = (riskLevel: string) => {
+    switch (riskLevel.toLowerCase()) {
+      case 'red':
+      case 'urgent':
+      case 'high':
+        return 'bg-red-500 text-white border-red-600';
+      case 'amber':
+      case 'moderate':
+      case 'medium':
+        return 'bg-amber-500 text-white border-amber-600';
+      case 'green':
+      case 'low':
+      default:
+        return 'bg-green-500 text-white border-green-600';
+    }
+  };
+
+  const getRiskLabel = (riskLevel: string) => {
+    switch (riskLevel.toLowerCase()) {
+      case 'red':
+      case 'urgent':
+      case 'high':
+        return 'Urgent Risk';
+      case 'amber':
+      case 'moderate':
+      case 'medium':
+        return 'Moderate Risk';
+      case 'green':
+      case 'low':
+      default:
+        return 'Low Risk';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -137,8 +170,8 @@ const GPDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Completed: {assessment.completedAt}</p>
-                  <Badge className={`mt-2 ${assessment.riskLevel === 'red' ? 'bg-red-500 text-white' : assessment.riskLevel === 'amber' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'}`}>
-                    {assessment.riskLevel} Risk
+                  <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
+                    {getRiskLabel(assessment.riskLevel)}
                   </Badge>
                   <Button onClick={() => navigateToResults(assessment.id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                     View Results
