@@ -55,6 +55,9 @@ export const getDOBFromAge = (age?: string): string => {
 };
 
 export const processAssessmentData = async (assessmentData: AssessmentData, sessionId: string) => {
+  // Get the patient reference that was stored when the assessment was created
+  const storedPatientRef = localStorage.getItem(`patient_ref_${sessionId}`);
+  
   // Normalize data
   const normalizedData = {
     ...assessmentData,
@@ -75,9 +78,14 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
   const urgentFlags = getUrgentFlags(normalizedData);
   
+  // Use stored patient reference or fallback to age-based reference
+  const patientReference = storedPatientRef || 
+    normalizedData.patientRef || 
+    `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`;
+  
   const result = {
     sessionId: sessionId,
-    patientRef: normalizedData.patientRef || `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`,
+    patientRef: patientReference,
     completedAt: new Date().toISOString(),
     riskLevel,
     urgentFlags,
@@ -89,6 +97,9 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
 
   // Store result for GP access
   localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
+  
+  // Clean up the patient reference storage (no longer needed)
+  localStorage.removeItem(`patient_ref_${sessionId}`);
   
   // Send email to GP (only for cases requiring GP attention)
   if (determinedPath === 'gp-urgent' || determinedPath === 'gp-routine') {

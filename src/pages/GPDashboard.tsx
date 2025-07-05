@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   Activity
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
 interface Assessment {
   id: string;
@@ -23,8 +25,13 @@ const GPDashboard = () => {
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showPatientForm, setShowPatientForm] = useState(false);
 
   useEffect(() => {
+    loadAssessments();
+  }, []);
+
+  const loadAssessments = () => {
     // Load assessments from local storage
     const storedAssessments: Assessment[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -46,21 +53,14 @@ const GPDashboard = () => {
         }
       }
     }
+    // Sort by completion date (most recent first)
+    storedAssessments.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
     setAssessments(storedAssessments);
-  }, []);
+  };
 
   const filteredAssessments = assessments.filter(assessment =>
     assessment.patientRef.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const generateNewAssessment = () => {
-    const sessionId = generateSessionId();
-    navigate(`/patient-assessment/${sessionId}`);
-  };
-
-  const generateSessionId = () => {
-    return 'session_' + Math.random().toString(36).substring(2, 15);
-  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -68,6 +68,12 @@ const GPDashboard = () => {
 
   const navigateToResults = (sessionId: string) => {
     navigate(`/gp-results/${sessionId}`);
+  };
+
+  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
+    // Refresh the assessments list to show the new entry (though it won't be completed yet)
+    loadAssessments();
+    setShowPatientForm(false);
   };
 
   return (
@@ -92,7 +98,10 @@ const GPDashboard = () => {
                 <Activity className="w-4 h-4 mr-1" />
                 System Active
               </Badge>
-              <Button onClick={generateNewAssessment} className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                onClick={() => setShowPatientForm(true)} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New Assessment
               </Button>
@@ -104,7 +113,7 @@ const GPDashboard = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Recent Assessments</h2>
+          <h2 className="text-2xl font-bold text-gray-800">My Patient Assessments</h2>
           <div className="relative">
             <Input
               type="text"
@@ -139,11 +148,33 @@ const GPDashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center">
-            <p className="text-gray-600">No assessments found.</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Stethoscope className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
+            <p className="text-gray-500 mb-4">
+              {searchQuery ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
+            </p>
+            {!searchQuery && (
+              <Button 
+                onClick={() => setShowPatientForm(true)} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Assessment
+              </Button>
+            )}
           </div>
         )}
       </div>
+
+      {/* Patient Identification Form Modal */}
+      <PatientIdentificationForm
+        isOpen={showPatientForm}
+        onClose={() => setShowPatientForm(false)}
+        onAssessmentCreated={handleAssessmentCreated}
+      />
     </div>
   );
 };
