@@ -17,7 +17,7 @@ interface AssessmentData {
   patientRef?: string;
   dateOfBirth: string; // Required field to match PatientAssessmentData
   age?: string;
-  menstrualStatus?: 'regular' | 'irregular' | 'stopped' | 'unknown';
+  menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'unknown'; // Required field
   periodsStopped?: string;
   postmenopausalBleeding?: 'yes' | 'no' | 'unsure';
   unexplainedWeightLoss?: 'yes' | 'no' | 'unsure';
@@ -53,7 +53,8 @@ const PatientAssessment = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
-    dateOfBirth: "" // Initialize with empty string to satisfy required field
+    dateOfBirth: "", // Initialize with empty string to satisfy required field
+    menstrualStatus: "unknown" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
