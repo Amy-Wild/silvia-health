@@ -6,12 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, UserPlus, Calendar as CalendarIcon, Copy } from "lucide-react";
+import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, UserPlus, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
@@ -39,9 +35,9 @@ const ClinicalDashboard = () => {
   const { toast } = useToast();
   const [showPatientForm, setShowPatientForm] = useState(false);
   
-  // Patient creation form state
+  // Patient creation form state - simplified with text inputs
   const [patientName, setPatientName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [nhsNumber, setNhsNumber] = useState("");
   const [patientId, setPatientId] = useState("");
   const [isCreatingAssessment, setIsCreatingAssessment] = useState(false);
@@ -53,7 +49,6 @@ const ClinicalDashboard = () => {
   const loadAssessments = () => {
     const storedAssessments: Assessment[] = [];
     
-    // Load completed assessments from localStorage
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith('assessment_')) {
@@ -62,10 +57,8 @@ const ClinicalDashboard = () => {
           try {
             const assessment = JSON.parse(assessmentData);
             
-            // Determine priority based on risk level and urgent flags
             let priority = "routine";
             if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
-              // Check for red flags
               const hasRedFlags = assessment.urgentFlags.some((flag: string) => 
                 flag.includes('🚨 RED') || flag.includes('Postmenopausal bleeding') || 
                 flag.includes('Unexplained weight loss') || flag.includes('Severe pelvic pain')
@@ -96,7 +89,6 @@ const ClinicalDashboard = () => {
       }
     }
     
-    // Sort by completion date (most recent first)
     storedAssessments.sort((a, b) => {
       if (!a.completedAt || !b.completedAt) return 0;
       return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
@@ -107,10 +99,10 @@ const ClinicalDashboard = () => {
   };
 
   const handleCreateAssessment = async () => {
-    if (!patientName || !dateOfBirth) {
+    if (!patientName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Patient name and date of birth are required.",
+        description: "Patient name is required.",
         variant: "destructive",
       });
       return;
@@ -119,26 +111,32 @@ const ClinicalDashboard = () => {
     setIsCreatingAssessment(true);
     
     try {
-      const patientRef = nhsNumber || patientId || `${patientName}_${format(dateOfBirth, 'ddMMyyyy')}`;
+      let patientRef = patientName.trim();
+      if (nhsNumber.trim()) {
+        patientRef = `${patientName.trim()} (NHS: ${nhsNumber.trim()})`;
+      } else if (patientId.trim()) {
+        patientRef = `${patientName.trim()} (ID: ${patientId.trim()})`;
+      } else if (dateOfBirth.trim()) {
+        patientRef = `${patientName.trim()} (DOB: ${dateOfBirth.trim()})`;
+      }
+      
       const sessionId = `assessment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // Create a simple assessment link entry in localStorage for demo
       const linkData = {
         sessionId,
         patientRef,
-        patientName,
-        dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
-        nhsNumber,
-        patientId,
+        patientName: patientName.trim(),
+        dateOfBirth: dateOfBirth.trim(),
+        nhsNumber: nhsNumber.trim(),
+        patientId: patientId.trim(),
         createdAt: new Date().toISOString(),
         status: 'pending'
       };
       
       localStorage.setItem(`assessment_link_${sessionId}`, JSON.stringify(linkData));
       
-      // Clear form
       setPatientName("");
-      setDateOfBirth(undefined);
+      setDateOfBirth("");
       setNhsNumber("");
       setPatientId("");
       
@@ -186,7 +184,6 @@ const ClinicalDashboard = () => {
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    // Refresh the assessments list
     loadAssessments();
     setShowPatientForm(false);
   };
@@ -242,7 +239,6 @@ const ClinicalDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -274,7 +270,6 @@ const ClinicalDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Patient Creation Form */}
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -295,33 +290,13 @@ const ClinicalDashboard = () => {
                 </div>
                 
                 <div>
-                  <Label>Date of Birth *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !dateOfBirth && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateOfBirth ? format(dateOfBirth, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateOfBirth}
-                        onSelect={setDateOfBirth}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                    id="dateOfBirth"
+                    placeholder="DD/MM/YYYY"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
                 </div>
                 
                 <div>
@@ -346,7 +321,7 @@ const ClinicalDashboard = () => {
                 
                 <Button
                   onClick={handleCreateAssessment}
-                  disabled={isCreatingAssessment || !patientName || !dateOfBirth}
+                  disabled={isCreatingAssessment || !patientName.trim()}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {isCreatingAssessment ? (
@@ -362,7 +337,6 @@ const ClinicalDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardContent className="p-6">
@@ -421,7 +395,6 @@ const ClinicalDashboard = () => {
             </Card>
           </div>
 
-          {/* Filters */}
           <Card className="mb-6">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-4">
@@ -462,7 +435,6 @@ const ClinicalDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Assessment Table */}
           <Card>
             <CardHeader>
               <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
@@ -585,7 +557,6 @@ const ClinicalDashboard = () => {
         </div>
       </div>
 
-      {/* Patient Identification Form Modal */}
       <PatientIdentificationForm
         isOpen={showPatientForm}
         onClose={() => setShowPatientForm(false)}

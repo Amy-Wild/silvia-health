@@ -7,12 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { UserPlus, FileText, BarChart3, Users, Calendar as CalendarIcon, Shield, Search, Eye, Mail, Plus, AlertTriangle, Clock, CheckCircle, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import AssessmentLinkGenerator from "@/components/AssessmentLinkGenerator";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
@@ -39,9 +35,9 @@ const GPDashboard = () => {
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   
-  // Patient creation form state
+  // Patient creation form state - simplified with text inputs
   const [patientName, setPatientName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [nhsNumber, setNhsNumber] = useState("");
   const [patientId, setPatientId] = useState("");
   const [isCreatingAssessment, setIsCreatingAssessment] = useState(false);
@@ -109,10 +105,10 @@ const GPDashboard = () => {
   };
 
   const handleCreateAssessment = async () => {
-    if (!patientName || !dateOfBirth) {
+    if (!patientName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Patient name and date of birth are required.",
+        description: "Patient name is required.",
         variant: "destructive",
       });
       return;
@@ -121,17 +117,26 @@ const GPDashboard = () => {
     setIsCreatingAssessment(true);
     
     try {
-      const patientRef = nhsNumber || patientId || `${patientName}_${format(dateOfBirth, 'ddMMyyyy')}`;
+      // Create patient reference from available information
+      let patientRef = patientName.trim();
+      if (nhsNumber.trim()) {
+        patientRef = `${patientName.trim()} (NHS: ${nhsNumber.trim()})`;
+      } else if (patientId.trim()) {
+        patientRef = `${patientName.trim()} (ID: ${patientId.trim()})`;
+      } else if (dateOfBirth.trim()) {
+        patientRef = `${patientName.trim()} (DOB: ${dateOfBirth.trim()})`;
+      }
+      
       const sessionId = `assessment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       // Create a simple assessment link entry in localStorage for demo
       const linkData = {
         sessionId,
         patientRef,
-        patientName,
-        dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
-        nhsNumber,
-        patientId,
+        patientName: patientName.trim(),
+        dateOfBirth: dateOfBirth.trim(),
+        nhsNumber: nhsNumber.trim(),
+        patientId: patientId.trim(),
         createdBy: user?.id,
         createdAt: new Date().toISOString(),
         status: 'pending'
@@ -141,7 +146,7 @@ const GPDashboard = () => {
       
       // Clear form
       setPatientName("");
-      setDateOfBirth(undefined);
+      setDateOfBirth("");
       setNhsNumber("");
       setPatientId("");
       
@@ -281,7 +286,7 @@ const GPDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Patient Creation Form */}
+        {/* Patient Creation Form - Updated with text inputs */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -302,33 +307,13 @@ const GPDashboard = () => {
               </div>
               
               <div>
-                <Label>Date of Birth *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dateOfBirth && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateOfBirth ? format(dateOfBirth, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dateOfBirth}
-                      onSelect={setDateOfBirth}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  placeholder="DD/MM/YYYY"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                />
               </div>
               
               <div>
@@ -353,7 +338,7 @@ const GPDashboard = () => {
               
               <Button
                 onClick={handleCreateAssessment}
-                disabled={isCreatingAssessment || !patientName || !dateOfBirth}
+                disabled={isCreatingAssessment || !patientName.trim()}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {isCreatingAssessment ? (
@@ -388,7 +373,7 @@ const GPDashboard = () => {
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
-                <Calendar className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                <CalendarIcon className="w-8 h-8 mx-auto mb-2 text-purple-500" />
                 <h3 className="text-2xl font-bold">{stats.pending}</h3>
                 <p className="text-gray-600">Pending</p>
               </CardContent>
@@ -406,7 +391,6 @@ const GPDashboard = () => {
           <AssessmentLinkGenerator />
         </div>
 
-        {/* Filters */}
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -447,7 +431,6 @@ const GPDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Assessment Table */}
         <Card>
           <CardHeader>
             <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>

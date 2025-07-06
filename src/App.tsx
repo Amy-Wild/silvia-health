@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Navigation from "@/components/Navigation";
 import PrivacyBanner from "@/components/PrivacyBanner";
-import Index from "./pages/Index";
+import RouteGuard from "@/components/RouteGuard";
+import PublicHome from "./pages/PublicHome";
 import Assessment from "./pages/Assessment";
 import PatientAssessment from "./pages/PatientAssessment";
 import Results from "./pages/Results";
@@ -16,6 +17,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import GPDashboard from "./pages/GPDashboard";
 import ClinicalDashboard from "./pages/ClinicalDashboard";
 import Auth from "./pages/Auth";
+import Education from "./pages/Education";
+import Instructions from "./pages/Instructions";
+import PartnerZone from "./pages/PartnerZone";
+import GPResults from "./pages/GPResults";
+import PatientResults from "./pages/PatientResults";
 
 const queryClient = new QueryClient();
 
@@ -29,16 +35,81 @@ const App = () => (
           <div className="min-h-screen bg-background">
             <Navigation />
             <Routes>
-              <Route path="/" element={<Index />} />
+              {/* Public routes - accessible to everyone */}
+              <Route path="/" element={<PublicHome />} />
+              <Route path="/education" element={<Education />} />
+              <Route path="/instructions" element={<Instructions />} />
+              <Route path="/partner-zone" element={<PartnerZone />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Assessment routes - public but specific */}
               <Route path="/assessment" element={<Assessment />} />
               <Route path="/assessment/:linkId" element={<Assessment />} />
               <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
               <Route path="/results" element={<Results />} />
-              <Route path="/symptom-tracker" element={<SymptomTracker />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/gp-dashboard" element={<GPDashboard />} />
-              <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
-              <Route path="/auth" element={<Auth />} />
+              
+              {/* Patient-only routes */}
+              <Route 
+                path="/symptom-tracker" 
+                element={
+                  <RouteGuard requiresAccess="patient">
+                    <SymptomTracker />
+                  </RouteGuard>
+                } 
+              />
+              <Route 
+                path="/patient-results/:sessionId" 
+                element={
+                  <RouteGuard requiresAccess="patient">
+                    <PatientResults />
+                  </RouteGuard>
+                } 
+              />
+              
+              {/* GP-only routes */}
+              <Route 
+                path="/gp-dashboard" 
+                element={
+                  <RouteGuard requiresAccess="gp">
+                    <GPDashboard />
+                  </RouteGuard>
+                } 
+              />
+              <Route 
+                path="/gp/dashboard" 
+                element={
+                  <RouteGuard requiresAccess="gp">
+                    <GPDashboard />
+                  </RouteGuard>
+                } 
+              />
+              <Route 
+                path="/gp-results/:sessionId" 
+                element={
+                  <RouteGuard requiresAccess="gp">
+                    <GPResults />
+                  </RouteGuard>
+                } 
+              />
+              
+              {/* Clinical Admin routes */}
+              <Route 
+                path="/clinical-dashboard" 
+                element={
+                  <RouteGuard requiresAccess="clinical_admin">
+                    <ClinicalDashboard />
+                  </RouteGuard>
+                } 
+              />
+              <Route 
+                path="/clinical/dashboard" 
+                element={
+                  <RouteGuard requiresAccess="clinical_admin">
+                    <ClinicalDashboard />
+                  </RouteGuard>
+                } 
+              />
             </Routes>
             <PrivacyBanner />
           </div>
