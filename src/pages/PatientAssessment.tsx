@@ -12,7 +12,7 @@ import AssessmentProgress from "@/components/assessment/AssessmentProgress";
 import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 
 const PatientAssessment = () => {
-  const { sessionId } = useParams();
+  const { sessionId } = useParams<{ sessionId: string }>();
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(true);
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
