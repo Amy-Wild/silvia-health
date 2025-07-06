@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +26,7 @@ interface AssessmentData {
   physicalSymptoms: string[]; // Required field
   moodSymptoms: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   cognitiveSymptoms: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
+  sleepQuality: 'good' | 'fair' | 'poor' | 'very-poor'; // Required field
   libidoChanges?: 'none' | 'decreased' | 'increased';
   smokingStatus?: 'never' | 'former' | 'current';
   alcoholConsumption?: 'none' | '1-7' | '8-14' | '15-21' | '22+';
@@ -37,7 +37,6 @@ interface AssessmentData {
   familyHistory?: string[];
   height?: string;
   weight?: string;
-  sleepQuality?: 'good' | 'fair' | 'poor' | 'very-poor';
   vaginalSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
   vasomotorImpact?: string;
   moodImpact?: string;
@@ -62,7 +61,8 @@ const PatientAssessment = () => {
     nightSweats: "none", // Initialize with default value to satisfy required field
     physicalSymptoms: [], // Initialize with empty array to satisfy required field
     moodSymptoms: "none", // Initialize with default value to satisfy required field
-    cognitiveSymptoms: "none" // Initialize with default value to satisfy required field
+    cognitiveSymptoms: "none", // Initialize with default value to satisfy required field
+    sleepQuality: "good" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
