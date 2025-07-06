@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import AssessmentLinkGenerator from "@/components/AssessmentLinkGenerator";
+import DateInput from "@/components/DateInput";
 
 const GPDashboard = () => {
   const { user } = useAuth();
@@ -397,7 +398,7 @@ const GPDashboard = () => {
 
       {/* Create Assessment Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -406,11 +407,7 @@ const GPDashboard = () => {
                 </div>
                 <DialogTitle>Create Patient Assessment</DialogTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCreateModal(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)}>
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -419,71 +416,101 @@ const GPDashboard = () => {
             </p>
           </DialogHeader>
           
-          <div className="space-y-4 mt-6">
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
-                Please identify the patient using one of the secure methods below
+          <div className="space-y-6 mt-6">
+            {/* Instructions */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 font-medium mb-2">
+                Please identify the patient using one or more of the secure methods below
+              </p>
+              <p className="text-xs text-blue-600">
+                Use any combination of identifiers that your practice requires for patient verification
               </p>
             </div>
 
-            <div className="grid grid-cols-4 gap-2 text-xs text-gray-500 border-b pb-2">
+            {/* Column Headers */}
+            <div className="grid grid-cols-4 gap-3 text-xs font-medium text-gray-500 border-b pb-2">
               <span>Name</span>
               <span>DOB</span>
               <span>NHS</span>
               <span>ID</span>
             </div>
 
+            {/* Name Fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="firstName">First Name *</Label>
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                  First Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="firstName"
                   value={newAssessment.firstName}
                   onChange={(e) => setNewAssessment(prev => ({ ...prev, firstName: e.target.value }))}
                   placeholder="Sarah"
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="surname">Surname *</Label>
+                <Label htmlFor="surname" className="text-sm font-medium text-gray-700">
+                  Surname <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="surname"
                   value={newAssessment.surname}
                   onChange={(e) => setNewAssessment(prev => ({ ...prev, surname: e.target.value }))}
                   placeholder="Smith"
+                  className="mt-1"
                 />
               </div>
             </div>
 
+            {/* Date of Birth */}
             <div>
-              <Label htmlFor="dob">Date of Birth</Label>
-              <Input
+              <Label htmlFor="dob" className="text-sm font-medium text-gray-700">Date of Birth</Label>
+              <DateInput
                 id="dob"
                 value={newAssessment.dateOfBirth}
-                onChange={(e) => setNewAssessment(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                onChange={(value) => setNewAssessment(prev => ({ ...prev, dateOfBirth: value }))}
                 placeholder="DD/MM/YYYY"
+                className="mt-1"
               />
             </div>
 
+            {/* NHS Number */}
             <div>
-              <Label htmlFor="nhs">NHS Number</Label>
+              <Label htmlFor="nhs" className="text-sm font-medium text-gray-700">NHS Number</Label>
               <Input
                 id="nhs"
                 value={newAssessment.nhsNumber}
                 onChange={(e) => setNewAssessment(prev => ({ ...prev, nhsNumber: e.target.value }))}
                 placeholder="123 456 7890"
+                className="mt-1"
               />
             </div>
 
+            {/* Patient ID */}
             <div>
-              <Label htmlFor="patientId">Patient ID</Label>
+              <Label htmlFor="patientId" className="text-sm font-medium text-gray-700">Patient ID</Label>
               <Input
                 id="patientId"
                 value={newAssessment.patientId}
                 onChange={(e) => setNewAssessment(prev => ({ ...prev, patientId: e.target.value }))}
-                placeholder="Unique identifier"
+                placeholder="Practice patient identifier"
+                className="mt-1"
               />
             </div>
 
+            {/* Security Notice */}
+            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+              <div className="flex items-start space-x-2">
+                <Shield className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-yellow-800">
+                  <p className="font-medium">Security Notice</p>
+                  <p>Links expire in 48 hours and are single-use only for patient safety.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
             <div className="flex space-x-3 pt-4">
               <Button
                 variant="outline"

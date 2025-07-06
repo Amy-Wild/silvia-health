@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -45,7 +46,7 @@ const PublicHome = () => {
                       Track My Symptoms
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-soft-coral-dark text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
+                  <Button size="lg" className="border-2 border-white text-white bg-white/10 hover:bg-white hover:text-soft-coral-dark text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
                     <Link to="/auth">
                       <Stethoscope className="w-6 h-6 mr-3" />
                       Healthcare Login

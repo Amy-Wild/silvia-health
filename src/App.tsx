@@ -9,7 +9,6 @@ import Navigation from "@/components/Navigation";
 import PrivacyBanner from "@/components/PrivacyBanner";
 import RouteGuard from "@/components/RouteGuard";
 import PublicHome from "./pages/PublicHome";
-import Assessment from "./pages/Assessment";
 import PatientAssessment from "./pages/PatientAssessment";
 import Results from "./pages/Results";
 import SymptomTracker from "./pages/SymptomTracker";
@@ -44,8 +43,6 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               
               {/* Assessment routes - public but specific */}
-              <Route path="/assessment" element={<Assessment />} />
-              <Route path="/assessment/:linkId" element={<Assessment />} />
               <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
               <Route path="/results" element={<Results />} />
               
