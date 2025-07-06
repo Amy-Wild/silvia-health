@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +22,7 @@ interface AssessmentData {
   postmenopausalBleeding: 'yes' | 'no' | 'unsure'; // Required field
   unexplainedWeightLoss: 'yes' | 'no' | 'unsure'; // Required field
   severePelvicPain: 'yes' | 'no' | 'unsure'; // Required field
-  hotFlashFrequency?: 'none' | 'mild' | 'moderate' | 'severe';
+  hotFlashFrequency: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   nightSweats?: 'none' | 'mild' | 'moderate' | 'severe';
   physicalSymptoms?: string[];
   moodSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
@@ -56,7 +57,8 @@ const PatientAssessment = () => {
     menstrualStatus: "unknown", // Initialize with default value to satisfy required field
     postmenopausalBleeding: "unsure", // Initialize with default value to satisfy required field
     unexplainedWeightLoss: "unsure", // Initialize with default value to satisfy required field
-    severePelvicPain: "unsure" // Initialize with default value to satisfy required field
+    severePelvicPain: "unsure", // Initialize with default value to satisfy required field
+    hotFlashFrequency: "none" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
