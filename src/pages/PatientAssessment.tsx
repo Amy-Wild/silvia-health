@@ -25,7 +25,7 @@ interface AssessmentData {
   hotFlashFrequency: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   nightSweats: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   physicalSymptoms: string[]; // Required field
-  moodSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
+  moodSymptoms: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   libidoChanges?: 'none' | 'decreased' | 'increased';
   smokingStatus?: 'never' | 'former' | 'current';
   alcoholConsumption?: 'none' | '1-7' | '8-14' | '15-21' | '22+';
@@ -60,7 +60,8 @@ const PatientAssessment = () => {
     severePelvicPain: "unsure", // Initialize with default value to satisfy required field
     hotFlashFrequency: "none", // Initialize with default value to satisfy required field
     nightSweats: "none", // Initialize with default value to satisfy required field
-    physicalSymptoms: [] // Initialize with empty array to satisfy required field
+    physicalSymptoms: [], // Initialize with empty array to satisfy required field
+    moodSymptoms: "none" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
