@@ -9,6 +9,7 @@ interface AssessmentNavigationProps {
   isSubmitting: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  onSubmit: () => Promise<void>;
 }
 
 const AssessmentNavigation = ({
@@ -17,8 +18,17 @@ const AssessmentNavigation = ({
   isValid,
   isSubmitting,
   onPrevious,
-  onNext
+  onNext,
+  onSubmit
 }: AssessmentNavigationProps) => {
+  const handleNextOrSubmit = () => {
+    if (currentStep === totalSteps) {
+      onSubmit();
+    } else {
+      onNext();
+    }
+  };
+
   return (
     <div className="flex justify-between mt-8">
       <Button 
@@ -31,7 +41,7 @@ const AssessmentNavigation = ({
         Previous
       </Button>
       <Button 
-        onClick={onNext}
+        onClick={handleNextOrSubmit}
         disabled={(!isValid && currentStep < totalSteps) || isSubmitting}
         className="bg-pink-500 hover:bg-pink-600 flex items-center"
       >
