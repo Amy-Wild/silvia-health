@@ -1,4 +1,3 @@
-
 import { calculateBMI, calculateAgeFromDOB, assessAgeRelatedRisks } from "@/utils/assessmentProcessor";
 
 // Function to determine the appropriate care path based on assessment data
@@ -148,32 +147,50 @@ export const generateNHSRecommendations = (data: any, riskLevel: string): string
 };
 
 // Function to generate patient guidance based on assessment data
-export const generatePatientGuidance = (data: any): string => {
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
-  let guidance = "Based on your assessment, here's some general guidance:\n\n";
-
-  if (data.hotFlashFrequency === 'severe') {
-    guidance += "- Consider discussing HRT with your GP to manage severe hot flashes.\n";
-  } else {
-    guidance += "- Lifestyle modifications such as regular exercise and a balanced diet can help manage mild symptoms.\n";
+export const generatePatientGuidance = (determinedPath: string, normalizedData: any) => {
+  const calculatedAge = normalizedData.dateOfBirth ? calculateAgeFromDOB(normalizedData.dateOfBirth) : null;
+  
+  switch (determinedPath) {
+    case 'gp-urgent':
+      return {
+        title: "Urgent GP Appointment Recommended",
+        nextSteps: [
+          "Please contact your GP practice today to book an urgent appointment.",
+          "Your assessment indicates symptoms that require prompt medical review.",
+          "In the meantime, monitor your symptoms and seek immediate care if they worsen."
+        ]
+      };
+    
+    case 'gp-routine':
+      return {
+        title: "GP Appointment Recommended",
+        nextSteps: [
+          "Please book a routine appointment with your GP to discuss your symptoms.",
+          "Your assessment suggests you would benefit from professional medical guidance.",
+          "Consider keeping a symptom diary before your appointment."
+        ]
+      };
+    
+    case 'education':
+      return {
+        title: "Educational Resources Available",
+        nextSteps: [
+          "You have access to comprehensive educational materials about managing your symptoms.",
+          "Consider lifestyle modifications and self-care strategies.",
+          "Monitor your symptoms and seek medical advice if they worsen."
+        ]
+      };
+    
+    default: // self-care
+      return {
+        title: "Self-Care Recommendations",
+        nextSteps: [
+          "Your symptoms can likely be managed with lifestyle modifications.",
+          "Focus on healthy diet, regular exercise, and stress management.",
+          "Continue monitoring your symptoms and seek advice if they change."
+        ]
+      };
   }
-
-  if (data.moodSymptoms === 'severe') {
-    guidance += "- Seek psychological support or counseling to address severe mood symptoms.\n";
-  } else {
-    guidance += "- Practice relaxation techniques and mindfulness to improve mental wellbeing.\n";
-  }
-
-  // Add age-specific guidance
-  if (calculatedAge) {
-    if (calculatedAge < 40) {
-      guidance += "- Your age suggests possible early menopause - this requires specialist evaluation.\n";
-    } else if (calculatedAge >= 55) {
-      guidance += "- As you are post-menopausal, any unusual bleeding should be reported immediately to your GP.\n";
-    }
-  }
-
-  return guidance;
 };
 
 // Function to calculate the risk level based on assessment data
