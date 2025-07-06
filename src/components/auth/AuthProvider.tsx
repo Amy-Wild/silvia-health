@@ -2,6 +2,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+type UserRole = Database['public']['Enums']['user_role'];
 
 interface AuthContextType {
   user: User | null;
@@ -57,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUserRole = async (userId: string, role: 'patient' | 'gp' | 'clinical_admin') => {
+  const updateUserRole = async (userId: string, role: UserRole) => {
     try {
       const { error } = await supabase
         .from('user_roles')
@@ -142,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // If signup was successful and we have a user, update their role
     if (!error && data.user && role && role !== 'patient') {
       setTimeout(async () => {
-        await updateUserRole(data.user!.id, role as 'patient' | 'gp' | 'clinical_admin');
+        await updateUserRole(data.user!.id, role as UserRole);
       }, 1000);
     }
 
