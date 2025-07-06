@@ -97,7 +97,9 @@ const PeriodTracker = () => {
           entry_date: data.entry_date,
           period_start: data.period_start || false,
           period_end: data.period_end || false,
-          flow_intensity: (data.flow_intensity as 'light' | 'medium' | 'heavy') || undefined,
+          flow_intensity: (data.flow_intensity === 'light' || data.flow_intensity === 'medium' || data.flow_intensity === 'heavy') 
+            ? data.flow_intensity 
+            : undefined,
           symptoms_data: symptomsData
         });
       }
@@ -126,7 +128,9 @@ const PeriodTracker = () => {
           entry_date: entry.entry_date,
           period_start: entry.period_start || false,
           period_end: entry.period_end || false,
-          flow_intensity: (entry.flow_intensity as 'light' | 'medium' | 'heavy') || undefined
+          flow_intensity: (entry.flow_intensity === 'light' || entry.flow_intensity === 'medium' || entry.flow_intensity === 'heavy') 
+            ? entry.flow_intensity 
+            : undefined
         }));
         
         setRecentEntries(mappedEntries);
@@ -180,7 +184,7 @@ const PeriodTracker = () => {
           period_start: todayEntry.period_start,
           period_end: todayEntry.period_end,
           flow_intensity: todayEntry.flow_intensity,
-          symptoms_data: todayEntry.symptoms_data,
+          symptoms_data: todayEntry.symptoms_data as any, // Cast to any for JSONB compatibility
           updated_at: new Date().toISOString()
         });
 

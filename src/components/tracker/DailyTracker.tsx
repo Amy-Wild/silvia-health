@@ -122,8 +122,8 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
       if (data) {
         setHasEntryToday(true);
         // Load existing data with proper type checking
-        if (data.symptoms_data) {
-          const symptomsData = data.symptoms_data as SymptomsData;
+        if (data.symptoms_data && typeof data.symptoms_data === 'object') {
+          const symptomsData = data.symptoms_data as any;
           if (symptomsData.symptoms) {
             setSymptoms(symptomsData.symptoms);
           }
@@ -203,7 +203,7 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
           symptoms,
           triggers,
           timestamp: new Date().toISOString()
-        } as SymptomsData,
+        } as any, // Cast to any for JSONB compatibility
         notes,
         updated_at: new Date().toISOString()
       };
