@@ -3,6 +3,7 @@ export interface PatientAssessmentData {
   // Core Demographics
   patientRef?: string;
   age: string;
+  dateOfBirth?: string;
   occupation?: string;
   
   // Clinical History
