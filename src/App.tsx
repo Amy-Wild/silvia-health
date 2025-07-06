@@ -42,7 +42,7 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/auth" element={<Auth />} />
               
-              {/* Assessment routes - public but specific */}
+              {/* Assessment routes - public but specific (no auth required) */}
               <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
               <Route path="/results" element={<Results />} />
               

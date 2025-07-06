@@ -156,8 +156,16 @@ const PatientAssessment = () => {
   }
 
   if (!sessionId || !assessmentLink) {
-    console.log('Redirecting to home - no sessionId or assessmentLink');
-    return <Navigate to="/" replace />;
+    console.log('Invalid session - showing error message');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Assessment Link Invalid</h1>
+          <p className="text-gray-600 mb-4">This assessment link is invalid or has expired.</p>
+          <p className="text-sm text-gray-500">Please contact your healthcare provider for a new assessment link.</p>
+        </div>
+      </div>
+    );
   }
 
   if (showWelcome) {
