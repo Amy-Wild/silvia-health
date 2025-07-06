@@ -20,7 +20,7 @@ interface AssessmentData {
   periodsStopped?: string;
   postmenopausalBleeding: 'yes' | 'no' | 'unsure'; // Required field
   unexplainedWeightLoss: 'yes' | 'no' | 'unsure'; // Required field
-  severePelvicPain?: 'yes' | 'no' | 'unsure';
+  severePelvicPain: 'yes' | 'no' | 'unsure'; // Required field
   hotFlashFrequency?: 'none' | 'mild' | 'moderate' | 'severe';
   nightSweats?: 'none' | 'mild' | 'moderate' | 'severe';
   physicalSymptoms?: string[];
@@ -55,7 +55,8 @@ const PatientAssessment = () => {
     dateOfBirth: "", // Initialize with empty string to satisfy required field
     menstrualStatus: "unknown", // Initialize with default value to satisfy required field
     postmenopausalBleeding: "unsure", // Initialize with default value to satisfy required field
-    unexplainedWeightLoss: "unsure" // Initialize with default value to satisfy required field
+    unexplainedWeightLoss: "unsure", // Initialize with default value to satisfy required field
+    severePelvicPain: "unsure" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
