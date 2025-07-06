@@ -26,6 +26,7 @@ interface AssessmentData {
   nightSweats: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   physicalSymptoms: string[]; // Required field
   moodSymptoms: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
+  cognitiveSymptoms: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   libidoChanges?: 'none' | 'decreased' | 'increased';
   smokingStatus?: 'never' | 'former' | 'current';
   alcoholConsumption?: 'none' | '1-7' | '8-14' | '15-21' | '22+';
@@ -38,7 +39,6 @@ interface AssessmentData {
   weight?: string;
   sleepQuality?: 'good' | 'fair' | 'poor' | 'very-poor';
   vaginalSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
-  cognitiveSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
   vasomotorImpact?: string;
   moodImpact?: string;
   primaryConcern?: string;
@@ -61,7 +61,8 @@ const PatientAssessment = () => {
     hotFlashFrequency: "none", // Initialize with default value to satisfy required field
     nightSweats: "none", // Initialize with default value to satisfy required field
     physicalSymptoms: [], // Initialize with empty array to satisfy required field
-    moodSymptoms: "none" // Initialize with default value to satisfy required field
+    moodSymptoms: "none", // Initialize with default value to satisfy required field
+    cognitiveSymptoms: "none" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
