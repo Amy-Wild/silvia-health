@@ -19,20 +19,17 @@ import Education from "./pages/Education";
 import PartnerZone from "./pages/PartnerZone";
 import SymptomTracker from "./pages/SymptomTracker";
 import NotFound from "./pages/NotFound";
-import { useAuth } from "@/components/auth/AuthProvider";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { user } = useAuth();
-
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth Route - No Navigation */}
+        {/* Public Auth Route - Always accessible */}
         <Route path="/auth" element={<AuthPage />} />
         
-        {/* Public Routes - No Navigation Required */}
+        {/* Public Routes - No Authentication Required */}
         <Route path="/education" element={<Education />} />
         <Route path="/partner-zone" element={<PartnerZone />} />
         <Route path="/instructions" element={<Instructions />} />
