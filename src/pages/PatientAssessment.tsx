@@ -5,6 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PatientWelcome from "@/components/assessment/PatientWelcome";
 import PatientAssessmentForm from "@/components/PatientAssessmentForm";
+import { useAssessmentState } from "@/hooks/useAssessmentState";
+import { useAssessmentCompletion } from "@/hooks/useAssessmentCompletion";
+import AssessmentHeader from "@/components/assessment/AssessmentHeader";
+import AssessmentProgress from "@/components/assessment/AssessmentProgress";
+import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 
 const PatientAssessment = () => {
   const { sessionId } = useParams();
@@ -12,6 +17,24 @@ const PatientAssessment = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Use assessment state management
+  const {
+    currentStep,
+    setCurrentStep,
+    assessmentData,
+    isValid,
+    setIsValid,
+    isSubmitting,
+    setIsSubmitting,
+    totalSteps,
+    steps,
+    handleDataChange,
+    getRiskBadge,
+    showUrgentWarning
+  } = useAssessmentState();
+
+  const { processAssessmentCompletion } = useAssessmentCompletion(sessionId);
 
   useEffect(() => {
     const verifyAssessmentLink = async () => {
@@ -79,6 +102,35 @@ const PatientAssessment = () => {
     setShowWelcome(false);
   };
 
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!sessionId) return;
+    
+    setIsSubmitting(true);
+    try {
+      await processAssessmentCompletion(assessmentData);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit assessment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -98,7 +150,43 @@ const PatientAssessment = () => {
     return <PatientWelcome onStart={handleStartAssessment} />;
   }
 
-  return <PatientAssessmentForm sessionId={sessionId} />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gentle-blue/30 to-soft-coral/20">
+      <div className="container mx-auto px-4 py-8">
+        <AssessmentHeader 
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          stepTitle={steps[currentStep - 1]}
+          riskBadge={getRiskBadge()}
+          showUrgentWarning={showUrgentWarning()}
+        />
+        
+        <AssessmentProgress 
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          steps={steps}
+        />
+
+        <div className="mt-8">
+          <PatientAssessmentForm
+            step={currentStep}
+            data={assessmentData}
+            onDataChange={handleDataChange}
+          />
+        </div>
+
+        <AssessmentNavigation
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isValid={isValid}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSubmit={handleSubmit}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default PatientAssessment;
