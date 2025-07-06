@@ -1,4 +1,3 @@
-
 import { 
   calculateRiskLevel, 
   generateClinicalSummary, 
@@ -12,6 +11,7 @@ import { EmailService } from "@/services/EmailService";
 interface AssessmentData {
   patientRef?: string;
   age?: string;
+  dateOfBirth?: string;
   menstrualStatus?: string;
   periodsStopped?: string;
   postmenopausalBleeding?: string;
