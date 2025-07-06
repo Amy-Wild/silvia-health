@@ -1,100 +1,104 @@
 
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import AssessmentHeader from "@/components/assessment/AssessmentHeader";
-import AssessmentProgress from "@/components/assessment/AssessmentProgress";
-import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
-import WelcomeMessage from "@/components/assessment/WelcomeMessage";
-import RiskBadgeDisplay from "@/components/assessment/RiskBadgeDisplay";
-import UrgentWarning from "@/components/assessment/UrgentWarning";
-import AssessmentFormSection from "@/components/assessment/AssessmentFormSection";
-import { useAssessmentState } from "@/hooks/useAssessmentState";
-import { useAssessmentCompletion } from "@/hooks/useAssessmentCompletion";
+import { useState, useEffect } from "react";
+import { useParams, Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import PatientWelcome from "@/components/assessment/PatientWelcome";
+import PatientAssessmentForm from "@/components/PatientAssessmentForm";
 
 const PatientAssessment = () => {
   const { sessionId } = useParams();
-  const navigate = useNavigate();
-  const { processAssessmentCompletion } = useAssessmentCompletion(sessionId);
-  
-  const {
-    currentStep,
-    setCurrentStep,
-    assessmentData,
-    isValid,
-    isSubmitting,
-    setIsSubmitting,
-    totalSteps,
-    steps,
-    handleDataChange,
-    getRiskBadge,
-    showUrgentWarning
-  } = useAssessmentState();
+  const { toast } = useToast();
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [assessmentLink, setAssessmentLink] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sessionId) {
-      navigate('/');
-    }
-  }, [sessionId, navigate]);
-
-  const handleNext = async () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setIsSubmitting(true);
-      try {
-        await processAssessmentCompletion(assessmentData);
-      } finally {
-        setIsSubmitting(false);
+    const verifyAssessmentLink = async () => {
+      if (!sessionId) {
+        setLoading(false);
+        return;
       }
-    }
+
+      try {
+        const { data, error } = await supabase
+          .from('assessment_links')
+          .select('*')
+          .eq('id', sessionId)
+          .single();
+
+        if (error || !data) {
+          toast({
+            title: "Invalid Link",
+            description: "This assessment link is invalid or has expired.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Check if link has expired
+        if (new Date(data.expires_at) < new Date()) {
+          toast({
+            title: "Link Expired",
+            description: "This assessment link has expired. Please contact your healthcare provider for a new link.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Check if already completed
+        if (data.status === 'completed') {
+          toast({
+            title: "Assessment Completed",
+            description: "This assessment has already been completed.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        setAssessmentLink(data);
+      } catch (error) {
+        console.error('Error verifying assessment link:', error);
+        toast({
+          title: "Error",
+          description: "Failed to verify assessment link.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyAssessmentLink();
+  }, [sessionId, toast]);
+
+  const handleStartAssessment = () => {
+    setShowWelcome(false);
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const riskBadge = getRiskBadge();
-  const shouldShowRiskBadge = riskBadge.className !== "bg-green-500 text-white";
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
-      <AssessmentHeader />
-
-      {shouldShowRiskBadge && <RiskBadgeDisplay riskBadge={riskBadge} />}
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <WelcomeMessage show={currentStep === 1} />
-
-          <UrgentWarning show={showUrgentWarning()} />
-
-          <AssessmentProgress 
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-            steps={steps}
-          />
-
-          <AssessmentFormSection
-            currentStep={currentStep}
-            steps={steps}
-            assessmentData={assessmentData}
-            onDataChange={handleDataChange}
-          />
-
-          <AssessmentNavigation 
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-            isValid={isValid}
-            isSubmitting={isSubmitting}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-          />
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-soft-coral-dark mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying assessment link...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!sessionId || !assessmentLink) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (showWelcome) {
+    return <PatientWelcome onStart={handleStartAssessment} />;
+  }
+
+  return <PatientAssessmentForm sessionId={sessionId} />;
 };
 
 export default PatientAssessment;

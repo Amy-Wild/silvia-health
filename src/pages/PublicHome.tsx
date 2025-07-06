@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -21,52 +20,66 @@ const PublicHome = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-soft-coral to-light-purple text-white py-20">
+      {/* Hero Section - Reduced padding to eliminate white gap */}
+      <section className="bg-gradient-to-r from-soft-coral to-light-purple text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
               SYLVIA Health
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90">
+            <p className="text-lg md:text-xl mb-6 text-white/90">
               Comprehensive Menopause Assessment & Support Platform
             </p>
-            <p className="text-lg mb-10 text-white/80 max-w-2xl mx-auto">
+            <p className="text-base mb-8 text-white/80 max-w-2xl mx-auto">
               Evidence-based menopause assessment tool designed for healthcare professionals and patients. 
               Get personalized insights, track symptoms, and access educational resources.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {/* More prominent CTA buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               {!user ? (
                 <>
-                  <Button size="lg" variant="secondary" className="bg-white text-soft-coral-dark hover:bg-white/90" asChild>
+                  <Button size="lg" className="bg-white text-soft-coral-dark hover:bg-white/90 text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
                     <Link to="/auth">
-                      <Calendar className="w-5 h-5 mr-2" />
+                      <Calendar className="w-6 h-6 mr-3" />
                       Track My Symptoms
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-soft-coral-dark" asChild>
+                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-soft-coral-dark text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
                     <Link to="/auth">
-                      <Stethoscope className="w-5 h-5 mr-2" />
+                      <Stethoscope className="w-6 h-6 mr-3" />
                       Healthcare Login
                     </Link>
                   </Button>
                 </>
               ) : userRole === 'patient' ? (
-                <Button size="lg" variant="secondary" className="bg-white text-soft-coral-dark hover:bg-white/90" asChild>
+                <Button size="lg" className="bg-white text-soft-coral-dark hover:bg-white/90 text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
                   <Link to="/symptom-tracker">
-                    <Calendar className="w-5 h-5 mr-2" />
+                    <Calendar className="w-6 h-6 mr-3" />
                     Go to Symptom Tracker
                   </Link>
                 </Button>
               ) : (
-                <Button size="lg" variant="secondary" className="bg-white text-soft-coral-dark hover:bg-white/90" asChild>
+                <Button size="lg" className="bg-white text-soft-coral-dark hover:bg-white/90 text-lg px-8 py-4 h-auto font-semibold shadow-lg" asChild>
                   <Link to={userRole === 'gp' ? "/gp-dashboard" : "/clinical-dashboard"}>
-                    <Stethoscope className="w-5 h-5 mr-2" />
+                    <Stethoscope className="w-6 h-6 mr-3" />
                     Go to Clinical Portal
                   </Link>
                 </Button>
               )}
+            </div>
+
+            {/* Secondary navigation buttons */}
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <Link to="/education" className="text-white/80 hover:text-white font-medium underline">
+                Learn About Menopause
+              </Link>
+              <Link to="/instructions" className="text-white/80 hover:text-white font-medium underline">
+                Resources & Guidelines
+              </Link>
+              <Link to="/partner-zone" className="text-white/80 hover:text-white font-medium underline">
+                Partner Support
+              </Link>
             </div>
           </div>
         </div>
