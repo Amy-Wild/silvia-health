@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,7 @@ interface AssessmentData {
   age?: string;
   menstrualStatus: 'regular' | 'irregular' | 'stopped' | 'unknown'; // Required field
   periodsStopped?: string;
-  postmenopausalBleeding?: 'yes' | 'no' | 'unsure';
+  postmenopausalBleeding: 'yes' | 'no' | 'unsure'; // Required field
   unexplainedWeightLoss?: 'yes' | 'no' | 'unsure';
   severePelvicPain?: 'yes' | 'no' | 'unsure';
   hotFlashFrequency?: 'none' | 'mild' | 'moderate' | 'severe';
@@ -54,7 +53,8 @@ const PatientAssessment = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
     dateOfBirth: "", // Initialize with empty string to satisfy required field
-    menstrualStatus: "unknown" // Initialize with default value to satisfy required field
+    menstrualStatus: "unknown", // Initialize with default value to satisfy required field
+    postmenopausalBleeding: "unsure" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
