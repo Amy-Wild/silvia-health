@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,20 +53,32 @@ const PatientAssessment = () => {
       }
 
       try {
+        console.log('About to query assessment_links with ID:', sessionId);
         const { data, error } = await supabase
           .from('assessment_links')
           .select('*')
           .eq('id', sessionId)
           .single();
 
-        console.log('Assessment link data:', data);
-        console.log('Assessment link error:', error);
+        console.log('Assessment link query result - data:', data);
+        console.log('Assessment link query result - error:', error);
 
-        if (error || !data) {
-          console.error('Assessment link not found or error:', error);
+        if (error) {
+          console.error('Supabase query error:', error);
+          toast({
+            title: "Database Error",
+            description: `Failed to verify assessment link: ${error.message}`,
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        if (!data) {
+          console.error('No assessment link found for ID:', sessionId);
           toast({
             title: "Invalid Link",
-            description: "This assessment link is invalid or has expired.",
+            description: "This assessment link was not found.",
             variant: "destructive",
           });
           setLoading(false);
@@ -182,13 +193,16 @@ const PatientAssessment = () => {
   }
 
   if (!sessionId || !assessmentLink) {
-    console.log('Invalid session - showing error message');
+    console.log('Invalid session - showing error message. SessionId:', sessionId, 'AssessmentLink:', assessmentLink);
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Assessment Link Invalid</h1>
           <p className="text-gray-600 mb-4">This assessment link is invalid or has expired.</p>
           <p className="text-sm text-gray-500">Please contact your healthcare provider for a new assessment link.</p>
+          <div className="mt-4 p-4 bg-gray-100 rounded text-xs text-gray-500">
+            Debug: SessionId = {sessionId || 'undefined'}
+          </div>
         </div>
       </div>
     );
