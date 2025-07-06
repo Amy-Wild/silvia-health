@@ -15,6 +15,43 @@ interface DailyTrackerProps {
   onEntryComplete: () => void;
 }
 
+interface SymptomsData {
+  symptoms?: {
+    vasomotor: {
+      hotFlashes: number;
+      nightSweats: number;
+      coldFlashes: number;
+    };
+    physical: {
+      jointPain: number;
+      headaches: number;
+      fatigue: number;
+      bloating: number;
+      breastTenderness: number;
+    };
+    psychological: {
+      moodRating: number;
+      anxiety: number;
+      irritability: number;
+      cognitiveIssues: number;
+    };
+    sleep: {
+      sleepQuality: number;
+      timeToSleep: number;
+      nightWakings: number;
+      hoursSlept: number;
+    };
+    lifestyle: {
+      stressLevel: number;
+      exerciseMinutes: number;
+      alcohol: boolean;
+      caffeine: boolean;
+    };
+  };
+  triggers?: string[];
+  timestamp?: string;
+}
+
 const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -84,10 +121,15 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
 
       if (data) {
         setHasEntryToday(true);
-        // Load existing data
+        // Load existing data with proper type checking
         if (data.symptoms_data) {
-          setSymptoms(data.symptoms_data.symptoms || symptoms);
-          setTriggers(data.symptoms_data.triggers || []);
+          const symptomsData = data.symptoms_data as SymptomsData;
+          if (symptomsData.symptoms) {
+            setSymptoms(symptomsData.symptoms);
+          }
+          if (symptomsData.triggers) {
+            setTriggers(symptomsData.triggers);
+          }
         }
         setNotes(data.notes || '');
         
@@ -161,7 +203,7 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
           symptoms,
           triggers,
           timestamp: new Date().toISOString()
-        },
+        } as SymptomsData,
         notes,
         updated_at: new Date().toISOString()
       };
@@ -197,7 +239,7 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
   return (
     <div className="space-y-6">
       {hasEntryToday && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-soft-green border border-green-200 rounded-lg p-4">
           <p className="text-green-800 text-sm">
             ✅ You've already logged symptoms today. You can update your entry below.
           </p>

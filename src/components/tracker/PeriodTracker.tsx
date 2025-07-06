@@ -10,18 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 
+interface PeriodSymptoms {
+  cramps: boolean;
+  bloating: boolean;
+  moodChanges: boolean;
+  headaches: boolean;
+  breastTenderness: boolean;
+}
+
 interface PeriodEntry {
   entry_date: string;
   period_start: boolean;
   period_end: boolean;
   flow_intensity?: 'light' | 'medium' | 'heavy';
-  symptoms_data?: {
-    cramps: boolean;
-    bloating: boolean;
-    moodChanges: boolean;
-    headaches: boolean;
-    breastTenderness: boolean;
-  };
+  symptoms_data?: PeriodSymptoms;
 }
 
 const PeriodTracker = () => {
@@ -73,18 +75,30 @@ const PeriodTracker = () => {
       if (error) throw error;
 
       if (data) {
+        // Safely handle the symptoms_data which is JSONB
+        let symptomsData: PeriodSymptoms = {
+          cramps: false,
+          bloating: false,
+          moodChanges: false,
+          headaches: false,
+          breastTenderness: false
+        };
+
+        if (data.symptoms_data && typeof data.symptoms_data === 'object') {
+          const rawData = data.symptoms_data as any;
+          if (rawData.cramps !== undefined) symptomsData.cramps = rawData.cramps;
+          if (rawData.bloating !== undefined) symptomsData.bloating = rawData.bloating;
+          if (rawData.moodChanges !== undefined) symptomsData.moodChanges = rawData.moodChanges;
+          if (rawData.headaches !== undefined) symptomsData.headaches = rawData.headaches;
+          if (rawData.breastTenderness !== undefined) symptomsData.breastTenderness = rawData.breastTenderness;
+        }
+
         setTodayEntry({
           entry_date: data.entry_date,
           period_start: data.period_start || false,
           period_end: data.period_end || false,
-          flow_intensity: data.flow_intensity as 'light' | 'medium' | 'heavy' || undefined,
-          symptoms_data: data.symptoms_data || {
-            cramps: false,
-            bloating: false,
-            moodChanges: false,
-            headaches: false,
-            breastTenderness: false
-          }
+          flow_intensity: (data.flow_intensity as 'light' | 'medium' | 'heavy') || undefined,
+          symptoms_data: symptomsData
         });
       }
     } catch (error) {
@@ -107,7 +121,15 @@ const PeriodTracker = () => {
       if (error) throw error;
 
       if (data) {
-        setRecentEntries(data);
+        // Map the data to ensure proper typing
+        const mappedEntries: PeriodEntry[] = data.map(entry => ({
+          entry_date: entry.entry_date,
+          period_start: entry.period_start || false,
+          period_end: entry.period_end || false,
+          flow_intensity: (entry.flow_intensity as 'light' | 'medium' | 'heavy') || undefined
+        }));
+        
+        setRecentEntries(mappedEntries);
         calculateCycleStats(data);
       }
     } catch (error) {
@@ -180,7 +202,7 @@ const PeriodTracker = () => {
     }
   };
 
-  const updateSymptom = (symptom: string, checked: boolean) => {
+  const updateSymptom = (symptom: keyof PeriodSymptoms, checked: boolean) => {
     setTodayEntry(prev => ({
       ...prev,
       symptoms_data: {
@@ -308,7 +330,7 @@ const PeriodTracker = () => {
                   <Checkbox
                     id={symptom}
                     checked={checked}
-                    onCheckedChange={(isChecked) => updateSymptom(symptom, isChecked as boolean)}
+                    onCheckedChange={(isChecked) => updateSymptom(symptom as keyof PeriodSymptoms, isChecked as boolean)}
                   />
                   <label htmlFor={symptom} className="text-sm capitalize">
                     {symptom.replace(/([A-Z])/g, ' $1').toLowerCase()}
