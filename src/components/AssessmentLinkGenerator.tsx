@@ -42,7 +42,11 @@ const AssessmentLinkGenerator = () => {
 
       if (error) throw error;
 
-      const fullUrl = `${window.location.origin}/assessment/${data.id}`;
+      // Use the actual UUID from the database response
+      const fullUrl = `${window.location.origin}/patient-assessment/${data.id}`;
+      
+      console.log('Generated assessment link with ID:', data.id);
+      console.log('Full assessment URL:', fullUrl);
       
       setGeneratedLink({
         id: data.id,

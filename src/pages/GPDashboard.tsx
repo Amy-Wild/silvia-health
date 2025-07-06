@@ -101,10 +101,11 @@ const GPDashboard = () => {
 
       if (error) throw error;
 
-      // Create the correct URL path
+      // Use the actual UUID from the database response
       const fullUrl = `${window.location.origin}/patient-assessment/${data.id}`;
       
-      console.log('Created assessment link:', fullUrl);
+      console.log('Created assessment link with ID:', data.id);
+      console.log('Full assessment URL:', fullUrl);
       
       // Copy to clipboard
       await navigator.clipboard.writeText(fullUrl);
@@ -369,7 +370,7 @@ const GPDashboard = () => {
                             size="sm"
                             onClick={async () => {
                               const fullUrl = `${window.location.origin}/patient-assessment/${assessment.id}`;
-                              console.log('Copying link:', fullUrl);
+                              console.log('Copying assessment link:', fullUrl);
                               try {
                                 await navigator.clipboard.writeText(fullUrl);
                                 toast({

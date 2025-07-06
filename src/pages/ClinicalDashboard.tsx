@@ -103,7 +103,11 @@ const ClinicalDashboard = () => {
 
       if (error) throw error;
 
+      // Use the actual UUID from the database response
       const fullUrl = `${window.location.origin}/patient-assessment/${data.id}`;
+      
+      console.log('Created assessment link with ID:', data.id);
+      console.log('Full assessment URL:', fullUrl);
       
       // Copy to clipboard
       await navigator.clipboard.writeText(fullUrl);
@@ -384,6 +388,7 @@ const ClinicalDashboard = () => {
                             size="sm"
                             onClick={async () => {
                               const fullUrl = `${window.location.origin}/patient-assessment/${assessment.id}`;
+                              console.log('Copying assessment link:', fullUrl);
                               try {
                                 await navigator.clipboard.writeText(fullUrl);
                                 toast({
