@@ -1,89 +1,22 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Stethoscope, 
   Heart, 
   Brain, 
   Activity, 
   Users, 
   BookOpen, 
-  Calendar,
-  UserPlus,
-  LogIn,
-  LogOut
+  Calendar
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const Index = () => {
-  const { user, userRole, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const { userRole } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">SILVIA Health</h1>
-                <p className="text-sm text-gray-600">
-                  <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                    <Activity className="w-4 h-4 mr-1" />
-                    {userRole === 'gp' ? 'GP Account' : userRole === 'clinical_admin' ? 'Admin' : 'Patient'}
-                  </Badge>
-                  {userRole === 'gp' && (
-                    <Button asChild>
-                      <Link to="/gp/dashboard">GP Dashboard</Link>
-                    </Button>
-                  )}
-                  {userRole === 'clinical_admin' && (
-                    <Button asChild>
-                      <Link to="/clinical/dashboard">Clinical Dashboard</Link>
-                    </Button>
-                  )}
-                  <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" asChild>
-                    <Link to="/auth">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
-                    </Link>
-                  </Button>
-                  <Button asChild>
-                    <Link to="/auth">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Sign Up
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -181,7 +114,7 @@ const Index = () => {
               </Link>
             </Button>
             
-            {user && userRole === 'patient' && (
+            {userRole === 'patient' && (
               <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
                 <Link to="/symptom-tracker">
                   <Calendar className="w-6 h-6" />
