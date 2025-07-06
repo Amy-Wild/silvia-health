@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import AuthPage from "@/components/auth/AuthPage";
 import RouteGuard from "@/components/RouteGuard";
 import Index from "./pages/Index";
 import PatientAssessment from "./pages/PatientAssessment";
@@ -24,55 +26,78 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public Patient Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
-          <Route path="/patient-results/:sessionId" element={<PatientResults />} />
-          <Route path="/education" element={<Education />} />
-          <Route path="/partner-zone" element={<PartnerZone />} />
-          <Route path="/symptom-tracker" element={<SymptomTracker />} />
-          <Route path="/instructions" element={<Instructions />} />
-          
-          {/* GP/Healthcare Provider Routes */}
-          <Route path="/gp" element={
-            <RouteGuard requiresAccess="gp">
-              <GPDashboard />
-            </RouteGuard>
-          } />
-          <Route path="/gp/dashboard" element={
-            <RouteGuard requiresAccess="gp">
-              <GPDashboard />
-            </RouteGuard>
-          } />
-          <Route path="/gp/results/:sessionId" element={
-            <RouteGuard requiresAccess="gp">
-              <GPResults />
-            </RouteGuard>
-          } />
-          
-          {/* Clinical Dashboard Routes */}
-          <Route path="/clinical" element={
-            <RouteGuard requiresAccess="clinical">
-              <ClinicalDashboard />
-            </RouteGuard>
-          } />
-          <Route path="/clinical/dashboard" element={
-            <RouteGuard requiresAccess="clinical">
-              <ClinicalDashboard />
-            </RouteGuard>
-          } />
-          
-          {/* Legacy routes for backward compatibility */}
-          <Route path="/gp-dashboard" element={<GPDashboard />} />
-          <Route path="/gp-results/:sessionId" element={<GPResults />} />
-          <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
-          
-          {/* 404 Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Auth Route */}
+            <Route path="/auth" element={<AuthPage />} />
+            
+            {/* Public Patient Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
+            <Route path="/patient-results/:sessionId" element={<PatientResults />} />
+            <Route path="/education" element={<Education />} />
+            <Route path="/partner-zone" element={<PartnerZone />} />
+            <Route path="/instructions" element={<Instructions />} />
+            
+            {/* Protected Symptom Tracker - requires patient login */}
+            <Route path="/symptom-tracker" element={
+              <RouteGuard requiresAccess="patient">
+                <SymptomTracker />
+              </RouteGuard>
+            } />
+            
+            {/* GP/Healthcare Provider Routes */}
+            <Route path="/gp" element={
+              <RouteGuard requiresAccess="gp">
+                <GPDashboard />
+              </RouteGuard>
+            } />
+            <Route path="/gp/dashboard" element={
+              <RouteGuard requiresAccess="gp">
+                <GPDashboard />
+              </RouteGuard>
+            } />
+            <Route path="/gp/results/:sessionId" element={
+              <RouteGuard requiresAccess="gp">
+                <GPResults />
+              </RouteGuard>
+            } />
+            
+            {/* Clinical Dashboard Routes */}
+            <Route path="/clinical" element={
+              <RouteGuard requiresAccess="clinical_admin">
+                <ClinicalDashboard />
+              </RouteGuard>
+            } />
+            <Route path="/clinical/dashboard" element={
+              <RouteGuard requiresAccess="clinical_admin">
+                <ClinicalDashboard />
+              </RouteGuard>
+            } />
+            
+            {/* Legacy routes for backward compatibility */}
+            <Route path="/gp-dashboard" element={
+              <RouteGuard requiresAccess="gp">
+                <GPDashboard />
+              </RouteGuard>
+            } />
+            <Route path="/gp-results/:sessionId" element={
+              <RouteGuard requiresAccess="gp">
+                <GPResults />
+              </RouteGuard>
+            } />
+            <Route path="/clinical-dashboard" element={
+              <RouteGuard requiresAccess="clinical_admin">
+                <ClinicalDashboard />
+              </RouteGuard>
+            } />
+            
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
