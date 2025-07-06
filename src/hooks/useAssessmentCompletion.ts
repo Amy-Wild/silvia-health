@@ -1,5 +1,4 @@
 
-
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
@@ -14,38 +13,25 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
     try {
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
 
-      // Route based on care pathway - Updated to redirect to educational website
-      if (determinedPath === 'self-care' || determinedPath === 'education') {
-        const treatmentPreferences = normalizedData.treatmentPreferences || [];
-        const educationUrl = treatmentPreferences.length > 0 
-          ? `/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}&source=assessment`
-          : `/education?sessionId=${sessionId}&source=assessment`;
-        
+      // Show completion message
+      toast({
+        title: "Assessment Complete!",
+        description: "Your assessment has been submitted successfully. Thank you for completing the evaluation.",
+        duration: 5000
+      });
+
+      // For now, show a completion message instead of redirecting
+      // The GP can access results through the GP Results page using the session ID
+      setTimeout(() => {
         toast({
-          title: "Great news! You can manage your symptoms effectively",
-          description: "You're being redirected to educational resources to support your wellness journey.",
-          duration: 3000
+          title: "Next Steps",
+          description: "Your healthcare provider can now review your assessment results. Please follow up as directed.",
+          duration: 8000
         });
-        
-        // Redirect to educational website after brief delay
-        setTimeout(() => {
-          window.location.href = educationUrl;
-        }, 2000);
-        
-        return;
-      } else {
-        // Show patient guidance for GP appointments
-        const patientGuidance = generatePatientGuidance(normalizedData);
-        
-        toast({
-          title: "GP consultation recommended",
-          description: patientGuidance,
-          duration: 5000
-        });
-        
-        navigate(`/patient-results/${sessionId}`);
-      }
+      }, 2000);
+
     } catch (error) {
+      console.error('Assessment completion error:', error);
       toast({
         title: "Error", 
         description: "Failed to process assessment. Please try again.",
@@ -56,4 +42,3 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   return { processAssessmentCompletion };
 };
-

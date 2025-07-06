@@ -12,7 +12,8 @@ import AssessmentProgress from "@/components/assessment/AssessmentProgress";
 import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 
 const PatientAssessment = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
+  const params = useParams();
+  const sessionId = params.sessionId;
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(true);
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
@@ -44,6 +45,11 @@ const PatientAssessment = () => {
       
       if (!sessionId) {
         console.log('No sessionId provided');
+        toast({
+          title: "Invalid Link",
+          description: "No assessment session ID provided.",
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
@@ -132,8 +138,29 @@ const PatientAssessment = () => {
     
     setIsSubmitting(true);
     try {
+      // Store assessment data locally for GP results
+      const assessmentResult = {
+        sessionId,
+        rawData: assessmentData,
+        completedAt: new Date().toISOString(),
+        patientRef: assessmentLink?.patient_identifier || 'Patient Assessment'
+      };
+      
+      localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(assessmentResult));
+      
+      // Update assessment link status
+      await supabase
+        .from('assessment_links')
+        .update({ 
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          session_data: assessmentData 
+        })
+        .eq('id', sessionId);
+
       await processAssessmentCompletion(assessmentData);
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Error",
         description: "Failed to submit assessment. Please try again.",
