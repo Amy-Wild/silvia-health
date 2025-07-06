@@ -3,10 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, UserPlus, Calendar as CalendarIcon, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
 interface Assessment {
@@ -28,9 +34,17 @@ const ClinicalDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
-  const [showPatientForm, setShowPatientForm] = useState(false);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showPatientForm, setShowPatientForm] = useState(false);
+  
+  // Patient creation form state
+  const [patientName, setPatientName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [nhsNumber, setNhsNumber] = useState("");
+  const [patientId, setPatientId] = useState("");
+  const [isCreatingAssessment, setIsCreatingAssessment] = useState(false);
 
   useEffect(() => {
     loadAssessments();
@@ -90,6 +104,85 @@ const ClinicalDashboard = () => {
     
     console.log("Clinical dashboard loaded assessments:", storedAssessments);
     setAssessments(storedAssessments);
+  };
+
+  const handleCreateAssessment = async () => {
+    if (!patientName || !dateOfBirth) {
+      toast({
+        title: "Missing Information",
+        description: "Patient name and date of birth are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingAssessment(true);
+    
+    try {
+      const patientRef = nhsNumber || patientId || `${patientName}_${format(dateOfBirth, 'ddMMyyyy')}`;
+      const sessionId = `assessment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create a simple assessment link entry in localStorage for demo
+      const linkData = {
+        sessionId,
+        patientRef,
+        patientName,
+        dateOfBirth: format(dateOfBirth, 'yyyy-MM-dd'),
+        nhsNumber,
+        patientId,
+        createdAt: new Date().toISOString(),
+        status: 'pending'
+      };
+      
+      localStorage.setItem(`assessment_link_${sessionId}`, JSON.stringify(linkData));
+      
+      // Clear form
+      setPatientName("");
+      setDateOfBirth(undefined);
+      setNhsNumber("");
+      setPatientId("");
+      
+      toast({
+        title: "Assessment Created",
+        description: `Assessment link generated for ${patientName}`,
+      });
+      
+      loadAssessments();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create assessment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingAssessment(false);
+    }
+  };
+
+  const copySMSMessage = (assessment: Assessment) => {
+    const isHighRisk = assessment.riskLevel?.toLowerCase() === 'red' || 
+                      assessment.riskLevel?.toLowerCase() === 'urgent' || 
+                      assessment.riskLevel?.toLowerCase() === 'high';
+    
+    let message;
+    if (isHighRisk) {
+      message = "Please contact your GP Practice to arrange an appointment ASAP. Your assessment shows results requiring prompt review. Please contact the practice TODAY on [PRACTICE_PHONE]. Reply STOP to opt out.";
+    } else {
+      message = "NHS: You need an appointment to discuss your SYLVIA assessment results. Please call the practice to book. Reply STOP to opt out.";
+    }
+    
+    navigator.clipboard.writeText(message).then(() => {
+      toast({
+        title: "Message Copied!",
+        description: "Paste into your practice SMS system",
+      });
+    }).catch(() => {
+      toast({
+        title: "Copy Failed",
+        description: "Please copy the message manually",
+        variant: "destructive",
+      });
+    });
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
@@ -181,6 +274,94 @@ const ClinicalDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
+          {/* Patient Creation Form */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <UserPlus className="w-5 h-5 mr-2" />
+                Create New Patient Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                <div>
+                  <Label htmlFor="patientName">Patient Name *</Label>
+                  <Input
+                    id="patientName"
+                    placeholder="Enter patient name"
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Date of Birth *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dateOfBirth && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateOfBirth ? format(dateOfBirth, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateOfBirth}
+                        onSelect={setDateOfBirth}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <Label htmlFor="nhsNumber">NHS Number</Label>
+                  <Input
+                    id="nhsNumber"
+                    placeholder="Enter NHS number"
+                    value={nhsNumber}
+                    onChange={(e) => setNhsNumber(e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="patientId">Patient ID</Label>
+                  <Input
+                    id="patientId"
+                    placeholder="Unique patient ID"
+                    value={patientId}
+                    onChange={(e) => setPatientId(e.target.value)}
+                  />
+                </div>
+                
+                <Button
+                  onClick={handleCreateAssessment}
+                  disabled={isCreatingAssessment || !patientName || !dateOfBirth}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isCreatingAssessment ? (
+                    <>Creating...</>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Generate Link
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -301,67 +482,82 @@ const ClinicalDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAssessments.map((assessment) => (
-                      <TableRow key={assessment.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {getPriorityIcon(assessment.priority)}
-                            <span className="font-medium">
-                              {assessment.patientRef}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {assessment.id.slice(-8)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
-                            {assessment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {getRiskBadge(assessment.riskLevel)}
-                        </TableCell>
-                        <TableCell>
-                          {assessment.redFlags.length > 0 ? (
-                            <Badge variant="destructive">
-                              {assessment.redFlags.length} flag(s)
+                    {filteredAssessments.map((assessment) => {
+                      const isHighRisk = assessment.riskLevel?.toLowerCase() === 'red' || 
+                                        assessment.riskLevel?.toLowerCase() === 'urgent' || 
+                                        assessment.riskLevel?.toLowerCase() === 'high';
+                      
+                      return (
+                        <TableRow key={assessment.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              {getPriorityIcon(assessment.priority)}
+                              <span className="font-medium">
+                                {assessment.patientRef}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {assessment.id.slice(-8)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
+                              {assessment.status}
                             </Badge>
-                          ) : (
-                            <span className="text-gray-500">None</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {assessment.completed ? (
-                            <span className="text-sm text-gray-600">
-                              {assessment.completed}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {assessment.status === "completed" && (
-                              <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => navigate(`/gp-results/${assessment.id}`)}
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  Clinical View
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <Mail className="w-4 h-4 mr-1" />
-                                  Email
-                                </Button>
-                              </>
+                          </TableCell>
+                          <TableCell>
+                            {getRiskBadge(assessment.riskLevel)}
+                          </TableCell>
+                          <TableCell>
+                            {assessment.redFlags.length > 0 ? (
+                              <Badge variant="destructive">
+                                {assessment.redFlags.length} flag(s)
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-500">None</span>
                             )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                          <TableCell>
+                            {assessment.completed ? (
+                              <span className="text-sm text-gray-600">
+                                {assessment.completed}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              {assessment.status === "completed" && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => navigate(`/gp-results/${assessment.id}`)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    Clinical View
+                                  </Button>
+                                  <Button variant="outline" size="sm">
+                                    <Mail className="w-4 h-4 mr-1" />
+                                    Email
+                                  </Button>
+                                  <Button 
+                                    variant={isHighRisk ? "destructive" : "outline"}
+                                    size="sm"
+                                    onClick={() => copySMSMessage(assessment)}
+                                    className={isHighRisk ? "bg-red-600 hover:bg-red-700" : ""}
+                                  >
+                                    <Copy className="w-4 h-4 mr-1" />
+                                    Copy SMS
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               ) : (
