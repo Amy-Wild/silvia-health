@@ -23,7 +23,7 @@ interface AssessmentData {
   unexplainedWeightLoss: 'yes' | 'no' | 'unsure'; // Required field
   severePelvicPain: 'yes' | 'no' | 'unsure'; // Required field
   hotFlashFrequency: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
-  nightSweats?: 'none' | 'mild' | 'moderate' | 'severe';
+  nightSweats: 'none' | 'mild' | 'moderate' | 'severe'; // Required field
   physicalSymptoms?: string[];
   moodSymptoms?: 'none' | 'mild' | 'moderate' | 'severe';
   libidoChanges?: 'none' | 'decreased' | 'increased';
@@ -58,7 +58,8 @@ const PatientAssessment = () => {
     postmenopausalBleeding: "unsure", // Initialize with default value to satisfy required field
     unexplainedWeightLoss: "unsure", // Initialize with default value to satisfy required field
     severePelvicPain: "unsure", // Initialize with default value to satisfy required field
-    hotFlashFrequency: "none" // Initialize with default value to satisfy required field
+    hotFlashFrequency: "none", // Initialize with default value to satisfy required field
+    nightSweats: "none" // Initialize with default value to satisfy required field
   });
   const [isValid, setIsValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
