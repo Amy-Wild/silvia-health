@@ -13,8 +13,11 @@ import {
   Stethoscope,
   Brain,
   Moon,
-  Activity
+  Activity,
+  UserCheck,
+  Building2
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -24,8 +27,8 @@ const Index = () => {
       {/* Hero Section */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
               <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center mr-4">
                 <Heart className="w-8 h-8 text-white" />
               </div>
@@ -34,6 +37,25 @@ const Index = () => {
                 <p className="text-sm text-gray-600 mt-1">Your digital health companion</p>
               </div>
             </div>
+            
+            {/* Quick Access for Healthcare Providers */}
+            <div className="flex gap-2">
+              <Link to="/gp">
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <Stethoscope className="w-4 h-4 mr-2" />
+                  GP Access
+                </Button>
+              </Link>
+              <Link to="/clinical">
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Clinical Portal
+                </Button>
+              </Link>
+            </div>
+          </div>
+          
+          <div className="text-center">
             <p className="text-lg text-gray-700 max-w-2xl mx-auto">
               Comprehensive menopause education, support resources, and wellness tools 
               to help you navigate your health journey with confidence.
@@ -80,22 +102,26 @@ const Index = () => {
                     <p className="text-gray-600 mb-4">
                       Comprehensive guides covering symptoms, stages, and what to expect during your journey.
                     </p>
-                    <Button className="w-full">Explore Guides</Button>
+                    <Link to="/education">
+                      <Button className="w-full">Explore Guides</Button>
+                    </Link>
                   </CardContent>
                 </Card>
 
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Video className="w-5 h-5 mr-2 text-green-600" />
-                      Video Library
+                      <Activity className="w-5 h-5 mr-2 text-green-600" />
+                      Symptom Tracker
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-4">
-                      Expert interviews, exercise routines, and practical tips from healthcare professionals.
+                      Track your daily symptoms and identify patterns to discuss with your healthcare provider.
                     </p>
-                    <Button className="w-full" variant="outline">Watch Videos</Button>
+                    <Link to="/symptom-tracker">
+                      <Button className="w-full" variant="outline">Start Tracking</Button>
+                    </Link>
                   </CardContent>
                 </Card>
 
@@ -103,14 +129,16 @@ const Index = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Users className="w-5 h-5 mr-2 text-purple-600" />
-                      Community Support
+                      Partner Support
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-4">
-                      Connect with others on similar journeys and share experiences in a supportive environment.
+                      Resources for partners and family members to understand and support your journey.
                     </p>
-                    <Button className="w-full" variant="outline">Join Community</Button>
+                    <Link to="/partner-zone">
+                      <Button className="w-full" variant="outline">Learn More</Button>
+                    </Link>
                   </CardContent>
                 </Card>
               </div>
@@ -129,6 +157,30 @@ const Index = () => {
                   <div className="flex items-center text-sm text-blue-700">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     <span>Personalized content based on your assessment</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Healthcare Provider Access */}
+              <Card className="bg-gray-50 border-gray-200">
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <UserCheck className="w-8 h-8 text-green-600 mx-auto mb-3" />
+                      <h3 className="font-semibold mb-2">Healthcare Providers</h3>
+                      <p className="text-sm text-gray-600 mb-4">Access patient assessments and clinical tools</p>
+                      <Link to="/gp">
+                        <Button variant="outline" className="w-full">GP Dashboard</Button>
+                      </Link>
+                    </div>
+                    <div className="text-center">
+                      <Building2 className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                      <h3 className="font-semibold mb-2">Clinical Teams</h3>
+                      <p className="text-sm text-gray-600 mb-4">Advanced analytics and patient management</p>
+                      <Link to="/clinical">
+                        <Button variant="outline" className="w-full">Clinical Portal</Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
