@@ -81,11 +81,12 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   // Use stored patient reference or fallback to age-based reference
   const patientReference = storedPatientRef || 
     normalizedData.patientRef || 
-    `Patient (DOB: ${getDOBFromAge(normalizedData.age)})`;
+    `Patient (DOB: ${normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age)})`;
   
   const result = {
     sessionId: sessionId,
     patientRef: patientReference,
+    dateOfBirth: normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age),
     completedAt: new Date().toISOString(),
     riskLevel,
     urgentFlags,

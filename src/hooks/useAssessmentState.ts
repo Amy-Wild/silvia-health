@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { calculateRiskLevel, getUrgentFlags } from "@/components/ConditionalQuestionLogic";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
@@ -6,6 +7,9 @@ export const useAssessmentState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState<PatientAssessmentData>({
     age: "",
+    dateOfBirth: "",
+    occupation: "",
+    primaryConcern: "",
     menstrualStatus: "unknown",
     periodsStopped: "",
     postmenopausalBleeding: "unsure",
@@ -31,7 +35,7 @@ export const useAssessmentState = () => {
     exerciseLevel: "none",
     treatmentPreferences: []
   });
-  const [isValid, setIsValid] = useState(true); // Always valid to remove blocking
+  const [isValid, setIsValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [riskLevel, setRiskLevel] = useState("low");
 

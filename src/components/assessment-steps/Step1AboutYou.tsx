@@ -25,14 +25,24 @@ const Step1AboutYou = ({ data, onUpdate }: Step1Props) => {
           />
         </div>
         <div>
-          <Label htmlFor="occupation">Your occupation (optional)</Label>
+          <Label htmlFor="dateOfBirth">Date of Birth</Label>
           <Input
-            id="occupation"
-            value={data.occupation || ""}
-            onChange={(e) => onUpdate("occupation", e.target.value)}
-            placeholder="e.g., Teacher, Manager"
+            id="dateOfBirth"
+            type="date"
+            value={data.dateOfBirth || ""}
+            onChange={(e) => onUpdate("dateOfBirth", e.target.value)}
           />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="occupation">Your occupation (optional)</Label>
+        <Input
+          id="occupation"
+          value={data.occupation || ""}
+          onChange={(e) => onUpdate("occupation", e.target.value)}
+          placeholder="e.g., Teacher, Manager"
+        />
       </div>
 
       <div>
