@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Brand colors
+				// Brand colors - Calm Healthcare Palette
 				'gentle-blue': {
 					DEFAULT: 'hsl(var(--gentle-blue))',
 					dark: 'hsl(var(--gentle-blue-dark))'
@@ -79,6 +79,19 @@ export default {
 				'soft-coral': {
 					DEFAULT: 'hsl(var(--soft-coral))',
 					dark: 'hsl(var(--soft-coral-dark))'
+				},
+				// Risk Indicator Colors - Traffic Light System
+				'risk-high': {
+					DEFAULT: 'hsl(var(--risk-high))',
+					dark: 'hsl(var(--risk-high-dark))'
+				},
+				'risk-medium': {
+					DEFAULT: 'hsl(var(--risk-medium))',
+					alt: 'hsl(var(--risk-medium-alt))'
+				},
+				'risk-low': {
+					DEFAULT: 'hsl(var(--risk-low))',
+					dark: 'hsl(var(--risk-low-dark))'
 				}
 			},
 			borderRadius: {

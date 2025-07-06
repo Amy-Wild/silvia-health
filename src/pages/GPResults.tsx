@@ -312,7 +312,7 @@ const GPResults = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gentle-blue-dark mx-auto mb-4"></div>
           <p className="text-gray-600">Loading clinical assessment...</p>
         </div>
       </div>
@@ -323,9 +323,9 @@ const GPResults = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <AlertTriangle className="w-12 h-12 text-risk-medium mx-auto mb-4" />
           <p className="text-gray-600">No assessment data found</p>
-          <Button onClick={() => navigate('/gp-dashboard')} className="mt-4">
+          <Button onClick={() => navigate('/gp-dashboard')} className="mt-4 bg-gentle-blue-dark hover:bg-gentle-blue-dark/80">
             Return to Dashboard
           </Button>
         </div>
@@ -344,7 +344,7 @@ const GPResults = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/gp-dashboard')}
-                className="flex items-center"
+                className="flex items-center hover:bg-gentle-blue"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Dashboard
@@ -364,11 +364,11 @@ const GPResults = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hover:bg-light-purple">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="sm" className="bg-gentle-blue-dark hover:bg-gentle-blue-dark/80 text-white">
                 <Mail className="w-4 h-4 mr-2" />
                 Email
               </Button>
@@ -381,10 +381,10 @@ const GPResults = () => {
         <div className="max-w-6xl mx-auto">
           {/* Critical Alerts - Show psychological risks prominently */}
           {clinicalResults.analyticsData.psychologicalRisk.startsWith('CRITICAL') && (
-            <Card className="mb-6 border-red-500 bg-red-50">
+            <Card className="mb-6 border-risk-high bg-red-50">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <AlertTriangle className="w-6 h-6 text-risk-high" />
                   <div>
                     <h3 className="font-bold text-red-800">URGENT MENTAL HEALTH ALERT</h3>
                     <p className="text-red-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
@@ -396,10 +396,10 @@ const GPResults = () => {
           )}
 
           {clinicalResults.analyticsData.psychologicalRisk.startsWith('HIGH') && (
-            <Card className="mb-6 border-orange-500 bg-orange-50">
+            <Card className="mb-6 border-risk-medium bg-orange-50">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-6 h-6 text-orange-500" />
+                  <AlertTriangle className="w-6 h-6 text-risk-medium" />
                   <div>
                     <h3 className="font-bold text-orange-800">HIGH PRIORITY MENTAL HEALTH CONCERN</h3>
                     <p className="text-orange-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
@@ -415,7 +415,7 @@ const GPResults = () => {
           
           {/* Patient Comments Section - NEW */}
           {clinicalResults.clinicalSummary?.patientComments && (
-            <Card className="mt-6 border-blue-200 bg-blue-50">
+            <Card className="mt-6 border-gentle-blue-dark bg-gentle-blue">
               <CardHeader>
                 <CardTitle className="flex items-center text-blue-900">
                   <User className="w-5 h-5 mr-2" />
@@ -423,7 +423,7 @@ const GPResults = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-4 rounded border-l-4 border-blue-500">
+                <div className="bg-white p-4 rounded border-l-4 border-gentle-blue-dark">
                   <p className="text-gray-800 italic">"{clinicalResults.clinicalSummary.patientComments}"</p>
                 </div>
               </CardContent>
@@ -432,8 +432,8 @@ const GPResults = () => {
           
           {/* Detailed Treatment Options */}
           <div className="mt-8">
-            <Card>
-              <CardHeader>
+            <Card className="bg-white border-gentle-blue-dark/20">
+              <CardHeader className="bg-gentle-blue/30">
                 <CardTitle>Clinical Decision Support</CardTitle>
                 <p className="text-sm text-gray-600">Evidence-based treatment analysis with transparent reasoning</p>
               </CardHeader>
@@ -449,7 +449,7 @@ const GPResults = () => {
           </div>
 
           {/* Session Information */}
-          <Card className="mt-6 bg-gray-100">
+          <Card className="mt-6 bg-light-purple/20 border-light-purple-dark/20">
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
                 <div>

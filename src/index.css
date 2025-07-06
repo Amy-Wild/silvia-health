@@ -37,7 +37,7 @@
 
     --radius: 0.5rem;
 
-    /* Brand Colors */
+    /* Brand Colors - Calm Healthcare Palette */
     --gentle-blue: 214 100% 92%; /* #dbeafe */
     --soft-green: 142 76% 92%; /* #dcfce7 */
     --light-purple: 250 100% 95%; /* #ede9fe */
@@ -48,6 +48,14 @@
     --soft-green-dark: 142 76% 75%;
     --light-purple-dark: 250 100% 80%;
     --soft-coral-dark: 24 95% 70%;
+
+    /* Risk Indicator Colors - Traffic Light System */
+    --risk-high: 0 84% 55%; /* #ef4444 */
+    --risk-high-dark: 0 91% 39%; /* #dc2626 */
+    --risk-medium: 32 95% 50%; /* #f59e0b */
+    --risk-medium-alt: 24 95% 53%; /* #f97316 */
+    --risk-low: 142 71% 45%; /* #22c55e */
+    --risk-low-dark: 142 76% 36%; /* #16a34a */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
