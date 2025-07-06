@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PatientWelcome from "@/components/assessment/PatientWelcome";
@@ -11,13 +11,20 @@ import AssessmentProgress from "@/components/assessment/AssessmentProgress";
 import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 
 const PatientAssessment = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
+  const params = useParams();
+  const location = useLocation();
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(true);
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('PatientAssessment component loaded with sessionId:', sessionId);
+  // Extract sessionId from URL params or pathname
+  const sessionId = params.sessionId || location.pathname.split('/').pop();
+
+  console.log('PatientAssessment component loaded');
+  console.log('URL params:', params);
+  console.log('Location pathname:', location.pathname);
+  console.log('Extracted sessionId:', sessionId);
 
   // Use assessment state management
   const {
@@ -41,8 +48,8 @@ const PatientAssessment = () => {
     const verifyAssessmentLink = async () => {
       console.log('Verifying assessment link for sessionId:', sessionId);
       
-      if (!sessionId) {
-        console.log('No sessionId provided');
+      if (!sessionId || sessionId === 'patient-assessment') {
+        console.log('No valid sessionId provided. SessionId:', sessionId);
         toast({
           title: "Invalid Link",
           description: "No assessment session ID provided.",
@@ -201,7 +208,10 @@ const PatientAssessment = () => {
           <p className="text-gray-600 mb-4">This assessment link is invalid or has expired.</p>
           <p className="text-sm text-gray-500">Please contact your healthcare provider for a new assessment link.</p>
           <div className="mt-4 p-4 bg-gray-100 rounded text-xs text-gray-500">
-            Debug: SessionId = {sessionId || 'undefined'}
+            <div>Debug Info:</div>
+            <div>SessionId = {sessionId || 'undefined'}</div>
+            <div>URL = {location.pathname}</div>
+            <div>Params = {JSON.stringify(params)}</div>
           </div>
         </div>
       </div>
@@ -209,7 +219,7 @@ const PatientAssessment = () => {
   }
 
   if (showWelcome) {
-    return <PatientWelcome onStart={handleStartAssessment} />;
+    return <PatientWelcome onStart={() => setShowWelcome(false)} />;
   }
 
   return (
@@ -242,9 +252,45 @@ const PatientAssessment = () => {
           totalSteps={totalSteps}
           isValid={isValid}
           isSubmitting={isSubmitting}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSubmit={handleSubmit}
+          onPrevious={() => currentStep > 1 && setCurrentStep(currentStep - 1)}
+          onNext={() => currentStep < totalSteps && setCurrentStep(currentStep + 1)}
+          onSubmit={async () => {
+            if (!sessionId) return;
+            
+            setIsSubmitting(true);
+            try {
+              // Store assessment data locally for GP results
+              const assessmentResult = {
+                sessionId,
+                rawData: assessmentData,
+                completedAt: new Date().toISOString(),
+                patientRef: assessmentLink?.patient_identifier || 'Patient Assessment'
+              };
+              
+              localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(assessmentResult));
+              
+              // Update assessment link status - properly cast to Json
+              await supabase
+                .from('assessment_links')
+                .update({ 
+                  status: 'completed',
+                  completed_at: new Date().toISOString(),
+                  session_data: assessmentData as any
+                })
+                .eq('id', sessionId);
+
+              await processAssessmentCompletion(assessmentData);
+            } catch (error) {
+              console.error('Submit error:', error);
+              toast({
+                title: "Error",
+                description: "Failed to submit assessment. Please try again.",
+                variant: "destructive",
+              });
+            } finally {
+              setIsSubmitting(false);
+            }
+          }}
         />
       </div>
     </div>
