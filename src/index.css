@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,13 +8,13 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 210 22% 35%; /* #425563 - dark grey for readability */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 22% 35%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 22% 35%;
 
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
@@ -36,20 +37,25 @@
 
     --radius: 0.5rem;
 
+    /* Brand Colors */
+    --gentle-blue: 214 100% 92%; /* #dbeafe */
+    --soft-green: 142 76% 92%; /* #dcfce7 */
+    --light-purple: 250 100% 95%; /* #ede9fe */
+    --soft-coral: 24 95% 88%; /* #fed7c3 */
+    
+    /* Darker versions for buttons (20-30% darker) */
+    --gentle-blue-dark: 214 100% 75%;
+    --soft-green-dark: 142 76% 75%;
+    --light-purple-dark: 250 100% 80%;
+    --soft-coral-dark: 24 95% 70%;
+
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 

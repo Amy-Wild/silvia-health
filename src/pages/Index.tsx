@@ -16,26 +16,26 @@ const Index = () => {
   const { userRole } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Comprehensive Menopause
-            <span className="text-blue-600"> Assessment</span>
+            <span className="text-soft-coral-dark"> Assessment</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Evidence-based menopause assessment tool designed for healthcare professionals and patients. 
             Get personalized insights and treatment recommendations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
+            <Button size="lg" className="bg-soft-coral-dark hover:bg-soft-coral-dark/80 text-white border-0" asChild>
               <Link to="/patient-assessment/new">
                 <Heart className="w-5 h-5 mr-2" />
                 Start Assessment
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button size="lg" variant="outline" className="border-gentle-blue-dark text-gentle-blue-dark hover:bg-gentle-blue" asChild>
               <Link to="/education">
                 <BookOpen className="w-5 h-5 mr-2" />
                 Learn More
@@ -46,12 +46,12 @@ const Index = () => {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
+          <Card className="bg-gentle-blue border-gentle-blue-dark/20 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Brain className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-gentle-blue-dark rounded-lg flex items-center justify-center mb-4">
+                <Brain className="w-6 h-6 text-white" />
               </div>
-              <CardTitle>Comprehensive Assessment</CardTitle>
+              <CardTitle className="text-gray-900">Comprehensive Assessment</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
@@ -60,12 +60,12 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
+          <Card className="bg-soft-green border-soft-green-dark/20 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <Activity className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-soft-green-dark rounded-lg flex items-center justify-center mb-4">
+                <Activity className="w-6 h-6 text-white" />
               </div>
-              <CardTitle>Evidence-Based</CardTitle>
+              <CardTitle className="text-gray-900">Evidence-Based</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
@@ -74,12 +74,12 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
+          <Card className="bg-light-purple border-light-purple-dark/20 hover:shadow-lg transition-shadow">
             <CardHeader>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-light-purple-dark rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-white" />
               </div>
-              <CardTitle>Patient & Provider</CardTitle>
+              <CardTitle className="text-gray-900">Patient & Provider</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
@@ -90,24 +90,24 @@ const Index = () => {
         </div>
 
         {/* Quick Access Section */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 mb-16">
+        <div className="bg-gentle-blue/50 rounded-2xl p-8 mb-16 border border-gentle-blue-dark/10">
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Access</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2 border-gray-300 hover:bg-soft-coral hover:border-soft-coral-dark" asChild>
               <Link to="/instructions">
                 <BookOpen className="w-6 h-6" />
                 <span>Instructions</span>
               </Link>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2 border-gray-300 hover:bg-light-purple hover:border-light-purple-dark" asChild>
               <Link to="/education">
                 <Brain className="w-6 h-6" />
                 <span>Education</span>
               </Link>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2 border-gray-300 hover:bg-soft-green hover:border-soft-green-dark" asChild>
               <Link to="/partner-zone">
                 <Users className="w-6 h-6" />
                 <span>Partner Zone</span>
@@ -115,7 +115,7 @@ const Index = () => {
             </Button>
             
             {userRole === 'patient' && (
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2 border-gray-300 hover:bg-gentle-blue hover:border-gentle-blue-dark" asChild>
                 <Link to="/symptom-tracker">
                   <Calendar className="w-6 h-6" />
                   <span>Symptom Tracker</span>
@@ -126,12 +126,12 @@ const Index = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center">
+        <div className="text-center bg-soft-coral/30 rounded-2xl p-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Begin?</h3>
           <p className="text-gray-600 mb-6">
             Take the first step towards understanding your menopause journey with our comprehensive assessment.
           </p>
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
+          <Button size="lg" className="bg-soft-coral-dark hover:bg-soft-coral-dark/80 text-white" asChild>
             <Link to="/patient-assessment/new">
               Start Your Assessment Now
             </Link>
@@ -140,10 +140,10 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t mt-16">
+      <footer className="bg-gentle-blue/20 border-t border-gentle-blue-dark/20 mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-gray-600">
-            <p>&copy; 2024 SILVIA Health. Supporting women through their menopause journey.</p>
+            <p>&copy; 2024 SYLVIA Health. Supporting women through their menopause journey.</p>
           </div>
         </div>
       </footer>

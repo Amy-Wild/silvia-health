@@ -21,12 +21,12 @@ const Navigation = () => {
   const getRoleColor = () => {
     switch (userRole) {
       case 'gp':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-light-purple text-purple-800 border-purple-300';
       case 'clinical_admin':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-soft-coral text-orange-800 border-orange-300';
       case 'patient':
       default:
-        return 'bg-green-50 text-green-700 border-green-200';
+        return 'bg-soft-green text-green-800 border-green-300';
     }
   };
 
@@ -86,7 +86,7 @@ const Navigation = () => {
           {/* Left: Logo and Brand */}
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0 flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 bg-gradient-to-r from-soft-coral-dark to-light-purple-dark rounded-xl flex items-center justify-center shadow-sm">
                 <Stethoscope className="w-5 h-5 text-white" />
               </div>
               <div className="hidden sm:block">
@@ -127,7 +127,7 @@ const Navigation = () => {
               variant="outline"
               size="sm"
               onClick={handleSignOut}
-              className="hidden sm:flex items-center space-x-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="hidden sm:flex items-center space-x-2 border-gray-300 text-gray-700 hover:bg-soft-coral hover:border-soft-coral-dark transition-colors"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -138,7 +138,7 @@ const Navigation = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden border-gray-300"
+              className="md:hidden border-gray-300 hover:bg-soft-coral"
             >
               {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </Button>
@@ -168,7 +168,7 @@ const Navigation = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-soft-coral-dark hover:bg-gentle-blue rounded-md transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}
@@ -181,7 +181,7 @@ const Navigation = () => {
                 <Button
                   variant="outline"
                   onClick={handleSignOut}
-                  className="w-full justify-center border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="w-full justify-center border-gray-300 text-gray-700 hover:bg-soft-coral hover:border-soft-coral-dark"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
