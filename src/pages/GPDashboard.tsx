@@ -1,218 +1,130 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Stethoscope,
-  Plus,
-  Search,
-  Activity
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PatientIdentificationForm from "@/components/PatientIdentificationForm";
-
-interface Assessment {
-  id: string;
-  patientRef: string;
-  completedAt: string;
-  riskLevel: string;
-}
+import { Button } from "@/components/ui/button";
+import { UserPlus, FileText, BarChart3, Users, Calendar, Shield } from "lucide-react";
+import AssessmentLinkGenerator from "@/components/AssessmentLinkGenerator";
 
 const GPDashboard = () => {
-  const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showPatientForm, setShowPatientForm] = useState(false);
+  const { user, userRole } = useAuth();
 
-  useEffect(() => {
-    loadAssessments();
-  }, []);
-
-  const loadAssessments = () => {
-    // Load assessments from local storage
-    const storedAssessments: Assessment[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('assessment_')) {
-        const assessmentData = localStorage.getItem(key);
-        if (assessmentData) {
-          try {
-            const assessment = JSON.parse(assessmentData);
-            storedAssessments.push({
-              id: assessment.sessionId,
-              patientRef: assessment.patientRef,
-              completedAt: assessment.completedAt ? new Date(assessment.completedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
-              riskLevel: assessment.riskLevel
-            });
-          } catch (error) {
-            console.error("Error parsing assessment data:", error);
-          }
-        }
-      }
-    }
-    // Sort by completion date (most recent first) - use the original completedAt for sorting
-    storedAssessments.sort((a, b) => {
-      const aTime = new Date(a.completedAt.split('/').reverse().join('-')).getTime();
-      const bTime = new Date(b.completedAt.split('/').reverse().join('-')).getTime();
-      return bTime - aTime;
-    });
-    console.log("Loaded assessments:", storedAssessments);
-    setAssessments(storedAssessments);
-  };
-
-  const filteredAssessments = assessments.filter(assessment =>
-    assessment.patientRef.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const navigateToResults = (sessionId: string) => {
-    navigate(`/gp-results/${sessionId}`);
-  };
-
-  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    // Refresh the assessments list to show the new entry (though it won't be completed yet)
-    loadAssessments();
-    setShowPatientForm(false);
-  };
-
-  const getRiskBadgeClass = (riskLevel: string) => {
-    switch (riskLevel.toLowerCase()) {
-      case 'red':
-      case 'urgent':
-      case 'high':
-        return 'bg-red-500 hover:bg-red-600 text-white border-red-600';
-      case 'amber':
-      case 'moderate':
-      case 'medium':
-        return 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600';
-      case 'green':
-      case 'low':
-      default:
-        return 'bg-green-500 hover:bg-green-600 text-white border-green-600';
-    }
-  };
-
-  const getRiskLabel = (riskLevel: string) => {
-    switch (riskLevel.toLowerCase()) {
-      case 'red':
-      case 'urgent':
-      case 'high':
-        return 'HIGH RISK';
-      case 'amber':
-      case 'moderate':
-      case 'medium':
-        return 'MODERATE RISK';
-      case 'green':
-      case 'low':
-      default:
-        return 'LOW RISK';
-    }
-  };
+  if (!user || (userRole !== 'gp' && userRole !== 'clinical_admin')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-12 h-12 mx-auto mb-4 text-red-500" />
+            <h2 className="text-xl font-bold mb-2">Access Restricted</h2>
+            <p className="text-gray-600">
+              This area is for healthcare professionals only.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+      {/* Professional Header */}
+      <div className="bg-blue-800 text-white py-4 border-b">
+        <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">SILVIA Clinical Portal</h1>
-                <p className="text-sm text-gray-600">
-                  <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment
-                </p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold">SYLVIA Clinician Portal</h1>
+              <p className="text-blue-200 text-sm">For Healthcare Professionals Only</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                <Activity className="w-4 h-4 mr-1" />
-                System Active
-              </Badge>
-              <Button 
-                onClick={() => setShowPatientForm(true)} 
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Assessment
-              </Button>
-            </div>
+            <Badge variant="outline" className="text-white border-white">
+              {userRole === 'clinical_admin' ? 'Clinical Admin' : 'GP'}
+            </Badge>
           </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">My Patient Assessments</h2>
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search by patient name..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-            />
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="w-5 h-5 text-gray-500" />
-            </div>
-          </div>
-        </div>
-
-        {filteredAssessments.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAssessments.map((assessment) => (
-              <Card key={assessment.id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{assessment.patientRef}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Completed: {assessment.completedAt}</p>
-                  <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
-                    {getRiskLabel(assessment.riskLevel)}
-                  </Badge>
-                  <Button onClick={() => navigateToResults(assessment.id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
-                    View Results
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Stethoscope className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchQuery ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
-            </p>
-            {!searchQuery && (
-              <Button 
-                onClick={() => setShowPatientForm(true)} 
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Assessment
-              </Button>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Patient Identification Form Modal */}
-      <PatientIdentificationForm
-        isOpen={showPatientForm}
-        onClose={() => setShowPatientForm(false)}
-        onAssessmentCreated={handleAssessmentCreated}
-      />
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Users className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                <h3 className="text-2xl font-bold">47</h3>
+                <p className="text-gray-600">Active Patients</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <FileText className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                <h3 className="text-2xl font-bold">12</h3>
+                <p className="text-gray-600">Pending Reviews</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Calendar className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                <h3 className="text-2xl font-bold">8</h3>
+                <p className="text-gray-600">This Week</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <BarChart3 className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                <h3 className="text-2xl font-bold">94%</h3>
+                <p className="text-gray-600">Completion Rate</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Assessment Link Generator */}
+          <AssessmentLinkGenerator />
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Assessment Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div>
+                    <p className="font-medium">Sarah Johnson</p>
+                    <p className="text-sm text-gray-600">Assessment completed</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge className="bg-green-500">Complete</Badge>
+                    <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div>
+                    <p className="font-medium">Emma Williams</p>
+                    <p className="text-sm text-gray-600">Link sent, awaiting response</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">Pending</Badge>
+                    <p className="text-xs text-gray-500 mt-1">1 day ago</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div>
+                    <p className="font-medium">Lisa Brown</p>
+                    <p className="text-sm text-gray-600">High risk assessment - requires follow-up</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge className="bg-red-500">High Risk</Badge>
+                    <p className="text-xs text-gray-500 mt-1">3 days ago</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

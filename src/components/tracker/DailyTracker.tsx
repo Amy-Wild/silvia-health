@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -7,12 +7,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Thermometer, Heart, Brain, Moon, Zap, Save } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useToast } from "@/hooks/use-toast";
 
 interface DailyTrackerProps {
   onEntryComplete: () => void;
 }
 
 const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const today = new Date().toISOString().split('T')[0];
+
   const [symptoms, setSymptoms] = useState({
     vasomotor: {
       hotFlashes: 0,
@@ -48,11 +55,68 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
 
   const [notes, setNotes] = useState('');
   const [triggers, setTriggers] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [hasEntryToday, setHasEntryToday] = useState(false);
 
   const commonTriggers = [
     'Stress', 'Hot weather', 'Spicy food', 'Alcohol', 'Caffeine', 
     'Lack of sleep', 'Exercise', 'Work pressure', 'Arguments'
   ];
+
+  useEffect(() => {
+    if (user) {
+      loadTodayEntry();
+    }
+  }, [user]);
+
+  const loadTodayEntry = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('symptom_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('entry_date', today)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setHasEntryToday(true);
+        // Load existing data
+        if (data.symptoms_data) {
+          setSymptoms(data.symptoms_data.symptoms || symptoms);
+          setTriggers(data.symptoms_data.triggers || []);
+        }
+        setNotes(data.notes || '');
+        
+        // Set individual fields
+        setSymptoms(prev => ({
+          ...prev,
+          vasomotor: {
+            ...prev.vasomotor,
+            hotFlashes: data.hot_flashes_frequency || 0,
+            nightSweats: data.night_sweats_severity || 0
+          },
+          psychological: {
+            ...prev.psychological,
+            moodRating: data.mood_rating || 5
+          },
+          sleep: {
+            ...prev.sleep,
+            sleepQuality: data.sleep_quality || 5
+          },
+          physical: {
+            ...prev.physical,
+            fatigue: data.energy_level ? (10 - data.energy_level) : 0
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading today entry:', error);
+    }
+  };
 
   const handleSymptomChange = (category: string, symptom: string, value: number | boolean) => {
     setSymptoms(prev => ({
@@ -72,35 +136,74 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
     );
   };
 
-  const handleSave = () => {
-    const entry = {
-      date: new Date().toISOString().split('T')[0],
-      symptoms,
-      notes,
-      triggers,
-      timestamp: new Date().toISOString()
-    };
+  const handleSave = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save your symptom data.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Save to localStorage
-    const existingData = JSON.parse(localStorage.getItem('symptom-tracker-entries') || '[]');
-    existingData.push(entry);
-    localStorage.setItem('symptom-tracker-entries', JSON.stringify(existingData));
+    setSaving(true);
+    try {
+      const entryData = {
+        user_id: user.id,
+        entry_date: today,
+        hot_flashes_frequency: symptoms.vasomotor.hotFlashes,
+        hot_flashes_severity: symptoms.vasomotor.hotFlashes, // Using frequency as severity for now
+        night_sweats_severity: symptoms.vasomotor.nightSweats,
+        mood_rating: symptoms.psychological.moodRating,
+        sleep_quality: symptoms.sleep.sleepQuality,
+        energy_level: 10 - symptoms.physical.fatigue, // Invert fatigue to energy
+        symptoms_data: {
+          symptoms,
+          triggers,
+          timestamp: new Date().toISOString()
+        },
+        notes,
+        updated_at: new Date().toISOString()
+      };
 
-    // Update tracking stats
-    const stats = JSON.parse(localStorage.getItem('symptom-tracker-data') || '{}');
-    stats.totalDays = (stats.totalDays || 0) + 1;
-    stats.currentStreak = (stats.currentStreak || 0) + 1;
-    stats.lastEntry = entry.date;
-    localStorage.setItem('symptom-tracker-data', JSON.stringify(stats));
+      const { error } = await supabase
+        .from('symptom_entries')
+        .upsert(entryData);
 
-    onEntryComplete();
-    
-    // Show success message
-    alert('Entry saved successfully!');
+      if (error) throw error;
+
+      onEntryComplete();
+      
+      toast({
+        title: "Entry Saved Successfully!",
+        description: hasEntryToday ? "Your symptom data has been updated." : "Your daily entry has been recorded.",
+      });
+
+      if (!hasEntryToday) {
+        setHasEntryToday(true);
+      }
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your entry. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {hasEntryToday && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p className="text-green-800 text-sm">
+            ✅ You've already logged symptoms today. You can update your entry below.
+          </p>
+        </div>
+      )}
+
       {/* Vasomotor Symptoms */}
       <Card>
         <CardHeader>
@@ -329,9 +432,14 @@ const DailyTracker = ({ onEntryComplete }: DailyTrackerProps) => {
 
       {/* Save Button */}
       <div className="flex justify-center">
-        <Button onClick={handleSave} size="lg" className="bg-purple-600 hover:bg-purple-700">
+        <Button 
+          onClick={handleSave} 
+          size="lg" 
+          className="bg-purple-600 hover:bg-purple-700"
+          disabled={saving}
+        >
           <Save className="w-4 h-4 mr-2" />
-          Save Today's Entry
+          {saving ? 'Saving...' : hasEntryToday ? 'Update Entry' : 'Save Today\'s Entry'}
         </Button>
       </div>
     </div>

@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assessment_links: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          patient_identifier: string
+          session_data: Json | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          patient_identifier: string
+          session_data?: Json | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          patient_identifier?: string
+          session_data?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -33,6 +102,96 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      symptom_entries: {
+        Row: {
+          created_at: string
+          energy_level: number | null
+          entry_date: string
+          flow_intensity: string | null
+          hot_flashes_frequency: number | null
+          hot_flashes_severity: number | null
+          id: string
+          mood_rating: number | null
+          night_sweats_severity: number | null
+          notes: string | null
+          period_end: boolean | null
+          period_start: boolean | null
+          sleep_quality: number | null
+          symptoms_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy_level?: number | null
+          entry_date: string
+          flow_intensity?: string | null
+          hot_flashes_frequency?: number | null
+          hot_flashes_severity?: number | null
+          id?: string
+          mood_rating?: number | null
+          night_sweats_severity?: number | null
+          notes?: string | null
+          period_end?: boolean | null
+          period_start?: boolean | null
+          sleep_quality?: number | null
+          symptoms_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy_level?: number | null
+          entry_date?: string
+          flow_intensity?: string | null
+          hot_flashes_frequency?: number | null
+          hot_flashes_severity?: number | null
+          id?: string
+          mood_rating?: number | null
+          night_sweats_severity?: number | null
+          notes?: string | null
+          period_end?: boolean | null
+          period_start?: boolean | null
+          sleep_quality?: number | null
+          symptoms_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          reminder_frequency: string | null
+          reminder_method: string | null
+          reminder_time: string | null
+          reminders_paused: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reminder_frequency?: string | null
+          reminder_method?: string | null
+          reminder_time?: string | null
+          reminders_paused?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reminder_frequency?: string | null
+          reminder_method?: string | null
+          reminder_time?: string | null
+          reminders_paused?: boolean | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

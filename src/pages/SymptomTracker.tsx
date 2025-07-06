@@ -4,34 +4,90 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3 } from "lucide-react";
+import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3, Droplets, Settings } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import DailyTracker from "@/components/tracker/DailyTracker";
 import TrackerAnalytics from "@/components/tracker/TrackerAnalytics";
 import TrackerHistory from "@/components/tracker/TrackerHistory";
 import TrackerEducation from "@/components/tracker/TrackerEducation";
+import PeriodTracker from "@/components/tracker/PeriodTracker";
+import UserPreferences from "@/components/UserPreferences";
 
 const SymptomTracker = () => {
+  const { user } = useAuth();
   const [trackedDays, setTrackedDays] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [lastEntry, setLastEntry] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load tracking data from localStorage
-    const savedData = localStorage.getItem('symptom-tracker-data');
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      setTrackedDays(data.totalDays || 0);
-      setCurrentStreak(data.currentStreak || 0);
-      setLastEntry(data.lastEntry || null);
+    if (user) {
+      loadTrackingStats();
     }
-  }, []);
+  }, [user]);
+
+  const loadTrackingStats = async () => {
+    if (!user) return;
+
+    try {
+      const { data: entries, error } = await supabase
+        .from('symptom_entries')
+        .select('entry_date')
+        .eq('user_id', user.id)
+        .order('entry_date', { ascending: false });
+
+      if (error) throw error;
+
+      if (entries && entries.length > 0) {
+        setTrackedDays(entries.length);
+        setLastEntry(entries[0].entry_date);
+        
+        // Calculate current streak
+        let streak = 0;
+        const today = new Date();
+        const sortedDates = entries
+          .map(entry => new Date(entry.entry_date))
+          .sort((a, b) => b.getTime() - a.getTime());
+
+        for (let i = 0; i < sortedDates.length; i++) {
+          const diffTime = today.getTime() - sortedDates[i].getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          if (diffDays === i + 1 || (i === 0 && diffDays === 0)) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+        
+        setCurrentStreak(streak);
+      }
+    } catch (error) {
+      console.error('Error loading tracking stats:', error);
+    }
+  };
 
   const handleNewEntry = () => {
-    const today = new Date().toISOString().split('T')[0];
-    setLastEntry(today);
-    setTrackedDays(prev => prev + 1);
-    setCurrentStreak(prev => prev + 1);
+    loadTrackingStats();
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-xl font-bold mb-4">Login Required</h2>
+            <p className="text-gray-600 mb-4">
+              Please log in to access the symptom tracker and save your data securely.
+            </p>
+            <Button onClick={() => window.location.href = '/auth'}>
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -94,15 +150,21 @@ const SymptomTracker = () => {
 
         {/* Main Tracker Interface */}
         <Tabs defaultValue="daily" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="daily">Daily Entry</TabsTrigger>
+            <TabsTrigger value="period">Period Tracker</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
             <TabsTrigger value="education">Learn</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="daily">
             <DailyTracker onEntryComplete={handleNewEntry} />
+          </TabsContent>
+
+          <TabsContent value="period">
+            <PeriodTracker />
           </TabsContent>
 
           <TabsContent value="analytics">
@@ -115,6 +177,10 @@ const SymptomTracker = () => {
 
           <TabsContent value="education">
             <TrackerEducation />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <UserPreferences />
           </TabsContent>
         </Tabs>
       </div>
