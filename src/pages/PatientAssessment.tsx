@@ -18,6 +18,8 @@ const PatientAssessment = () => {
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('PatientAssessment component loaded with sessionId:', sessionId);
+
   // Use assessment state management
   const {
     currentStep,
@@ -38,7 +40,10 @@ const PatientAssessment = () => {
 
   useEffect(() => {
     const verifyAssessmentLink = async () => {
+      console.log('Verifying assessment link for sessionId:', sessionId);
+      
       if (!sessionId) {
+        console.log('No sessionId provided');
         setLoading(false);
         return;
       }
@@ -50,7 +55,11 @@ const PatientAssessment = () => {
           .eq('id', sessionId)
           .single();
 
+        console.log('Assessment link data:', data);
+        console.log('Assessment link error:', error);
+
         if (error || !data) {
+          console.error('Assessment link not found or error:', error);
           toast({
             title: "Invalid Link",
             description: "This assessment link is invalid or has expired.",
@@ -62,6 +71,7 @@ const PatientAssessment = () => {
 
         // Check if link has expired
         if (new Date(data.expires_at) < new Date()) {
+          console.log('Assessment link has expired');
           toast({
             title: "Link Expired",
             description: "This assessment link has expired. Please contact your healthcare provider for a new link.",
@@ -73,6 +83,7 @@ const PatientAssessment = () => {
 
         // Check if already completed
         if (data.status === 'completed') {
+          console.log('Assessment already completed');
           toast({
             title: "Assessment Completed",
             description: "This assessment has already been completed.",
@@ -82,6 +93,7 @@ const PatientAssessment = () => {
           return;
         }
 
+        console.log('Assessment link verified successfully');
         setAssessmentLink(data);
       } catch (error) {
         console.error('Error verifying assessment link:', error);
@@ -99,6 +111,7 @@ const PatientAssessment = () => {
   }, [sessionId, toast]);
 
   const handleStartAssessment = () => {
+    console.log('Starting assessment');
     setShowWelcome(false);
   };
 
@@ -143,6 +156,7 @@ const PatientAssessment = () => {
   }
 
   if (!sessionId || !assessmentLink) {
+    console.log('Redirecting to home - no sessionId or assessmentLink');
     return <Navigate to="/" replace />;
   }
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -102,7 +101,10 @@ const GPDashboard = () => {
 
       if (error) throw error;
 
+      // Create the correct URL path
       const fullUrl = `${window.location.origin}/patient-assessment/${data.id}`;
+      
+      console.log('Created assessment link:', fullUrl);
       
       // Copy to clipboard
       await navigator.clipboard.writeText(fullUrl);
@@ -367,6 +369,7 @@ const GPDashboard = () => {
                             size="sm"
                             onClick={async () => {
                               const fullUrl = `${window.location.origin}/patient-assessment/${assessment.id}`;
+                              console.log('Copying link:', fullUrl);
                               try {
                                 await navigator.clipboard.writeText(fullUrl);
                                 toast({
