@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,20 +12,21 @@ import AssessmentProgress from "@/components/assessment/AssessmentProgress";
 import AssessmentNavigation from "@/components/assessment/AssessmentNavigation";
 
 const PatientAssessment = () => {
-  const params = useParams();
+  const { sessionId: paramSessionId } = useParams<{ sessionId: string }>();
   const location = useLocation();
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(true);
   const [assessmentLink, setAssessmentLink] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Extract sessionId from URL params or pathname
-  const sessionId = params.sessionId || location.pathname.split('/').pop();
+  // Extract sessionId more reliably
+  const sessionId = paramSessionId || location.pathname.split('/').filter(Boolean).pop();
 
   console.log('PatientAssessment component loaded');
-  console.log('URL params:', params);
+  console.log('URL params sessionId:', paramSessionId);
   console.log('Location pathname:', location.pathname);
-  console.log('Extracted sessionId:', sessionId);
+  console.log('Final extracted sessionId:', sessionId);
+  console.log('SessionId type:', typeof sessionId, 'Length:', sessionId?.length);
 
   // Use assessment state management
   const {
@@ -48,7 +50,7 @@ const PatientAssessment = () => {
     const verifyAssessmentLink = async () => {
       console.log('Verifying assessment link for sessionId:', sessionId);
       
-      if (!sessionId || sessionId === 'patient-assessment') {
+      if (!sessionId || sessionId === 'patient-assessment' || sessionId.includes(':')) {
         console.log('No valid sessionId provided. SessionId:', sessionId);
         toast({
           title: "Invalid Link",
@@ -211,7 +213,7 @@ const PatientAssessment = () => {
             <div>Debug Info:</div>
             <div>SessionId = {sessionId || 'undefined'}</div>
             <div>URL = {location.pathname}</div>
-            <div>Params = {JSON.stringify(params)}</div>
+            <div>ParamSessionId = {paramSessionId || 'undefined'}</div>
           </div>
         </div>
       </div>
