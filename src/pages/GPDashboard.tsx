@@ -1,13 +1,148 @@
 
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UserPlus, FileText, BarChart3, Users, Calendar, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UserPlus, FileText, BarChart3, Users, Calendar, Shield, Search, Eye, Mail, Plus, AlertTriangle, Clock, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import AssessmentLinkGenerator from "@/components/AssessmentLinkGenerator";
+import PatientIdentificationForm from "@/components/PatientIdentificationForm";
+
+interface Assessment {
+  id: string;
+  patientRef: string;
+  completed: string | null;
+  status: string;
+  riskLevel: string | null;
+  redFlags: string[];
+  symptoms: any;
+  priority: string | null;
+  completedAt?: string;
+}
 
 const GPDashboard = () => {
   const { user, userRole } = useAuth();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterRisk, setFilterRisk] = useState("all");
+  const [showPatientForm, setShowPatientForm] = useState(false);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      loadAssessments();
+    }
+  }, [user]);
+
+  const loadAssessments = () => {
+    const storedAssessments: Assessment[] = [];
+    
+    // Load completed assessments from localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('assessment_')) {
+        const assessmentData = localStorage.getItem(key);
+        if (assessmentData) {
+          try {
+            const assessment = JSON.parse(assessmentData);
+            
+            // Determine priority based on risk level and urgent flags
+            let priority = "routine";
+            if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
+              const hasRedFlags = assessment.urgentFlags.some((flag: string) => 
+                flag.includes('🚨 RED') || flag.includes('Postmenopausal bleeding') || 
+                flag.includes('Unexplained weight loss') || flag.includes('Severe pelvic pain')
+              );
+              if (hasRedFlags) {
+                priority = "urgent";
+              }
+            }
+            
+            storedAssessments.push({
+              id: assessment.sessionId,
+              patientRef: assessment.patientRef || "Anonymous Patient",
+              completed: assessment.completedAt ? new Date(assessment.completedAt).toLocaleString('en-GB') : null,
+              status: "completed",
+              riskLevel: assessment.riskLevel,
+              redFlags: assessment.urgentFlags || [],
+              symptoms: assessment.clinicalSummary || {},
+              priority,
+              completedAt: assessment.completedAt
+            });
+          } catch (error) {
+            console.error("Error parsing assessment data:", error);
+          }
+        }
+      }
+    }
+    
+    // Sort by completion date (most recent first)
+    storedAssessments.sort((a, b) => {
+      if (!a.completedAt || !b.completedAt) return 0;
+      return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+    });
+    
+    setAssessments(storedAssessments);
+  };
+
+  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
+    loadAssessments();
+    setShowPatientForm(false);
+  };
+
+  const getRiskBadge = (level: string | null) => {
+    if (!level) return <Badge variant="outline">Pending</Badge>;
+    
+    const getBadgeProps = (level: string) => {
+      switch (level.toLowerCase()) {
+        case 'red':
+        case 'urgent':
+        case 'high':
+          return { className: "bg-red-500 hover:bg-red-600 text-white border-red-600", label: "HIGH RISK" };
+        case 'amber':
+        case 'moderate': 
+        case 'medium':
+          return { className: "bg-amber-500 hover:bg-amber-600 text-white border-amber-600", label: "MODERATE RISK" };
+        case 'green':
+        case 'low':
+        case 'mild':
+        default:
+          return { className: "bg-green-500 hover:bg-green-600 text-white border-green-600", label: "LOW RISK" };
+      }
+    };
+    
+    const { className, label } = getBadgeProps(level);
+    return <Badge className={className}>{label}</Badge>;
+  };
+
+  const getPriorityIcon = (priority: string | null) => {
+    if (priority === "urgent") return <AlertTriangle className="w-4 h-4 text-red-500" />;
+    if (priority === "routine") return <Clock className="w-4 h-4 text-gray-500" />;
+    return null;
+  };
+
+  const filteredAssessments = assessments.filter(assessment => {
+    const matchesSearch = !searchTerm || 
+      assessment.patientRef.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assessment.id.includes(searchTerm);
+    
+    const matchesStatus = filterStatus === "all" || assessment.status === filterStatus;
+    const matchesRisk = filterRisk === "all" || assessment.riskLevel === filterRisk;
+    
+    return matchesSearch && matchesStatus && matchesRisk;
+  });
+
+  const stats = {
+    total: assessments.length,
+    completed: assessments.filter(a => a.status === "completed").length,
+    pending: assessments.filter(a => a.status === "pending").length,
+    urgent: assessments.filter(a => a.priority === "urgent").length
+  };
 
   if (!user || (userRole !== 'gp' && userRole !== 'clinical_admin')) {
     return (
@@ -35,43 +170,53 @@ const GPDashboard = () => {
               <h1 className="text-xl font-bold">SYLVIA Clinician Portal</h1>
               <p className="text-blue-200 text-sm">For Healthcare Professionals Only</p>
             </div>
-            <Badge variant="outline" className="text-white border-white">
-              {userRole === 'clinical_admin' ? 'Clinical Admin' : 'GP'}
-            </Badge>
+            <div className="flex items-center space-x-4">
+              <Badge variant="outline" className="text-white border-white">
+                {userRole === 'clinical_admin' ? 'Clinical Admin' : 'GP'}
+              </Badge>
+              <Button 
+                onClick={() => setShowPatientForm(true)} 
+                variant="secondary"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Assessment
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-4">
             <Card>
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                <h3 className="text-2xl font-bold">47</h3>
-                <p className="text-gray-600">Active Patients</p>
+                <h3 className="text-2xl font-bold">{stats.total}</h3>
+                <p className="text-gray-600">Total Assessments</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                <h3 className="text-2xl font-bold">12</h3>
-                <p className="text-gray-600">Pending Reviews</p>
+                <h3 className="text-2xl font-bold">{stats.completed}</h3>
+                <p className="text-gray-600">Completed</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
                 <Calendar className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-                <h3 className="text-2xl font-bold">8</h3>
-                <p className="text-gray-600">This Week</p>
+                <h3 className="text-2xl font-bold">{stats.pending}</h3>
+                <p className="text-gray-600">Pending</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6 text-center">
-                <BarChart3 className="w-8 h-8 mx-auto mb-2 text-orange-500" />
-                <h3 className="text-2xl font-bold">94%</h3>
-                <p className="text-gray-600">Completion Rate</p>
+                <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-red-500" />
+                <h3 className="text-2xl font-bold">{stats.urgent}</h3>
+                <p className="text-gray-600">Urgent</p>
               </CardContent>
             </Card>
           </div>
@@ -79,6 +224,153 @@ const GPDashboard = () => {
           {/* Assessment Link Generator */}
           <AssessmentLinkGenerator />
         </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Search by patient reference or session ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterRisk} onValueChange={setFilterRisk}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by risk" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Risk Levels</SelectItem>
+                  <SelectItem value="red">Red Flag</SelectItem>
+                  <SelectItem value="amber">Amber</SelectItem>
+                  <SelectItem value="yellow">Yellow</SelectItem>
+                  <SelectItem value="green">Green</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Assessment Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredAssessments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Patient</TableHead>
+                    <TableHead>Session ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Risk Level</TableHead>
+                    <TableHead>Red Flags</TableHead>
+                    <TableHead>Completed</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssessments.map((assessment) => (
+                    <TableRow key={assessment.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {getPriorityIcon(assessment.priority)}
+                          <span className="font-medium">
+                            {assessment.patientRef}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {assessment.id.slice(-8)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
+                          {assessment.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {getRiskBadge(assessment.riskLevel)}
+                      </TableCell>
+                      <TableCell>
+                        {assessment.redFlags.length > 0 ? (
+                          <Badge variant="destructive">
+                            {assessment.redFlags.length} flag(s)
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-500">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {assessment.completed ? (
+                          <span className="text-sm text-gray-600">
+                            {assessment.completed}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {assessment.status === "completed" && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => navigate(`/gp-results/${assessment.id}`)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Mail className="w-4 h-4 mr-1" />
+                                Email
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
+                </p>
+                {!searchTerm && (
+                  <Button 
+                    onClick={() => setShowPatientForm(true)} 
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Assessment
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Recent Activity */}
         <div className="mt-8">
@@ -88,43 +380,40 @@ const GPDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div>
-                    <p className="font-medium">Sarah Johnson</p>
-                    <p className="text-sm text-gray-600">Assessment completed</p>
+                {filteredAssessments.slice(0, 5).map((assessment, index) => (
+                  <div key={assessment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                      <p className="font-medium">{assessment.patientRef}</p>
+                      <p className="text-sm text-gray-600">
+                        {assessment.status === 'completed' ? 'Assessment completed' : 'Assessment pending'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {getRiskBadge(assessment.riskLevel)}
+                      <p className="text-xs text-gray-500 mt-1">
+                        {assessment.completed || 'Pending'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className="bg-green-500">Complete</Badge>
-                    <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
-                  </div>
-                </div>
+                ))}
                 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div>
-                    <p className="font-medium">Emma Williams</p>
-                    <p className="text-sm text-gray-600">Link sent, awaiting response</p>
+                {filteredAssessments.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No recent activity. Generate assessment links to get started.
                   </div>
-                  <div className="text-right">
-                    <Badge variant="outline">Pending</Badge>
-                    <p className="text-xs text-gray-500 mt-1">1 day ago</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div>
-                    <p className="font-medium">Lisa Brown</p>
-                    <p className="text-sm text-gray-600">High risk assessment - requires follow-up</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge className="bg-red-500">High Risk</Badge>
-                    <p className="text-xs text-gray-500 mt-1">3 days ago</p>
-                  </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Patient Identification Form Modal */}
+      <PatientIdentificationForm
+        isOpen={showPatientForm}
+        onClose={() => setShowPatientForm(false)}
+        onAssessmentCreated={handleAssessmentCreated}
+      />
     </div>
   );
 };

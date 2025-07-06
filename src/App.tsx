@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,10 +9,12 @@ import Navigation from "@/components/Navigation";
 import PrivacyBanner from "@/components/PrivacyBanner";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
+import PatientAssessment from "./pages/PatientAssessment";
 import Results from "./pages/Results";
 import SymptomTracker from "./pages/SymptomTracker";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import GPDashboard from "./pages/GPDashboard";
+import ClinicalDashboard from "./pages/ClinicalDashboard";
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
@@ -29,10 +32,12 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/assessment" element={<Assessment />} />
               <Route path="/assessment/:linkId" element={<Assessment />} />
+              <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
               <Route path="/results" element={<Results />} />
               <Route path="/symptom-tracker" element={<SymptomTracker />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/gp-dashboard" element={<GPDashboard />} />
+              <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
               <Route path="/auth" element={<Auth />} />
             </Routes>
             <PrivacyBanner />
