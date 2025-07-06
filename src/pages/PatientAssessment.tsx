@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,13 +147,13 @@ const PatientAssessment = () => {
       
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(assessmentResult));
       
-      // Update assessment link status
+      // Update assessment link status - properly cast to Json
       await supabase
         .from('assessment_links')
         .update({ 
           status: 'completed',
           completed_at: new Date().toISOString(),
-          session_data: assessmentData 
+          session_data: assessmentData as any
         })
         .eq('id', sessionId);
 
