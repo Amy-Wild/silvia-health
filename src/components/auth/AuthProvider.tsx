@@ -9,7 +9,7 @@ interface AuthContextType {
   userRole: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string, role?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -54,6 +54,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error fetching user role:', error);
       return null;
+    }
+  };
+
+  const updateUserRole = async (userId: string, role: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ role })
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error updating user role:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      return false;
     }
   };
 
@@ -104,10 +123,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, role?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -115,9 +134,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: {
           first_name: firstName,
           last_name: lastName,
+          role: role || 'patient'
         }
       }
     });
+
+    // If signup was successful and we have a user, update their role
+    if (!error && data.user && role && role !== 'patient') {
+      setTimeout(async () => {
+        await updateUserRole(data.user!.id, role);
+      }, 1000);
+    }
+
     return { error };
   };
 
