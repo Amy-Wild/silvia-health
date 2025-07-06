@@ -15,6 +15,7 @@ import { AlertTriangle } from "lucide-react";
 
 interface AssessmentData {
   patientRef?: string;
+  dateOfBirth?: string; // Added missing required property
   age?: string;
   menstrualStatus?: string;
   periodsStopped?: string;
@@ -93,8 +94,8 @@ const PatientAssessment = () => {
     try {
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
 
-      // Route based on care pathway - Updated to redirect to educational website
-      if (determinedPath === 'self-care' || determinedPath === 'education-first') {
+      // Route based on care pathway - Fixed to use correct pathway values
+      if (determinedPath === 'self-care' || determinedPath === 'education') {
         const treatmentPreferences = normalizedData.treatmentPreferences || [];
         const educationUrl = treatmentPreferences.length > 0 
           ? `/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}&source=assessment`
@@ -172,20 +173,14 @@ const PatientAssessment = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
-      <AssessmentHeader 
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        stepTitle={steps[currentStep - 1]}
-        riskBadge={{
-          className: riskLevel === 'urgent' ? 'bg-red-500 text-white' : 
-                    riskLevel === 'high' ? 'bg-orange-500 text-white' :
-                    riskLevel === 'medium' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white',
-          text: riskLevel === 'urgent' ? 'Urgent Care Needed' :
-                riskLevel === 'high' ? 'High Priority' :
-                riskLevel === 'medium' ? 'Routine Care' : 'Low Risk'
-        }}
-        showUrgentWarning={showUrgentWarning()}
-      />
+      <AssessmentHeader />
+
+      {/* Risk Level Display */}
+      <div className="container mx-auto px-4 py-2">
+        <div className="max-w-3xl mx-auto flex justify-end">
+          {getRiskBadge()}
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
@@ -238,7 +233,6 @@ const PatientAssessment = () => {
             isSubmitting={isSubmitting}
             onPrevious={handlePrevious}
             onNext={handleNext}
-            onSubmit={processAssessmentCompletion}
           />
         </div>
       </div>
