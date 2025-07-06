@@ -11,13 +11,18 @@ import {
   BookOpen, 
   Calendar,
   UserPlus,
-  LogIn
+  LogIn,
+  LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const Index = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -53,6 +58,10 @@ const Index = () => {
                       <Link to="/clinical/dashboard">Clinical Dashboard</Link>
                     </Button>
                   )}
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
