@@ -47,12 +47,7 @@ const App = () => (
               </RouteGuard>
             } />
             
-            {/* GP/Healthcare Provider Routes */}
-            <Route path="/gp" element={
-              <RouteGuard requiresAccess="gp">
-                <GPDashboard />
-              </RouteGuard>
-            } />
+            {/* GP/Healthcare Provider Routes - Single set only */}
             <Route path="/gp/dashboard" element={
               <RouteGuard requiresAccess="gp">
                 <GPDashboard />
@@ -64,19 +59,19 @@ const App = () => (
               </RouteGuard>
             } />
             
-            {/* Clinical Dashboard Routes */}
-            <Route path="/clinical" element={
-              <RouteGuard requiresAccess="clinical_admin">
-                <ClinicalDashboard />
-              </RouteGuard>
-            } />
+            {/* Clinical Dashboard Routes - Single set only */}
             <Route path="/clinical/dashboard" element={
               <RouteGuard requiresAccess="clinical_admin">
                 <ClinicalDashboard />
               </RouteGuard>
             } />
             
-            {/* Legacy routes for backward compatibility */}
+            {/* Legacy redirects for backward compatibility */}
+            <Route path="/gp" element={
+              <RouteGuard requiresAccess="gp">
+                <GPDashboard />
+              </RouteGuard>
+            } />
             <Route path="/gp-dashboard" element={
               <RouteGuard requiresAccess="gp">
                 <GPDashboard />
@@ -85,6 +80,11 @@ const App = () => (
             <Route path="/gp-results/:sessionId" element={
               <RouteGuard requiresAccess="gp">
                 <GPResults />
+              </RouteGuard>
+            } />
+            <Route path="/clinical" element={
+              <RouteGuard requiresAccess="clinical_admin">
+                <ClinicalDashboard />
               </RouteGuard>
             } />
             <Route path="/clinical-dashboard" element={

@@ -1,4 +1,3 @@
-
 import { 
   calculateRiskLevel, 
   generateClinicalSummary, 
@@ -8,6 +7,7 @@ import {
   getUrgentFlags 
 } from "@/components/ConditionalQuestionLogic";
 import { EmailService } from "@/services/EmailService";
+import { storeAssessment } from "./assessmentStorage";
 
 interface AssessmentData {
   patientRef?: string;
@@ -142,7 +142,23 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
     carePath: determinedPath
   };
 
-  // Store result for GP access
+  // Store result using the new storage system
+  await storeAssessment({
+    id: sessionId,
+    session_id: sessionId,
+    patient_ref: patientReference,
+    date_of_birth: assessmentData.dateOfBirth,
+    age: calculatedAge,
+    completed_at: result.completedAt,
+    risk_level: riskLevel,
+    urgent_flags: urgentFlags,
+    clinical_summary: clinicalSummary,
+    recommendations,
+    raw_data: normalizedData,
+    care_path: determinedPath
+  });
+  
+  // Also keep the old localStorage format for backward compatibility
   localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
   
   // Clean up the patient reference storage (no longer needed)

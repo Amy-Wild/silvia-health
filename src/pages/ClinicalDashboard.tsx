@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,99 +9,61 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
-
-interface Assessment {
-  id: string;
-  patientRef: string;
-  completed: string | null;
-  status: string;
-  riskLevel: string | null;
-  redFlags: string[];
-  symptoms: any;
-  bmi?: number;
-  smoking?: string;
-  alcohol?: string;
-  priority: string | null;
-  completedAt?: string;
-}
+import { loadAllAssessments, type StoredAssessment } from "@/utils/assessmentStorage";
 
 const ClinicalDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
   const [showPatientForm, setShowPatientForm] = useState(false);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [assessments, setAssessments] = useState<StoredAssessment[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadAssessments();
+    loadAssessmentsData();
   }, []);
 
-  const loadAssessments = () => {
-    const storedAssessments: Assessment[] = [];
-    
-    // Load completed assessments from localStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('assessment_')) {
-        const assessmentData = localStorage.getItem(key);
-        if (assessmentData) {
-          try {
-            const assessment = JSON.parse(assessmentData);
-            
-            // Determine priority based on risk level and urgent flags
-            let priority = "routine";
-            if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
-              // Check for red flags
-              const hasRedFlags = assessment.urgentFlags.some((flag: string) => 
-                flag.includes('🚨 RED') || flag.includes('Postmenopausal bleeding') || 
-                flag.includes('Unexplained weight loss') || flag.includes('Severe pelvic pain')
-              );
-              if (hasRedFlags) {
-                priority = "urgent";
-              }
-            }
-            
-            storedAssessments.push({
-              id: assessment.sessionId,
-              patientRef: assessment.patientRef || "Anonymous Patient",
-              completed: assessment.completedAt ? new Date(assessment.completedAt).toLocaleString('en-GB') : null,
-              status: "completed",
-              riskLevel: assessment.riskLevel,
-              redFlags: assessment.urgentFlags || [],
-              symptoms: assessment.clinicalSummary || {},
-              bmi: assessment.rawData?.bmi ? parseFloat(assessment.rawData.bmi) : undefined,
-              smoking: assessment.rawData?.smokingStatus,
-              alcohol: assessment.rawData?.alcoholConsumption,
-              priority,
-              completedAt: assessment.completedAt
-            });
-          } catch (error) {
-            console.error("Error parsing assessment data:", error);
-          }
-        }
+  const loadAssessmentsData = async () => {
+    setLoading(true);
+    try {
+      const allAssessments = await loadAllAssessments();
+      
+      // Process assessments to determine priority
+      const processedAssessments = allAssessments.map(assessment => ({
+        ...assessment,
+        priority: determinePriority(assessment),
+        status: 'completed'
+      }));
+      
+      console.log("Clinical dashboard loaded assessments:", processedAssessments);
+      setAssessments(processedAssessments);
+    } catch (error) {
+      console.error("Error loading assessments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const determinePriority = (assessment: StoredAssessment): string => {
+    if (assessment.urgent_flags && assessment.urgent_flags.length > 0) {
+      const hasRedFlags = assessment.urgent_flags.some((flag: string) => 
+        flag.includes('🚨 RED') || flag.includes('Postmenopausal bleeding') || 
+        flag.includes('Unexplained weight loss') || flag.includes('Severe pelvic pain')
+      );
+      if (hasRedFlags) {
+        return "urgent";
       }
     }
-    
-    // Sort by completion date (most recent first)
-    storedAssessments.sort((a, b) => {
-      if (!a.completedAt || !b.completedAt) return 0;
-      return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
-    });
-    
-    console.log("Clinical dashboard loaded assessments:", storedAssessments);
-    setAssessments(storedAssessments);
+    return "routine";
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    // Refresh the assessments list
-    loadAssessments();
+    loadAssessmentsData();
     setShowPatientForm(false);
   };
 
-  const getRiskBadge = (level: string | null) => {
-    if (!level) return <Badge variant="outline">Pending</Badge>;
-    
+  const getRiskBadge = (level: string) => {
     const getBadgeProps = (level: string) => {
       switch (level.toLowerCase()) {
         case 'red':
@@ -123,28 +86,36 @@ const ClinicalDashboard = () => {
     return <Badge className={className}>{label}</Badge>;
   };
 
-  const getPriorityIcon = (priority: string | null) => {
+  const getPriorityIcon = (priority: string) => {
     if (priority === "urgent") return <AlertTriangle className="w-4 h-4 text-red-500" />;
     if (priority === "routine") return <Clock className="w-4 h-4 text-gray-500" />;
     return null;
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleString('en-GB');
+    } catch (error) {
+      return 'Unknown date';
+    }
+  };
+
   const filteredAssessments = assessments.filter(assessment => {
     const matchesSearch = !searchTerm || 
-      assessment.patientRef.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assessment.id.includes(searchTerm);
+      assessment.patient_ref.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assessment.session_id.includes(searchTerm);
     
-    const matchesStatus = filterStatus === "all" || assessment.status === filterStatus;
-    const matchesRisk = filterRisk === "all" || assessment.riskLevel === filterRisk;
+    const matchesStatus = filterStatus === "all" || "completed" === filterStatus;
+    const matchesRisk = filterRisk === "all" || assessment.risk_level === filterRisk;
     
     return matchesSearch && matchesStatus && matchesRisk;
   });
 
   const stats = {
     total: assessments.length,
-    completed: assessments.filter(a => a.status === "completed").length,
-    pending: assessments.filter(a => a.status === "pending").length,
-    urgent: assessments.filter(a => a.priority === "urgent").length
+    completed: assessments.length,
+    pending: 0,
+    urgent: assessments.filter(a => determinePriority(a) === "urgent").length
   };
 
   return (
@@ -287,7 +258,14 @@ const ClinicalDashboard = () => {
               <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              {filteredAssessments.length > 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <CheckCircle className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500">Loading assessments...</p>
+                </div>
+              ) : filteredAssessments.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -302,62 +280,52 @@ const ClinicalDashboard = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredAssessments.map((assessment) => (
-                      <TableRow key={assessment.id}>
+                      <TableRow key={assessment.session_id}>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            {getPriorityIcon(assessment.priority)}
+                            {getPriorityIcon(determinePriority(assessment))}
                             <span className="font-medium">
-                              {assessment.patientRef}
+                              {assessment.patient_ref}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-sm">
-                          {assessment.id.slice(-8)}
+                          {assessment.session_id.slice(-8)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
-                            {assessment.status}
-                          </Badge>
+                          <Badge variant="default">completed</Badge>
                         </TableCell>
                         <TableCell>
-                          {getRiskBadge(assessment.riskLevel)}
+                          {getRiskBadge(assessment.risk_level)}
                         </TableCell>
                         <TableCell>
-                          {assessment.redFlags.length > 0 ? (
+                          {assessment.urgent_flags.length > 0 ? (
                             <Badge variant="destructive">
-                              {assessment.redFlags.length} flag(s)
+                              {assessment.urgent_flags.length} flag(s)
                             </Badge>
                           ) : (
                             <span className="text-gray-500">None</span>
                           )}
                         </TableCell>
                         <TableCell>
-                          {assessment.completed ? (
-                            <span className="text-sm text-gray-600">
-                              {assessment.completed}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          <span className="text-sm text-gray-600">
+                            {formatDate(assessment.completed_at)}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            {assessment.status === "completed" && (
-                              <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => navigate(`/gp-results/${assessment.id}`)}
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  Clinical View
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <Mail className="w-4 h-4 mr-1" />
-                                  Email
-                                </Button>
-                              </>
-                            )}
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => navigate(`/gp-results/${assessment.session_id}`)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Clinical View
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Mail className="w-4 h-4 mr-1" />
+                              Email
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
