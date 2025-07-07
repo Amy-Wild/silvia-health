@@ -8,6 +8,7 @@ import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
 import { generateClinicalSummary, generateNHSRecommendations, getRedFlags, getUrgentFlags, calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
 import { useState, useEffect } from "react";
+import { getAssessment } from "@/utils/assessmentStorage";
 
 const GPResults = () => {
   const { sessionId } = useParams();
@@ -16,17 +17,36 @@ const GPResults = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load actual patient assessment data
-    const storedData = localStorage.getItem(`assessment_${sessionId}`);
-    if (storedData) {
-      const assessmentResult = JSON.parse(storedData);
-      setClinicalResults(generateEnhancedGPResults(assessmentResult));
-    } else {
-      // Fallback to demo data
-      setClinicalResults(generateDemoResults());
-    }
-    setLoading(false);
+    loadAssessmentData();
   }, [sessionId]);
+
+  const loadAssessmentData = async () => {
+    console.log("🔍 Loading assessment data for sessionId:", sessionId);
+    
+    if (!sessionId) {
+      console.error("❌ No sessionId provided");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Load from localStorage instead of Supabase
+      const assessmentResult = await getAssessment(sessionId);
+      
+      if (assessmentResult) {
+        console.log("✅ Assessment data loaded:", assessmentResult);
+        setClinicalResults(generateEnhancedGPResults(assessmentResult));
+      } else {
+        console.log("ℹ️ No assessment found, using demo data");
+        setClinicalResults(generateDemoResults());
+      }
+    } catch (error) {
+      console.error("❌ Error loading assessment data:", error);
+      setClinicalResults(generateDemoResults());
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateEnhancedGPResults = (assessmentResult: any) => {
     const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
@@ -350,7 +370,7 @@ const GPResults = () => {
                 Dashboard
               </Button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">GP Clinical Review</h1>
+                <h1 className="text-xl font-bold text-gray-900">GP Clinical Review (Local Mode)</h1>
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
                   <span>{clinicalResults.patientRef}</span>
                   <span>•</span>
@@ -455,12 +475,12 @@ const GPResults = () => {
                 <div>
                   <p><strong>Session:</strong> {sessionId}</p>
                   <p><strong>Assessment:</strong> NHS NICE NG23 + AI Enhanced</p>
-                  <p><strong>Psychological Risk:</strong> {clinicalResults.analyticsData.psychologicalRisk}</p>
+                  <p><strong>Mode:</strong> Local Storage</p>
                 </div>
                 <div>
-                  <p><strong>Urgency Score:</strong> {clinicalResults.analyticsData.urgencyScore}/10</p>
+                  <p><strong>Urgency Score:</strong> {clinicalResults.analyticsData?.urgencyScore || 0}/10</p>
                   <p><strong>Confidence:</strong> 94%</p>
-                  <p><strong>Red Flags:</strong> {clinicalResults.redFlags.length}</p>
+                  <p><strong>Red Flags:</strong> {clinicalResults.redFlags?.length || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -469,6 +489,77 @@ const GPResults = () => {
       </div>
     </div>
   );
+};
+
+// Helper functions moved to end of file for brevity
+const generateEnhancedGPResults = (assessmentResult: any) => {
+  const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
+  
+  console.log('Raw assessment data:', rawData);
+  
+  const clinicalSummary = generateClinicalSummary(rawData);
+  const allRedFlags = getRedFlags(rawData);
+  const allUrgentFlags = getUrgentFlags(rawData);
+  
+  return {
+    patientRef: assessmentResult.patientRef,
+    completedAt: new Date(assessmentResult.completedAt).toLocaleDateString('en-GB'),
+    sessionId: assessmentResult.sessionId,
+    riskLevel: calculateRiskLevel(rawData),
+    redFlags: allRedFlags,
+    urgentFlags: allUrgentFlags,
+    clinicalSummary: clinicalSummary,
+    treatmentOptions: [],
+    rawData: rawData,
+    patientProfile: {
+      age: parseInt(rawData.age || "0"),
+      riskFactors: [],
+      preferences: rawData.treatmentPreferences || []
+    },
+    analyticsData: {
+      urgencyScore: 0,
+      qualityOfLifeImpact: [],
+      psychologicalRisk: 'LOW - No immediate psychological concerns'
+    },
+    clinicalRecommendations: generateNHSRecommendations(rawData, calculateRiskLevel(rawData))
+  };
+};
+
+const generateDemoResults = () => {
+  return {
+    patientRef: "Demo Patient",
+    completedAt: new Date().toLocaleDateString('en-GB'),
+    sessionId: "demo",
+    riskLevel: "amber",
+    redFlags: [],
+    clinicalSummary: {
+      vasomotor: { severity: 'Moderate' },
+      psychological: { severity: 'Mild' },
+      medicalHistory: { 
+        riskLevel: 'Low', 
+        personal: [], 
+        family: [], 
+        clinicalNotes: 'Demo data' 
+      },
+      treatmentPreferences: { selected: ['hrt'], educationNeeded: true, clinicalNotes: 'Demo preferences' },
+      lifestyle: { 
+        smoking: 'never', 
+        exercise: 'moderate', 
+        alcohol: '1-7', 
+        bmi: '24.5', 
+        height: '165', 
+        weight: '67', 
+        riskLevel: 'Low', 
+        clinicalNotes: 'Demo lifestyle data' 
+      },
+      patientComments: '',
+      overallComplexity: 'Low - Demo data'
+    },
+    treatmentOptions: [],
+    patientProfile: { age: 56, riskFactors: [], preferences: ['hrt'] },
+    analyticsData: { urgencyScore: 6, qualityOfLifeImpact: ["Demo data"], psychologicalRisk: 'LOW - Demo data' },
+    clinicalRecommendations: ["Demo recommendation"]
+  };
 };
 
 export default GPResults;

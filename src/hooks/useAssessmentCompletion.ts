@@ -1,9 +1,9 @@
 
-
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
 import { useToast } from "@/hooks/use-toast";
+import { saveAssessment } from "@/utils/assessmentStorage";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
 export const useAssessmentCompletion = (sessionId: string | undefined) => {
@@ -11,8 +11,17 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
   const { toast } = useToast();
 
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
+    console.log("🎯 Assessment completed, processing data:", { sessionId, assessmentData });
+    
     try {
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
+      
+      console.log("📊 Assessment processed:", { result, determinedPath });
+      
+      // Save to localStorage instead of Supabase
+      await saveAssessment(sessionId!, assessmentData, result);
+      
+      console.log("💾 Assessment saved successfully");
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education') {
@@ -46,6 +55,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         navigate(`/patient-results/${sessionId}`);
       }
     } catch (error) {
+      console.error("❌ Error processing assessment:", error);
       toast({
         title: "Error", 
         description: "Failed to process assessment. Please try again.",
@@ -56,4 +66,3 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   return { processAssessmentCompletion };
 };
-

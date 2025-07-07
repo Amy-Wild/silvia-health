@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Stethoscope,
   Plus,
@@ -12,9 +11,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
+import { getAllAssessments } from "@/utils/assessmentStorage";
 
 interface Assessment {
-  id: string;
+  sessionId: string;
   patientRef: string;
   completedAt: string;
   riskLevel: string;
@@ -30,36 +30,25 @@ const GPDashboard = () => {
     loadAssessments();
   }, []);
 
-  const loadAssessments = () => {
-    // Load assessments from local storage
-    const storedAssessments: Assessment[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('assessment_')) {
-        const assessmentData = localStorage.getItem(key);
-        if (assessmentData) {
-          try {
-            const assessment = JSON.parse(assessmentData);
-            storedAssessments.push({
-              id: assessment.sessionId,
-              patientRef: assessment.patientRef,
-              completedAt: assessment.completedAt ? new Date(assessment.completedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
-              riskLevel: assessment.riskLevel
-            });
-          } catch (error) {
-            console.error("Error parsing assessment data:", error);
-          }
-        }
-      }
+  const loadAssessments = async () => {
+    console.log("🔄 Loading assessments from localStorage...");
+    
+    try {
+      const storedAssessments = await getAllAssessments();
+      console.log("📋 Raw assessments from localStorage:", storedAssessments);
+      
+      // Sort by completion date (most recent first)
+      const sortedAssessments = storedAssessments.sort((a, b) => {
+        const aTime = new Date(a.completedAt).getTime();
+        const bTime = new Date(b.completedAt).getTime();
+        return bTime - aTime;
+      });
+      
+      console.log("✅ Loaded and sorted assessments:", sortedAssessments);
+      setAssessments(sortedAssessments);
+    } catch (error) {
+      console.error("❌ Error loading assessments:", error);
     }
-    // Sort by completion date (most recent first) - use the original completedAt for sorting
-    storedAssessments.sort((a, b) => {
-      const aTime = new Date(a.completedAt.split('/').reverse().join('-')).getTime();
-      const bTime = new Date(b.completedAt.split('/').reverse().join('-')).getTime();
-      return bTime - aTime;
-    });
-    console.log("Loaded assessments:", storedAssessments);
-    setAssessments(storedAssessments);
   };
 
   const filteredAssessments = assessments.filter(assessment =>
@@ -71,11 +60,12 @@ const GPDashboard = () => {
   };
 
   const navigateToResults = (sessionId: string) => {
+    console.log("🔗 Navigating to results for sessionId:", sessionId);
     navigate(`/gp-results/${sessionId}`);
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    // Refresh the assessments list to show the new entry (though it won't be completed yet)
+    // Refresh the assessments list
     loadAssessments();
     setShowPatientForm(false);
   };
@@ -134,7 +124,7 @@ const GPDashboard = () => {
             <div className="flex items-center space-x-4">
               <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                 <Activity className="w-4 h-4 mr-1" />
-                System Active
+                System Active (Local Mode)
               </Badge>
               <Button 
                 onClick={() => setShowPatientForm(true)} 
@@ -169,16 +159,16 @@ const GPDashboard = () => {
         {filteredAssessments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAssessments.map((assessment) => (
-              <Card key={assessment.id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
+              <Card key={assessment.sessionId} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">{assessment.patientRef}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Completed: {assessment.completedAt}</p>
+                  <p className="text-gray-600">Completed: {new Date(assessment.completedAt).toLocaleDateString('en-GB')}</p>
                   <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
                     {getRiskLabel(assessment.riskLevel)}
                   </Badge>
-                  <Button onClick={() => navigateToResults(assessment.id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button onClick={() => navigateToResults(assessment.sessionId)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                     View Results
                   </Button>
                 </CardContent>

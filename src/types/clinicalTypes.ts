@@ -1,8 +1,10 @@
+
 // Enhanced TypeScript definitions for NHS-compliant clinical data
 export interface PatientAssessmentData {
   // Core Demographics
   patientRef?: string;
   age: string;
+  dateOfBirth: string;
   occupation?: string;
   
   // Clinical History
