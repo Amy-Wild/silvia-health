@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AssessmentHeader from "@/components/assessment/AssessmentHeader";
@@ -41,6 +40,15 @@ const PatientAssessment = () => {
   } = useAssessmentState();
 
   useEffect(() => {
+    // Check if user has seen instructions - if not, redirect to patient instructions
+    const hasSeenInstructions = localStorage.getItem(`instructions_seen_${actualSessionId}`);
+    
+    if (!hasSeenInstructions) {
+      console.log("User hasn't seen instructions, redirecting to patient instructions");
+      navigate(`/patientinstructions?sessionId=${actualSessionId}`, { replace: true });
+      return;
+    }
+
     // If sessionId is invalid, redirect after generating a new one
     if (!sessionId || sessionId === ':sessionId') {
       console.log("Invalid sessionId, redirecting with new sessionId:", actualSessionId);

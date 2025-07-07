@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, LogOut, MessageSquare } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, LogOut, MessageSquare, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
+import GPInstructions from "@/components/instructions/GPInstructions";
 
 interface Assessment {
   id: string;
@@ -209,222 +210,241 @@ const ClinicalDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Assessments</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="dashboard" className="flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Assessment Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="instructions" className="flex items-center">
+                <BookOpen className="w-4 h-4 mr-2" />
+                Clinical Instructions
+              </TabsTrigger>
+            </TabsList>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Completed</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <TabsContent value="dashboard">
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total Assessments</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Pending</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Completed</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Urgent</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.urgent}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <Clock className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Pending</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-          {/* Filters */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      placeholder="Search by patient reference or session ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={filterRisk} onValueChange={setFilterRisk}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by risk" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Risk Levels</SelectItem>
-                    <SelectItem value="red">High Risk</SelectItem>
-                    <SelectItem value="amber">Moderate Risk</SelectItem>
-                    <SelectItem value="green">Low Risk</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-red-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Urgent</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.urgent}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Assessment Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredAssessments.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Patient</TableHead>
-                      <TableHead>Session ID</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Risk Level</TableHead>
-                      <TableHead>Red Flags</TableHead>
-                      <TableHead>Completed</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAssessments.map((assessment, index) => (
-                      <TableRow key={`${assessment.id}-${index}`}>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {getPriorityIcon(assessment.priority)}
-                            <span className="font-medium">
-                              {assessment.patientRef}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {assessment.id.slice(-8)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
-                            {assessment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {getRiskBadge(assessment.riskLevel)}
-                        </TableCell>
-                        <TableCell>
-                          {assessment.redFlags.length > 0 ? (
-                            <Badge variant="destructive">
-                              {assessment.redFlags.length} flag(s)
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-500">None</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {assessment.completed ? (
-                            <span className="text-sm text-gray-600">
-                              {assessment.completed}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {assessment.status === "completed" && (
-                              <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => navigate(`/gp-results/${assessment.id}`)}
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  Clinical View
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleEmail(assessment)}
-                                >
-                                  <Mail className="w-4 h-4 mr-1" />
-                                  Email
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleCopySMS(assessment)}
-                                >
-                                  <MessageSquare className="w-4 h-4 mr-1" />
-                                  SMS
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-gray-400" />
+              {/* Filters */}
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          placeholder="Search by patient reference or session ID..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterRisk} onValueChange={setFilterRisk}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by risk" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Risk Levels</SelectItem>
+                        <SelectItem value="red">High Risk</SelectItem>
+                        <SelectItem value="amber">Moderate Risk</SelectItem>
+                        <SelectItem value="green">Low Risk</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
-                  <p className="text-gray-500 mb-4">
-                    {searchTerm ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
-                  </p>
-                  {!searchTerm && (
-                    <Button 
-                      onClick={() => setShowPatientForm(true)} 
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New Assessment
-                    </Button>
+                </CardContent>
+              </Card>
+
+              {/* Assessment Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {filteredAssessments.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Patient</TableHead>
+                          <TableHead>Session ID</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Risk Level</TableHead>
+                          <TableHead>Red Flags</TableHead>
+                          <TableHead>Completed</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredAssessments.map((assessment, index) => (
+                          <TableRow key={`${assessment.id}-${index}`}>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                {getPriorityIcon(assessment.priority)}
+                                <span className="font-medium">
+                                  {assessment.patientRef}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {assessment.id.slice(-8)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={assessment.status === "completed" ? "default" : "secondary"}>
+                                {assessment.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {getRiskBadge(assessment.riskLevel)}
+                            </TableCell>
+                            <TableCell>
+                              {assessment.redFlags.length > 0 ? (
+                                <Badge variant="destructive">
+                                  {assessment.redFlags.length} flag(s)
+                                </Badge>
+                              ) : (
+                                <span className="text-gray-500">None</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {assessment.completed ? (
+                                <span className="text-sm text-gray-600">
+                                  {assessment.completed}
+                                </span>
+                              ) : (
+                                <span className="text-sm text-gray-400">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                {assessment.status === "completed" && (
+                                  <>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => navigate(`/gp-results/${assessment.id}`)}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Clinical View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleEmail(assessment)}
+                                    >
+                                      <Mail className="w-4 h-4 mr-1" />
+                                      Email
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleCopySMS(assessment)}
+                                    >
+                                      <MessageSquare className="w-4 h-4 mr-1" />
+                                      SMS
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
+                      <p className="text-gray-500 mb-4">
+                        {searchTerm ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
+                      </p>
+                      {!searchTerm && (
+                        <Button 
+                          onClick={() => setShowPatientForm(true)} 
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create New Assessment
+                        </Button>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="instructions">
+              <GPInstructions />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
