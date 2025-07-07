@@ -13,18 +13,22 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
     console.log("=== ASSESSMENT COMPLETION HOOK CALLED ===");
     console.log("Session ID:", sessionId);
     console.log("Assessment data:", assessmentData);
-    console.log("About to save to localStorage");
+    
+    if (!sessionId) {
+      console.error("No sessionId provided to completion hook");
+      return;
+    }
     
     console.log("🎯 Assessment completed, processing data:", { sessionId, assessmentData });
     
     try {
-      const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
+      const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId);
       
       console.log("📊 Assessment processed:", { result, determinedPath });
       
       // Save assessment to localStorage
       const assessment = {
-        id: sessionId!,
+        id: sessionId,
         patientName: assessmentData.patientRef || "Anonymous Patient",
         dateOfBirth: assessmentData.dateOfBirth || "",
         completedAt: new Date().toISOString(),

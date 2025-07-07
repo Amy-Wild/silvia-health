@@ -14,7 +14,17 @@ import { useAssessmentCompletion } from "@/hooks/useAssessmentCompletion";
 const PatientAssessment = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { processAssessmentCompletion } = useAssessmentCompletion(sessionId);
+  
+  // Generate a unique session ID if one isn't provided or is invalid
+  const actualSessionId = sessionId && sessionId !== ':sessionId' 
+    ? sessionId 
+    : `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  console.log("=== PATIENT ASSESSMENT COMPONENT ===");
+  console.log("Raw sessionId from params:", sessionId);
+  console.log("Actual sessionId being used:", actualSessionId);
+  
+  const { processAssessmentCompletion } = useAssessmentCompletion(actualSessionId);
   
   const {
     currentStep,
@@ -31,7 +41,8 @@ const PatientAssessment = () => {
   } = useAssessmentState();
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!sessionId || sessionId === ':sessionId') {
+      console.log("Invalid sessionId, redirecting to home");
       navigate('/');
     }
   }, [sessionId, navigate]);
@@ -41,16 +52,17 @@ const PatientAssessment = () => {
     console.log("Current step:", currentStep);
     console.log("Total steps:", totalSteps);
     console.log("Assessment data:", assessmentData);
+    console.log("Using sessionId:", actualSessionId);
     
     // Check if this is the final step (step 7)
     if (currentStep === 7) {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
-      console.log("Session ID:", sessionId);
+      console.log("Session ID:", actualSessionId);
       console.log("Assessment data before completion:", assessmentData);
       
       // Save to localStorage directly for testing
       const testData = {
-        id: sessionId,
+        id: actualSessionId,
         patientName: assessmentData.patientRef || "Test Patient",
         dateOfBirth: assessmentData.dateOfBirth || "",
         completedAt: new Date().toISOString(),
