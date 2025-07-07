@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,50 +8,51 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 25% 27%; /* #425563 - Dark grey for readability */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 27%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 27%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 215 25% 27%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 215 25% 27%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
     --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-foreground: 215 25% 27%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 215 25% 27%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-foreground: 215 25% 27%;
+    --sidebar-primary: 215 25% 27%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
+    --sidebar-accent-foreground: 215 25% 27%;
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* SYLVIA Health Brand Colors */
+    --sylvia-gentle-blue: 214 100% 92%; /* #dbeafe */
+    --sylvia-soft-green: 142 76% 92%; /* #dcfce7 */
+    --sylvia-light-purple: 253 91% 95%; /* #ede9fe */
+    --sylvia-soft-coral: 25 95% 87%; /* #fed7c3 */
+    --sylvia-text: 215 25% 27%; /* #425563 */
+    --sylvia-background: 0 0% 100%; /* #ffffff */
   }
 
   .dark {
@@ -99,5 +101,44 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* SYLVIA Health Brand Color Utilities */
+@layer utilities {
+  .bg-sylvia-gentle-blue {
+    background-color: hsl(var(--sylvia-gentle-blue));
+  }
+  
+  .bg-sylvia-soft-green {
+    background-color: hsl(var(--sylvia-soft-green));
+  }
+  
+  .bg-sylvia-light-purple {
+    background-color: hsl(var(--sylvia-light-purple));
+  }
+  
+  .bg-sylvia-soft-coral {
+    background-color: hsl(var(--sylvia-soft-coral));
+  }
+  
+  .text-sylvia {
+    color: hsl(var(--sylvia-text));
+  }
+  
+  .border-sylvia-gentle-blue {
+    border-color: hsl(var(--sylvia-gentle-blue));
+  }
+  
+  .border-sylvia-soft-green {
+    border-color: hsl(var(--sylvia-soft-green));
+  }
+  
+  .border-sylvia-light-purple {
+    border-color: hsl(var(--sylvia-light-purple));
+  }
+  
+  .border-sylvia-soft-coral {
+    border-color: hsl(var(--sylvia-soft-coral));
   }
 }

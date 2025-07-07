@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// SYLVIA Health Brand Colors
+				sylvia: {
+					'gentle-blue': '#dbeafe',
+					'soft-green': '#dcfce7',
+					'light-purple': '#ede9fe',
+					'soft-coral': '#fed7c3',
+					'text': '#425563',
+					'background': '#ffffff'
 				}
 			},
 			borderRadius: {
