@@ -1,8 +1,8 @@
-
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
 import { useToast } from "@/hooks/use-toast";
+import { dataStore } from "@/utils/dataStore";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
 export const useAssessmentCompletion = (sessionId: string | undefined) => {
@@ -58,39 +58,24 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         console.log("📋 Using patient reference from assessment data:", patientRef);
       }
 
-      // Create assessment with proper patient identification
-      const assessment = {
-        id: sessionId,
-        patientName: patientRef || "Anonymous Patient",
-        dateOfBirth: assessmentData.dateOfBirth || "",
+      console.log("=== USING DATASTORE TO COMPLETE ASSESSMENT ===");
+      console.log("SessionId:", sessionId);
+      console.log("Final patient reference:", patientRef);
+
+      // Use dataStore to complete the assessment
+      const completedAssessmentData = {
+        sessionId,
+        patientRef: patientRef || "Anonymous Patient",
         completedAt: new Date().toISOString(),
         riskLevel: result.riskLevel.toLowerCase(),
         urgentFlags: result.urgentFlags || [],
-        status: "completed"
+        rawData: result
       };
 
-      console.log("=== SAVING ASSESSMENT WITH PATIENT REFERENCE ===");
-      console.log("SessionId being used:", sessionId);
-      console.log("Final patient reference used:", patientRef);
-      console.log("Assessment to save:", assessment);
+      dataStore.completeAssessment(sessionId, completedAssessmentData);
+      console.log("✅ Assessment completed using dataStore");
 
-      // CRITICAL FIX: Use the SAME storage key that dashboards read from
-      const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
-      console.log("Existing assessments before save:", existingAssessments);
-      
-      // Remove any existing assessment with the same ID to avoid duplicates
-      const filteredAssessments = existingAssessments.filter((a: any) => a.id !== sessionId);
-      
-      // Add the new assessment
-      filteredAssessments.push(assessment);
-      
-      // Store using the SAME key that dashboards use: 'assessments'
-      localStorage.setItem('assessments', JSON.stringify(filteredAssessments));
-      
-      console.log("💾 Assessment saved to localStorage with key 'assessments':", assessment);
-      console.log("Final assessments array:", JSON.parse(localStorage.getItem('assessments') || '[]'));
-
-      // ALSO store individual assessment for GP results page
+      // ALSO store individual assessment for GP results page (keep this for results page compatibility)
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
       console.log("💾 Individual assessment also stored for GP results");
 

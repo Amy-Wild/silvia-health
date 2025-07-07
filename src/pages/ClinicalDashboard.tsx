@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, L
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 import GPInstructions from "@/components/instructions/GPInstructions";
+import { dataStore, type CompletedAssessment } from "@/utils/dataStore";
 
 interface Assessment {
   id: string;
@@ -34,6 +36,19 @@ const ClinicalDashboard = () => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const navigate = useNavigate();
 
+  // Get current user email from localStorage
+  const getCurrentUserEmail = () => {
+    const user = localStorage.getItem("auth_user");
+    if (user) {
+      try {
+        return JSON.parse(user).email;
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+      }
+    }
+    return "admin@example.com"; // fallback for clinical dashboard
+  };
+
   useEffect(() => {
     loadAssessments();
   }, []);
@@ -47,30 +62,19 @@ const ClinicalDashboard = () => {
     console.log("=== LOADING ASSESSMENTS (CLINICAL DASHBOARD) ===");
     
     try {
-      const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
-      console.log("📋 Raw assessments from localStorage:", storedAssessments);
+      const userEmail = getCurrentUserEmail();
       
-      // Filter out duplicate IDs and ensure unique assessments
-      const uniqueAssessments = storedAssessments.reduce((acc: any[], current: any) => {
-        const existingIndex = acc.findIndex(item => item.id === current.id);
-        if (existingIndex >= 0) {
-          // Keep the most recent one
-          if (new Date(current.completedAt) > new Date(acc[existingIndex].completedAt)) {
-            acc[existingIndex] = current;
-          }
-        } else {
-          acc.push(current);
-        }
-        return acc;
-      }, []);
+      // Get completed assessments from dataStore
+      const completedAssessments: CompletedAssessment[] = dataStore.getCompletedAssessments(userEmail);
+      console.log("📋 Completed assessments from dataStore:", completedAssessments);
       
-      // Transform to match expected interface - USE STORED RISK LEVEL
-      const transformedAssessments = uniqueAssessments.map((assessment: any) => ({
-        id: assessment.id,
-        patientRef: assessment.patientName,
+      // Transform to match expected interface
+      const transformedAssessments = completedAssessments.map((assessment: CompletedAssessment) => ({
+        id: assessment.sessionId,
+        patientRef: assessment.patientRef,
         completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
-        status: assessment.status,
-        riskLevel: assessment.riskLevel, // Use the stored risk level directly
+        status: "completed",
+        riskLevel: assessment.riskLevel,
         redFlags: assessment.urgentFlags || [],
         symptoms: {},
         priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
@@ -83,14 +87,23 @@ const ClinicalDashboard = () => {
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       });
       
-      console.log("✅ Clinical dashboard loaded unique assessments:", transformedAssessments);
+      console.log("✅ Clinical dashboard loaded assessments from dataStore:", transformedAssessments);
       setAssessments(transformedAssessments);
     } catch (error) {
       console.error("❌ Error loading assessments:", error);
     }
   };
 
-  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
+  const handleAssessmentCreated = (sessionId: string, patientRef: string, patientData: any) => {
+    // Create assessment link using dataStore
+    const userEmail = getCurrentUserEmail();
+    dataStore.createAssessmentLink(userEmail, {
+      firstName: patientData.firstName,
+      surname: patientData.surname,
+      dateOfBirth: patientData.dateOfBirth,
+      nhsId: patientData.nhsId
+    });
+
     // Refresh the assessments list
     loadAssessments();
     setShowPatientForm(false);
