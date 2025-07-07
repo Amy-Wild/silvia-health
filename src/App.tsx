@@ -16,6 +16,7 @@ import Education from "./pages/Education";
 import PartnerZone from "./pages/PartnerZone";
 import SymptomTracker from "./pages/SymptomTracker";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,17 +27,43 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          
+          {/* Protected patient routes */}
+          <Route path="/symptom-tracker" element={
+            <ProtectedRoute requiredRole="patient">
+              <SymptomTracker />
+            </ProtectedRoute>
+          } />
+          
+          {/* Protected GP routes */}
+          <Route path="/gp-dashboard" element={
+            <ProtectedRoute requiredRole="gp">
+              <GPDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/gp-results/:sessionId" element={
+            <ProtectedRoute requiredRole="gp">
+              <GPResults />
+            </ProtectedRoute>
+          } />
+          
+          {/* Protected admin routes */}
+          <Route path="/clinical-dashboard" element={
+            <ProtectedRoute requiredRole="admin">
+              <ClinicalDashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* Assessment routes - these can remain as they were */}
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
           <Route path="/patient-results/:sessionId" element={<PatientResults />} />
-          <Route path="/gp-dashboard" element={<GPDashboard />} />
-          <Route path="/gp-results/:sessionId" element={<GPResults />} />
-          <Route path="/clinical-dashboard" element={<ClinicalDashboard />} />
           <Route path="/instructions" element={<Instructions />} />
           <Route path="/education" element={<Education />} />
           <Route path="/partner-zone" element={<PartnerZone />} />
-          <Route path="/symptom-tracker" element={<SymptomTracker />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -13,30 +13,54 @@ import {
   Stethoscope,
   Brain,
   Moon,
-  Activity
+  Activity,
+  UserCheck
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+
+  const handleTrackSymptoms = () => {
+    navigate("/auth");
+  };
+
+  const handleHealthcareLogin = () => {
+    navigate("/auth");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       {/* Hero Section */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center mr-4">
                 <Heart className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Silvia</h1>
+                <h1 className="text-3xl font-bold text-gray-900">SYLVIA Health</h1>
                 <p className="text-sm text-gray-600 mt-1">Your digital health companion</p>
               </div>
             </div>
-            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-              Comprehensive menopause education, support resources, and wellness tools 
-              to help you navigate your health journey with confidence.
+            <div className="flex items-center space-x-4">
+              <Button onClick={handleTrackSymptoms} className="bg-pink-500 hover:bg-pink-600">
+                <Activity className="w-4 h-4 mr-2" />
+                Track My Symptoms
+              </Button>
+              <Button onClick={handleHealthcareLogin} variant="outline">
+                <UserCheck className="w-4 h-4 mr-2" />
+                Healthcare Login
+              </Button>
+            </div>
+          </div>
+          <div className="text-center mt-6">
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+              Comprehensive menopause education, symptom tracking, and wellness tools 
+              to help you navigate your health journey with confidence. Connect with healthcare 
+              professionals and access personalized support.
             </p>
           </div>
         </div>
@@ -67,7 +91,48 @@ const Index = () => {
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-8">
-              {/* Quick Access Cards */}
+              {/* Call to Action Cards */}
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
+                <Card className="bg-gradient-to-r from-pink-100 to-purple-100 border-pink-200 hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-xl">
+                      <Activity className="w-6 h-6 mr-3 text-pink-600" />
+                      Start Tracking Your Symptoms
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-4">
+                      Monitor your menopause journey with our comprehensive symptom tracker. 
+                      Identify patterns, share insights with your healthcare provider, and take control of your health.
+                    </p>
+                    <Button onClick={handleTrackSymptoms} className="w-full bg-pink-500 hover:bg-pink-600">
+                      <Activity className="w-4 h-4 mr-2" />
+                      Begin Symptom Tracking
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-blue-100 to-teal-100 border-blue-200 hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-xl">
+                      <Stethoscope className="w-6 h-6 mr-3 text-blue-600" />
+                      Healthcare Professional Access
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-4">
+                      Access your clinical dashboard to manage patient assessments, 
+                      review symptom data, and provide personalized care recommendations.
+                    </p>
+                    <Button onClick={handleHealthcareLogin} variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Healthcare Login
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Information Cards */}
               <div className="grid md:grid-cols-3 gap-6">
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
@@ -80,7 +145,7 @@ const Index = () => {
                     <p className="text-gray-600 mb-4">
                       Comprehensive guides covering symptoms, stages, and what to expect during your journey.
                     </p>
-                    <Button className="w-full">Explore Guides</Button>
+                    <Button className="w-full" variant="outline">Explore Guides</Button>
                   </CardContent>
                 </Card>
 
@@ -191,7 +256,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">Monitor your symptoms and identify patterns.</p>
-                  <Button className="w-full">Start Tracking</Button>
+                  <Button onClick={handleTrackSymptoms} className="w-full">Start Tracking</Button>
                 </CardContent>
               </Card>
 
@@ -275,7 +340,7 @@ const Index = () => {
           <div className="text-center text-gray-600">
             <div className="flex items-center justify-center mb-4">
               <Heart className="w-5 h-5 text-pink-500 mr-2" />
-              <span className="font-semibold">Silvia</span>
+              <span className="font-semibold">SYLVIA Health</span>
             </div>
             <p className="text-sm">
               Supporting your health journey with evidence-based information and community connection.

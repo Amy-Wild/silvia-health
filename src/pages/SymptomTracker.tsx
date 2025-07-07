@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3 } from "lucide-react";
+import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import DailyTracker from "@/components/tracker/DailyTracker";
 import TrackerAnalytics from "@/components/tracker/TrackerAnalytics";
 import TrackerHistory from "@/components/tracker/TrackerHistory";
 import TrackerEducation from "@/components/tracker/TrackerEducation";
 
 const SymptomTracker = () => {
+  const navigate = useNavigate();
   const [trackedDays, setTrackedDays] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [lastEntry, setLastEntry] = useState<string | null>(null);
@@ -25,6 +27,11 @@ const SymptomTracker = () => {
       setLastEntry(data.lastEntry || null);
     }
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_user");
+    navigate("/auth");
+  };
 
   const handleNewEntry = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -56,6 +63,15 @@ const SymptomTracker = () => {
               <Button variant="outline" size="sm">
                 <Share2 className="w-4 h-4 mr-2" />
                 Share with GP
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>

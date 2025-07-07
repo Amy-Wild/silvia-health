@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,11 +13,34 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const authUser = localStorage.getItem("auth_user");
+    if (authUser) {
+      const userData = JSON.parse(authUser);
+      // Redirect based on existing user role
+      switch (userData.role) {
+        case "patient":
+          navigate("/symptom-tracker");
+          break;
+        case "gp":
+          navigate("/gp-dashboard");
+          break;
+        case "admin":
+          navigate("/clinical-dashboard");
+          break;
+        default:
+          navigate("/");
+      }
+    }
+  }, [navigate]);
 
   // Hardcoded test users
   const testUsers = {
-    "patient@example.com": { password: "password123", role: "patient", redirect: "/" },
+    "patient@example.com": { password: "password123", role: "patient", redirect: "/symptom-tracker" },
     "gp@example.com": { password: "password123", role: "gp", redirect: "/gp-dashboard" },
     "admin@example.com": { password: "password123", role: "admin", redirect: "/clinical-dashboard" }
   };
@@ -65,8 +88,8 @@ const Auth = () => {
           <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Stethoscope className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">SILVIA Login</CardTitle>
-          <p className="text-gray-600">Access your clinical portal</p>
+          <CardTitle className="text-2xl font-bold">SYLVIA Login</CardTitle>
+          <p className="text-gray-600">Access your health portal</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
