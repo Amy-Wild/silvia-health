@@ -12,6 +12,7 @@ import { EmailService } from "@/services/EmailService";
 interface AssessmentData {
   patientRef?: string;
   age?: string;
+  dateOfBirth?: string;
   menstrualStatus?: string;
   periodsStopped?: string;
   postmenopausalBleeding?: string;
@@ -55,12 +56,18 @@ export const getDOBFromAge = (age?: string): string => {
 };
 
 export const processAssessmentData = async (assessmentData: AssessmentData, sessionId: string) => {
+  console.log("🔧 Processing assessment data:", { sessionId, assessmentData });
+  
   // Get the patient reference that was stored when the assessment was created
   const storedPatientRef = localStorage.getItem(`patient_ref_${sessionId}`);
   
-  // Normalize data
+  // Calculate dateOfBirth from age if not provided
+  const dateOfBirth = assessmentData.dateOfBirth || getDOBFromAge(assessmentData.age);
+  
+  // Normalize data with required dateOfBirth field
   const normalizedData = {
     ...assessmentData,
+    dateOfBirth: dateOfBirth,
     physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
       ? assessmentData.physicalSymptoms 
       : assessmentData.physicalSymptoms 
@@ -68,6 +75,8 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
         : [],
     bmi: calculateBMI(assessmentData.height, assessmentData.weight)?.toFixed(1)
   };
+
+  console.log("📊 Normalized data with dateOfBirth:", normalizedData);
 
   // Determine care pathway
   const determinedPath = determineCarePath(normalizedData);
@@ -81,12 +90,12 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   // Use stored patient reference or fallback to age-based reference
   const patientReference = storedPatientRef || 
     normalizedData.patientRef || 
-    `Patient (DOB: ${normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age)})`;
+    `Patient (DOB: ${dateOfBirth})`;
   
   const result = {
     sessionId: sessionId,
     patientRef: patientReference,
-    dateOfBirth: normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age),
+    dateOfBirth: dateOfBirth,
     completedAt: new Date().toISOString(),
     riskLevel,
     urgentFlags,
@@ -96,11 +105,15 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
     carePath: determinedPath
   };
 
+  console.log("✅ Assessment result generated:", result);
+
   // Store result for GP access
   localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
   
   // Clean up the patient reference storage (no longer needed)
   localStorage.removeItem(`patient_ref_${sessionId}`);
+  
+  console.log("💾 Assessment stored in localStorage");
   
   // Send email to GP (only for cases requiring GP attention)
   if (determinedPath === 'gp-urgent' || determinedPath === 'gp-routine') {
