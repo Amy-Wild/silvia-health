@@ -18,40 +18,40 @@ const PatientInstructions = () => {
         <CardHeader>
           <CardTitle className="flex items-center text-[#425563]">
             <Stethoscope className="w-5 h-5 mr-2" />
-            What Makes This Assessment Special
+            NICE NG23 Enhanced Evidence-Based Assessment
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-[#425563] font-medium">Your GP is using an evidence-based assessment aligned with NHS and NICE guidelines:</p>
+          <p className="text-[#425563] font-medium">Your GP is using NICE NG23 guidelines enhanced with the latest clinical evidence and research:</p>
           
           <div className="grid gap-3">
             <div className="bg-white p-4 rounded-lg border-l-4 border-[#dcfce7]">
               <div className="flex items-center space-x-2 mb-2">
                 <Activity className="w-4 h-4 text-[#425563]" />
-                <span className="font-semibold">Comprehensive Health Screening</span>
+                <span className="font-semibold">NICE NG23 Plus Enhanced Screening</span>
               </div>
-              <p className="text-sm text-[#425563]">We check for UTI risks, bone health, and other important factors that affect your wellbeing</p>
+              <p className="text-sm text-[#425563]">Building on NICE NG23 foundations with additional screening for UTI risks, bone health, and other important factors</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg border-l-4 border-[#ede9fe]">
               <div className="flex items-center space-x-2 mb-2">
                 <Heart className="w-4 h-4 text-[#425563]" />
-                <span className="font-semibold">Evidence-Based Recommendations</span>
+                <span className="font-semibold">Enhanced Evidence Base</span>
               </div>
-              <p className="text-sm text-[#425563]">Your results are based on NHS and NICE guidelines, alongside the latest research and medical studies</p>
+              <p className="text-sm text-[#425563]">Your results combine NICE NG23 recommendations with the latest Cochrane reviews and 2024 clinical research</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg border-l-4 border-[#dbeafe]">
               <div className="flex items-center space-x-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-[#425563]" />
-                <span className="font-semibold">Transparent Scoring</span>
+                <span className="font-semibold">Transparent Clinical Decision Making</span>
               </div>
-              <p className="text-sm text-[#425563]">You'll see exactly how your GP reaches their recommendations - no black box decisions</p>
+              <p className="text-sm text-[#425563]">You'll see exactly how your GP reaches their recommendations using NICE NG23 criteria plus enhanced evidence grading</p>
             </div>
           </div>
 
           <div className="bg-white p-3 rounded border-l-4 border-[#dbeafe]">
-            <p className="text-sm font-medium text-[#425563]">This assessment follows NHS and NICE guidelines to give you the best possible care</p>
+            <p className="text-sm font-medium text-[#425563]">This assessment follows NICE NG23 guidelines enhanced with additional clinical evidence to give you comprehensive care</p>
           </div>
         </CardContent>
       </Card>
@@ -120,7 +120,7 @@ const PatientInstructions = () => {
               <div className="w-8 h-8 bg-[#ede9fe] text-[#425563] rounded-full flex items-center justify-center font-bold">4</div>
               <div>
                 <h3 className="font-semibold">Submit & Relax</h3>
-                <p className="text-[#425563] text-sm">Once finished, your GP gets a detailed evidence-based report to discuss with you at your appointment.</p>
+                <p className="text-[#425563] text-sm">Once finished, your GP gets a detailed report based on NICE NG23 guidelines plus enhanced clinical evidence to discuss with you at your appointment.</p>
               </div>
             </div>
           </div>
@@ -131,7 +131,7 @@ const PatientInstructions = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-[#425563]">What We'll Ask You About</CardTitle>
-          <p className="text-[#425563] text-sm">Comprehensive assessment covering all aspects of your health</p>
+          <p className="text-[#425563] text-sm">NICE NG23 comprehensive assessment enhanced with additional clinical screening</p>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-3">
@@ -154,10 +154,10 @@ const PatientInstructions = () => {
               <Badge variant="outline" className="border-[#ede9fe]">Lifestyle & health habits</Badge>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge className="bg-[#dbeafe] text-[#425563]">UTI & bladder health</Badge>
+              <Badge className="bg-[#dbeafe] text-[#425563]">Enhanced: UTI & bladder health</Badge>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge className="bg-[#dcfce7] text-[#425563]">Bone health & fracture risks</Badge>
+              <Badge className="bg-[#dcfce7] text-[#425563]">Enhanced: Bone health & fracture risks</Badge>
             </div>
             <div className="flex items-center space-x-2">
               <Badge className="bg-[#ede9fe] text-[#425563]">Family & medical history</Badge>
@@ -168,8 +168,9 @@ const PatientInstructions = () => {
           </div>
           <div className="mt-4 p-3 bg-[#dbeafe] rounded-lg">
             <p className="text-sm text-[#425563]">
-              <strong>Why we ask about UTIs and bone health:</strong> Recent research shows these are closely linked to menopause 
-              and hormone changes. Catching risks early means better prevention and treatment options for you.
+              <strong>Enhanced Clinical Features:</strong> Building on NICE NG23 guidelines, we include additional screening 
+              for UTI risks and bone health based on recent research showing these are closely linked to menopause 
+              and hormone changes. Early identification means better prevention and treatment options.
             </p>
           </div>
         </CardContent>
@@ -231,7 +232,7 @@ const PatientInstructions = () => {
             If you have trouble with the assessment or technical issues, contact your GP practice directly.
             They can help you complete it or arrange an alternative.
           </p>
-          <Badge className="bg-[#ede9fe] text-[#425563]">Remember: This comprehensive assessment helps your GP provide you with the best possible care</Badge>
+          <Badge className="bg-[#ede9fe] text-[#425563]">Remember: This NICE NG23 enhanced assessment helps your GP provide you with the best possible care</Badge>
         </CardContent>
       </Card>
     </div>

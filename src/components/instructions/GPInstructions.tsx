@@ -9,7 +9,7 @@ const GPInstructions = () => {
       <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">GP User Guide</CardTitle>
-          <p className="text-blue-100">Advanced menopause assessments with evidence-based clinical insights</p>
+          <p className="text-blue-100">NICE NG23 Enhanced Evidence-Based Clinical Assessment Platform</p>
         </CardHeader>
       </Card>
 
@@ -18,46 +18,46 @@ const GPInstructions = () => {
         <CardHeader>
           <CardTitle className="flex items-center text-purple-800">
             <Stethoscope className="w-5 h-5 mr-2" />
-            Enhanced Clinical Assessment Features
+            NICE NG23 Enhanced Evidence-Based Clinical Features
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-purple-700 font-medium">Latest 2024 evidence-based enhancements beyond basic NICE NG23:</p>
+          <p className="text-purple-700 font-medium">Building on NICE NG23 foundations with enhanced 2024 evidence-based clinical features:</p>
           
           <div className="grid gap-4">
             <div className="bg-white p-4 rounded-lg border-l-4 border-red-500">
               <div className="flex items-center space-x-2 mb-2">
                 <Heart className="w-4 h-4 text-red-600" />
-                <span className="font-semibold">UTI Risk Assessment</span>
-                <Badge className="bg-red-100 text-red-800 text-xs">Cochrane 2023</Badge>
+                <span className="font-semibold">Enhanced UTI Risk Assessment</span>
+                <Badge className="bg-red-100 text-red-800 text-xs">NICE NG23 + Cochrane 2023</Badge>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Automatic screening for recurrent UTI risk factors</p>
-              <p className="text-xs text-gray-500">61% reduction in UTI recurrence with vaginal estrogen therapy</p>
+              <p className="text-sm text-gray-600 mb-2">Comprehensive screening for recurrent UTI risk factors alongside standard NICE NG23 assessment</p>
+              <p className="text-xs text-gray-500">Supporting evidence: 61% reduction in UTI recurrence with vaginal estrogen therapy</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg border-l-4 border-orange-500">
               <div className="flex items-center space-x-2 mb-2">
                 <Bone className="w-4 h-4 text-orange-600" />
-                <span className="font-semibold">Bone Health Screening</span>
-                <Badge className="bg-orange-100 text-orange-800 text-xs">FRAX Algorithm</Badge>
+                <span className="font-semibold">Enhanced Bone Health Screening</span>
+                <Badge className="bg-orange-100 text-orange-800 text-xs">NICE NG23 + FRAX Algorithm</Badge>
               </div>
-              <p className="text-sm text-gray-600 mb-2">DEXA scan recommendations based on fracture risk factors</p>
-              <p className="text-xs text-gray-500">30-40% fracture reduction with HRT for high-risk patients</p>
+              <p className="text-sm text-gray-600 mb-2">DEXA scan recommendations based on NICE NG23 criteria plus enhanced fracture risk factors</p>
+              <p className="text-xs text-gray-500">Supporting evidence: 30-40% fracture reduction with HRT for high-risk patients</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
               <div className="flex items-center space-x-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold">Advanced Risk Stratification</span>
-                <Badge className="bg-blue-100 text-blue-800 text-xs">Latest Research</Badge>
+                <span className="font-semibold">Enhanced Risk Stratification</span>
+                <Badge className="bg-blue-100 text-blue-800 text-xs">NICE NG23 + Latest Research</Badge>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Cardiovascular timing hypothesis and enhanced contraindication checking</p>
-              <p className="text-xs text-gray-500">Transparent scoring with confidence intervals for clinical decisions</p>
+              <p className="text-sm text-gray-600 mb-2">Cardiovascular timing hypothesis and enhanced contraindication checking building on NICE NG23 framework</p>
+              <p className="text-xs text-gray-500">Transparent scoring with confidence intervals supporting clinical decisions</p>
             </div>
           </div>
 
           <div className="bg-white p-3 rounded border-l-4 border-purple-500">
-            <p className="text-sm font-medium text-purple-800">✓ Evidence grading ✓ Study citations ✓ Uncertainty factors ✓ Clinical confidence scores</p>
+            <p className="text-sm font-medium text-purple-800">✓ NICE NG23 compliant ✓ Enhanced evidence grading ✓ Study citations ✓ Clinical confidence scores</p>
           </div>
         </CardContent>
       </Card>
@@ -131,7 +131,7 @@ const GPInstructions = () => {
               <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
               <div>
                 <h3 className="font-semibold">Send to Patient</h3>
-                <p className="text-gray-600 text-sm">Paste link in email/SMS or share verbally. Patient completes 10-minute comprehensive assessment on any device.</p>
+                <p className="text-gray-600 text-sm">Paste link in email/SMS or share verbally. Patient completes 10-minute NICE NG23 enhanced comprehensive assessment on any device.</p>
                 <p className="text-xs text-green-600 mt-1">✓ Enhanced with UTI and bone health screening</p>
               </div>
             </div>
@@ -153,9 +153,9 @@ const GPInstructions = () => {
             <div className="flex items-start space-x-3 p-4 border rounded-lg">
               <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
               <div>
-                <h3 className="font-semibold">Enhanced Clinical Report</h3>
-                <p className="text-gray-600 text-sm">Get immediate email notification with comprehensive clinical analysis including evidence grades and confidence scores.</p>
-                <p className="text-xs text-purple-600 mt-1">✓ NICE-compliant + latest research integrated</p>
+                <h3 className="font-semibold">NICE NG23 Enhanced Clinical Report</h3>
+                <p className="text-gray-600 text-sm">Get immediate email notification with comprehensive clinical analysis including NICE NG23 compliance plus enhanced evidence grades and confidence scores.</p>
+                <p className="text-xs text-purple-600 mt-1">✓ NICE NG23 compliant + latest research integrated</p>
               </div>
             </div>
           </div>
@@ -202,14 +202,14 @@ const GPInstructions = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <BarChart3 className="w-5 h-5 mr-2" />
-            Enhanced Clinical Features
+            NICE NG23 Enhanced Clinical Features
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Badge className="bg-green-100 text-green-800">Advanced Risk Assessment</Badge>
-              <p className="text-sm text-gray-600">UTI risk, bone health, cardiovascular factors with confidence scoring</p>
+              <Badge className="bg-green-100 text-green-800">Enhanced Risk Assessment</Badge>
+              <p className="text-sm text-gray-600">NICE NG23 plus UTI risk, bone health, cardiovascular factors with confidence scoring</p>
             </div>
             <div className="space-y-2">
               <Badge className="bg-blue-100 text-blue-800">Evidence-Based</Badge>
@@ -217,11 +217,11 @@ const GPInstructions = () => {
             </div>
             <div className="space-y-2">
               <Badge className="bg-purple-100 text-purple-800">Transparent Scoring</Badge>
-              <p className="text-sm text-gray-600">See exactly how recommendations are calculated with evidence grades</p>
+              <p className="text-sm text-gray-600">See exactly how recommendations are calculated with NICE NG23 criteria plus evidence grades</p>
             </div>
             <div className="space-y-2">
               <Badge className="bg-orange-100 text-orange-800">Comprehensive Screening</Badge>
-              <p className="text-sm text-gray-600">Red flags, contraindications, specialist referral criteria</p>
+              <p className="text-sm text-gray-600">NICE NG23 red flags, contraindications, specialist referral criteria plus enhanced screening</p>
             </div>
           </div>
         </CardContent>
@@ -256,7 +256,7 @@ const GPInstructions = () => {
           </div>
           <div className="bg-white p-3 rounded border-l-4 border-green-500">
             <p className="text-sm text-gray-700">
-              <strong>Enhanced Clinical Intelligence:</strong> Your identification system with advanced evidence-based assessment 
+              <strong>NICE NG23 Enhanced Clinical Intelligence:</strong> Your identification system with NICE NG23 enhanced evidence-based assessment 
               provides comprehensive clinical insights while maintaining complete patient anonymity and NHS compliance.
             </p>
           </div>
