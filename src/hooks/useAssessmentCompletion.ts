@@ -23,9 +23,9 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       const assessmentToStore = {
         id: sessionId!,
         session_id: sessionId!,
-        patient_ref: normalizedData.patientInfo?.name || 'Unknown Patient',
-        date_of_birth: normalizedData.patientInfo?.dateOfBirth,
-        age: normalizedData.patientInfo?.age,
+        patient_ref: normalizedData.patientRef || 'Unknown Patient',
+        date_of_birth: normalizedData.dateOfBirth,
+        age: normalizedData.age ? parseInt(normalizedData.age) : undefined,
         completed_at: new Date().toISOString(),
         risk_level: result.riskLevel || 'unknown',
         urgent_flags: result.urgentFlags || [],
