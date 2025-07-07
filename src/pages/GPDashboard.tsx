@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,31 +18,37 @@ import {
   MessageSquare,
   AlertTriangle,
   Clock,
-  BookOpen
+  BookOpen,
+  Copy,
+  CheckCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 import GPInstructions from "@/components/instructions/GPInstructions";
-
-interface Assessment {
-  id: string;
-  patientName: string;
-  dateOfBirth: string;
-  completedAt: string;
-  riskLevel: string;
-  urgentFlags: string[];
-  status: string;
-}
+import { dataStore, AssessmentLink } from "@/utils/dataStore";
 
 const GPDashboard = () => {
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [assessmentLinks, setAssessmentLinks] = useState<AssessmentLink[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPatientForm, setShowPatientForm] = useState(false);
   const { toast } = useToast();
 
+  // Get current user email from localStorage
+  const getCurrentUserEmail = () => {
+    const user = localStorage.getItem("auth_user");
+    if (user) {
+      try {
+        return JSON.parse(user).email;
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+      }
+    }
+    return "gp@example.com"; // fallback
+  };
+
   useEffect(() => {
-    loadAssessments();
+    loadAssessmentLinks();
   }, []);
 
   const handleLogout = () => {
@@ -49,47 +56,83 @@ const GPDashboard = () => {
     navigate("/auth");
   };
 
-  const loadAssessments = () => {
-    console.log("=== LOADING ASSESSMENTS (GP DASHBOARD) ===");
+  const loadAssessmentLinks = () => {
+    const userEmail = getCurrentUserEmail();
+    console.log("Loading assessment links for:", userEmail);
     
-    try {
-      const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
-      console.log("📋 Raw assessments from localStorage:", storedAssessments);
-      
-      // Filter out duplicate IDs and ensure unique assessments
-      const uniqueAssessments = storedAssessments.reduce((acc: any[], current: any) => {
-        const existingIndex = acc.findIndex(item => item.id === current.id);
-        if (existingIndex >= 0) {
-          // Keep the most recent one (or replace with current if it has more data)
-          if (new Date(current.completedAt) > new Date(acc[existingIndex].completedAt)) {
-            acc[existingIndex] = current;
-          }
-        } else {
-          acc.push(current);
-        }
-        return acc;
-      }, []);
-      
-      // Sort by completion date (most recent first)
-      const sortedAssessments = uniqueAssessments.sort((a: any, b: any) => {
-        const aTime = new Date(a.completedAt).getTime();
-        const bTime = new Date(b.completedAt).getTime();
-        return bTime - aTime;
-      });
-      
-      console.log("✅ Loaded and sorted unique assessments:", sortedAssessments);
-      setAssessments(sortedAssessments);
-    } catch (error) {
-      console.error("❌ Error loading assessments:", error);
-    }
+    const links = dataStore.getAssessmentLinks(userEmail);
+    setAssessmentLinks(links);
+    console.log("Loaded assessment links:", links);
   };
 
-  const filteredAssessments = assessments.filter(assessment =>
-    assessment.patientName.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAssessmentLinks = assessmentLinks.filter(link =>
+    (link.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    (link.surname?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    link.sessionId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleAssessmentCreated = (sessionId: string, patientRef: string, patientData: any) => {
+    console.log("Assessment created callback:", { sessionId, patientRef, patientData });
+    
+    // Create assessment link using dataStore
+    const userEmail = getCurrentUserEmail();
+    const assessmentLink = dataStore.createAssessmentLink(userEmail, {
+      firstName: patientData.firstName,
+      surname: patientData.surname,
+      dateOfBirth: patientData.dateOfBirth,
+      nhsId: patientData.nhsId
+    });
+
+    // Generate the assessment URL
+    const patientRefEncoded = encodeURIComponent(`${patientData.firstName} ${patientData.surname}`);
+    const assessmentUrl = `${window.location.origin}/patient-assessment/${assessmentLink.sessionId}?patientRef=${patientRefEncoded}`;
+
+    // Show success message with copy functionality
+    toast({
+      title: "Assessment Link Created Successfully!",
+      description: (
+        <div className="space-y-2">
+          <p>Assessment link has been generated for {patientRef}</p>
+          <div className="flex items-center space-x-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(assessmentUrl);
+                toast({
+                  title: "Link Copied!",
+                  description: "Assessment link copied to clipboard",
+                });
+              }}
+            >
+              <Copy className="w-4 h-4 mr-1" />
+              Copy Link
+            </Button>
+          </div>
+        </div>
+      ),
+      duration: 10000,
+    });
+
+    // Refresh the assessments list and close the form
+    loadAssessmentLinks();
+    setShowPatientForm(false);
+  };
+
+  const handleCopyLink = (link: AssessmentLink) => {
+    const patientRefEncoded = encodeURIComponent(`${link.firstName || ''} ${link.surname || ''}`.trim());
+    const assessmentUrl = `${window.location.origin}/patient-assessment/${link.sessionId}?patientRef=${patientRefEncoded}`;
+    
+    navigator.clipboard.writeText(assessmentUrl).then(() => {
+      toast({
+        title: "Link Copied!",
+        description: "Assessment link copied to clipboard",
+      });
+    });
   };
 
   const navigateToResults = (sessionId: string) => {
@@ -97,21 +140,21 @@ const GPDashboard = () => {
     navigate(`/gp-results/${sessionId}`);
   };
 
-  const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    // Refresh the assessments list
-    loadAssessments();
-    setShowPatientForm(false);
-  };
-
-  const handleEmail = (assessment: Assessment) => {
-    const subject = `Assessment Results for ${assessment.patientName}`;
-    const body = `Dear ${assessment.patientName},\n\nYour recent health assessment has been completed. Please contact the surgery to discuss your results.\n\nBest regards,\nYour Healthcare Team`;
+  const handleEmail = (link: AssessmentLink) => {
+    const patientName = `${link.firstName || ''} ${link.surname || ''}`.trim();
+    const subject = `Health Assessment Link for ${patientName}`;
+    const patientRefEncoded = encodeURIComponent(patientName);
+    const assessmentUrl = `${window.location.origin}/patient-assessment/${link.sessionId}?patientRef=${patientRefEncoded}`;
+    const body = `Dear ${patientName},\n\nPlease complete your health assessment using this secure link:\n${assessmentUrl}\n\nThis link will expire in 48 hours.\n\nBest regards,\nYour Healthcare Team`;
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl, '_blank');
   };
 
-  const handleCopySMS = (assessment: Assessment) => {
-    const smsText = `Please contact the surgery regarding your recent assessment. Call: 01234 567890`;
+  const handleCopySMS = (link: AssessmentLink) => {
+    const patientName = `${link.firstName || ''} ${link.surname || ''}`.trim();
+    const patientRefEncoded = encodeURIComponent(patientName);
+    const assessmentUrl = `${window.location.origin}/patient-assessment/${link.sessionId}?patientRef=${patientRefEncoded}`;
+    const smsText = `Hi ${patientName}, please complete your health assessment: ${assessmentUrl} (expires in 48hrs)`;
     navigator.clipboard.writeText(smsText).then(() => {
       toast({
         title: "SMS template copied to clipboard",
@@ -120,52 +163,38 @@ const GPDashboard = () => {
     });
   };
 
-  // NICE NG23 compliant risk badge mapping
-  const getRiskBadgeClass = (riskLevel: string) => {
-    console.log("=== GP DASHBOARD RISK BADGE MAPPING ===");
-    console.log("Risk level received:", riskLevel);
-    
-    switch (riskLevel.toLowerCase()) {
-      case 'red':
-      case 'urgent':
-      case 'high':
-        console.log("Mapping to HIGH RISK (red)");
-        return 'bg-red-500 hover:bg-red-600 text-white border-red-600';
-      case 'amber':
-      case 'medium':
-      case 'moderate':
-        console.log("Mapping to MODERATE RISK (amber)");
-        return 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600';
-      case 'green':
-      case 'low':
+  const getStatusBadge = (link: AssessmentLink) => {
+    switch (link.status) {
+      case 'active':
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Active</Badge>;
+      case 'completed':
+        return <Badge className="bg-blue-500 hover:bg-blue-600 text-white">Completed</Badge>;
+      case 'expired':
+        return <Badge variant="destructive">Expired</Badge>;
       default:
-        console.log("Mapping to LOW RISK (green)");
-        return 'bg-green-500 hover:bg-green-600 text-white border-green-600';
+        return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
-  const getRiskLabel = (riskLevel: string) => {
-    switch (riskLevel.toLowerCase()) {
-      case 'red':
-      case 'urgent':
-      case 'high':
-        return 'HIGH RISK';
-      case 'amber':
-      case 'medium':
-      case 'moderate':
-        return 'MODERATE RISK';
-      case 'green':
-      case 'low':
-      default:
-        return 'LOW RISK';
-    }
-  };
-
-  const getPriorityIcon = (assessment: Assessment) => {
-    if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
+  const getPriorityIcon = (link: AssessmentLink) => {
+    if (link.status === 'expired') {
       return <AlertTriangle className="w-4 h-4 text-red-500" />;
     }
     return <Clock className="w-4 h-4 text-gray-500" />;
+  };
+
+  const getExpiryText = (expiresAt: string) => {
+    const expiryDate = new Date(expiresAt);
+    const now = new Date();
+    const hoursLeft = Math.max(0, Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60)));
+    
+    if (hoursLeft <= 0) {
+      return "Expired";
+    } else if (hoursLeft < 24) {
+      return `${hoursLeft}h left`;
+    } else {
+      return `${Math.floor(hoursLeft / 24)}d ${hoursLeft % 24}h left`;
+    }
   };
 
   return (
@@ -179,7 +208,7 @@ const GPDashboard = () => {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SILVIA Clinical Portal</h1>
+                <h1 className="text-xl font-bold text-gray-900">SYLVIA Clinical Portal</h1>
                 <p className="text-sm text-gray-600">
                   <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment
                 </p>
@@ -226,11 +255,11 @@ const GPDashboard = () => {
 
           <TabsContent value="assessments">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">My Patient Assessments</h2>
+              <h2 className="text-2xl font-bold text-gray-800">My Patient Assessment Links</h2>
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search by patient name..."
+                  placeholder="Search by patient name or session ID..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
@@ -241,10 +270,10 @@ const GPDashboard = () => {
               </div>
             </div>
 
-            {filteredAssessments.length > 0 ? (
+            {filteredAssessmentLinks.length > 0 ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
+                  <CardTitle>Assessment Links ({filteredAssessmentLinks.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -252,62 +281,70 @@ const GPDashboard = () => {
                       <TableRow>
                         <TableHead>Patient</TableHead>
                         <TableHead>Date of Birth</TableHead>
-                        <TableHead>Risk Level</TableHead>
-                        <TableHead>Red Flags</TableHead>
-                        <TableHead>Completed</TableHead>
+                        <TableHead>NHS ID</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead>Created</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredAssessments.map((assessment, index) => (
-                        <TableRow key={`${assessment.id}-${index}`}>
+                      {filteredAssessmentLinks.map((link, index) => (
+                        <TableRow key={`${link.sessionId}-${index}`}>
                           <TableCell>
                             <div className="flex items-center space-x-2">
-                              {getPriorityIcon(assessment)}
+                              {getPriorityIcon(link)}
                               <span className="font-medium">
-                                {assessment.patientName}
+                                {`${link.firstName || ''} ${link.surname || ''}`.trim() || 'Anonymous'}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-gray-600">
-                            {assessment.dateOfBirth}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getRiskBadgeClass(assessment.riskLevel)}>
-                              {getRiskLabel(assessment.riskLevel)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {assessment.urgentFlags && assessment.urgentFlags.length > 0 ? (
-                              <Badge variant="destructive" className="text-xs">
-                                {assessment.urgentFlags.length} Red Flag(s)
-                              </Badge>
-                            ) : (
-                              <span className="text-gray-500">None</span>
-                            )}
+                            {link.dateOfBirth || '-'}
                           </TableCell>
                           <TableCell className="text-sm text-gray-600">
-                            {new Date(assessment.completedAt).toLocaleDateString('en-GB')}
+                            {link.nhsId || '-'}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(link)}
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {getExpiryText(link.expiresAt)}
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {new Date(link.createdAt).toLocaleDateString('en-GB')}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
+                              {link.status === 'active' && (
+                                <Button 
+                                  onClick={() => handleCopyLink(link)} 
+                                  variant="outline" size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white border-green-600"
+                                >
+                                  <Copy className="w-4 h-4 mr-1" />
+                                  Copy Link
+                                </Button>
+                              )}
+                              {link.status === 'completed' && (
+                                <Button 
+                                  onClick={() => navigateToResults(link.sessionId)} 
+                                  variant="outline" size="sm"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View Results
+                                </Button>
+                              )}
                               <Button 
-                                onClick={() => navigateToResults(assessment.id)} 
-                                variant="outline" size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                              >
-                                <Eye className="w-4 h-4 mr-1" />
-                                View Results
-                              </Button>
-                              <Button 
-                                onClick={() => handleEmail(assessment)} 
+                                onClick={() => handleEmail(link)} 
                                 variant="outline" size="sm"
                               >
                                 <Mail className="w-4 h-4 mr-1" />
                                 Email
                               </Button>
                               <Button 
-                                onClick={() => handleCopySMS(assessment)} 
+                                onClick={() => handleCopySMS(link)} 
                                 variant="outline" size="sm"
                               >
                                 <MessageSquare className="w-4 h-4 mr-1" />
@@ -326,9 +363,9 @@ const GPDashboard = () => {
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Stethoscope className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessments Found</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessment Links Found</h3>
                 <p className="text-gray-500 mb-4">
-                  {searchQuery ? "No assessments match your search criteria." : "Create your first patient assessment to get started."}
+                  {searchQuery ? "No assessment links match your search criteria." : "Create your first patient assessment link to get started."}
                 </p>
                 {!searchQuery && (
                   <Button 
@@ -336,7 +373,7 @@ const GPDashboard = () => {
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Create New Assessment
+                    Create New Assessment Link
                   </Button>
                 )}
               </div>
