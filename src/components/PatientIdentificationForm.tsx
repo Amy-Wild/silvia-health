@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,7 +98,14 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     const sessionId = generateSessionId();
     const assessmentLink = `${window.location.origin}/patient-assessment/${sessionId}`;
     
+    console.log("=== CREATING ASSESSMENT LINK ===");
+    console.log("SessionId:", sessionId);
+    console.log("Patient Reference:", patientRef);
+    console.log("Assessment Link:", assessmentLink);
+    
+    // Store the patient reference with the session ID for later retrieval
     localStorage.setItem(`patient_ref_${sessionId}`, patientRef);
+    console.log("💾 Stored patient reference for sessionId:", sessionId, "->", patientRef);
     
     setCreatedLink(assessmentLink);
     setPatientReference(patientRef);

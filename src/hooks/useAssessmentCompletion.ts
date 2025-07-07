@@ -26,10 +26,14 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       
       console.log("📊 Assessment processed:", { result, determinedPath });
       
-      // Create assessment with unique ID
+      // Get the stored patient reference from localStorage (set during link creation)
+      const storedPatientRef = localStorage.getItem(`patient_ref_${sessionId}`);
+      console.log("📋 Retrieved patient reference for sessionId:", sessionId, "->", storedPatientRef);
+      
+      // Create assessment with proper patient identification
       const assessment = {
-        id: sessionId, // Use the actual sessionId, not a placeholder
-        patientName: assessmentData.patientRef || "Anonymous Patient",
+        id: sessionId,
+        patientName: storedPatientRef || assessmentData.patientRef || "Anonymous Patient",
         dateOfBirth: assessmentData.dateOfBirth || "",
         completedAt: new Date().toISOString(),
         riskLevel: result.riskLevel.toLowerCase(),
@@ -37,8 +41,9 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         status: "completed"
       };
 
-      console.log("=== SAVING ASSESSMENT WITH UNIQUE ID ===");
+      console.log("=== SAVING ASSESSMENT WITH PATIENT REFERENCE ===");
       console.log("SessionId being used:", sessionId);
+      console.log("Patient reference used:", storedPatientRef);
       console.log("Assessment to save:", assessment);
 
       // Get existing assessments and filter out any with the same ID (avoid duplicates)
@@ -52,7 +57,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       filteredAssessments.push(assessment);
       localStorage.setItem('assessments', JSON.stringify(filteredAssessments));
       
-      console.log("💾 Assessment saved to localStorage with unique ID:", assessment);
+      console.log("💾 Assessment saved to localStorage with patient reference:", assessment);
       console.log("Final assessments array:", JSON.parse(localStorage.getItem('assessments') || '[]'));
 
       // Route based on care pathway
