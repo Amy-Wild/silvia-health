@@ -1,207 +1,288 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Stethoscope, 
   Heart, 
-  Brain, 
-  Activity, 
-  Users, 
   BookOpen, 
-  Calendar,
-  UserPlus,
-  LogIn
+  Users, 
+  Video, 
+  ArrowRight, 
+  CheckCircle,
+  Stethoscope,
+  Brain,
+  Moon,
+  Activity
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/components/auth/AuthProvider";
 
 const Index = () => {
-  const { user, userRole } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <header className="bg-white border-b shadow-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center mr-4">
+                <Heart className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SILVIA Health</h1>
-                <p className="text-sm text-gray-600">
-                  <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment
-                </p>
+                <h1 className="text-3xl font-bold text-gray-900">Silvia</h1>
+                <p className="text-sm text-gray-600 mt-1">Your digital health companion</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                    <Activity className="w-4 h-4 mr-1" />
-                    {userRole === 'gp' ? 'GP Account' : userRole === 'clinical_admin' ? 'Admin' : 'Patient'}
-                  </Badge>
-                  {userRole === 'gp' && (
-                    <Button asChild>
-                      <Link to="/gp/dashboard">GP Dashboard</Link>
-                    </Button>
-                  )}
-                  {userRole === 'clinical_admin' && (
-                    <Button asChild>
-                      <Link to="/clinical/dashboard">Clinical Dashboard</Link>
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" asChild>
-                    <Link to="/auth">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
-                    </Link>
-                  </Button>
-                  <Button asChild>
-                    <Link to="/auth">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Sign Up
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+              Comprehensive menopause education, support resources, and wellness tools 
+              to help you navigate your health journey with confidence.
+            </p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Comprehensive Menopause
-            <span className="text-blue-600"> Assessment</span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Evidence-based menopause assessment tool designed for healthcare professionals and patients. 
-            Get personalized insights and treatment recommendations.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-              <Link to="/patient-assessment/new">
-                <Heart className="w-5 h-5 mr-2" />
-                Start Assessment
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/education">
-                <BookOpen className="w-5 h-5 mr-2" />
-                Learn More
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Brain className="w-6 h-6 text-blue-600" />
-              </div>
-              <CardTitle>Comprehensive Assessment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Complete symptom evaluation covering physical, emotional, and lifestyle factors affecting menopause.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <Activity className="w-6 h-6 text-green-600" />
-              </div>
-              <CardTitle>Evidence-Based</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Built on clinical guidelines and research-backed assessment criteria for accurate evaluation.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
-              </div>
-              <CardTitle>Patient & Provider</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Designed for both patients and healthcare providers with secure data sharing capabilities.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Access Section */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 mb-16">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Access</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
-              <Link to="/instructions">
-                <BookOpen className="w-6 h-6" />
-                <span>Instructions</span>
-              </Link>
-            </Button>
-            
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
-              <Link to="/education">
-                <Brain className="w-6 h-6" />
-                <span>Education</span>
-              </Link>
-            </Button>
-            
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
-              <Link to="/partner-zone">
-                <Users className="w-6 h-6" />
-                <span>Partner Zone</span>
-              </Link>
-            </Button>
-            
-            {user && userRole === 'patient' && (
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2" asChild>
-                <Link to="/symptom-tracker">
-                  <Calendar className="w-6 h-6" />
-                  <span>Symptom Tracker</span>
-                </Link>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Navigation Tabs */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {[
+              { id: "overview", label: "Overview", icon: Heart },
+              { id: "symptoms", label: "Understanding Symptoms", icon: Activity },
+              { id: "wellness", label: "Wellness Tools", icon: Brain },
+              { id: "support", label: "Support & Community", icon: Users }
+            ].map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "outline"}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex items-center"
+              >
+                <tab.icon className="w-4 h-4 mr-2" />
+                {tab.label}
               </Button>
-            )}
+            ))}
           </div>
-        </div>
 
-        {/* Call to Action */}
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Begin?</h3>
-          <p className="text-gray-600 mb-6">
-            Take the first step towards understanding your menopause journey with our comprehensive assessment.
-          </p>
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-            <Link to="/patient-assessment/new">
-              Start Your Assessment Now
-            </Link>
-          </Button>
+          {/* Overview Tab */}
+          {activeTab === "overview" && (
+            <div className="space-y-8">
+              {/* Quick Access Cards */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
+                      Learn About Menopause
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Comprehensive guides covering symptoms, stages, and what to expect during your journey.
+                    </p>
+                    <Button className="w-full">Explore Guides</Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Video className="w-5 h-5 mr-2 text-green-600" />
+                      Video Library
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Expert interviews, exercise routines, and practical tips from healthcare professionals.
+                    </p>
+                    <Button className="w-full" variant="outline">Watch Videos</Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Users className="w-5 h-5 mr-2 text-purple-600" />
+                      Community Support
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Connect with others on similar journeys and share experiences in a supportive environment.
+                    </p>
+                    <Button className="w-full" variant="outline">Join Community</Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Assessment Integration Notice */}
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <Stethoscope className="w-6 h-6 text-blue-600 mr-3" />
+                    <h3 className="text-lg font-semibold text-blue-900">Referred by Your GP?</h3>
+                  </div>
+                  <p className="text-blue-800 mb-4">
+                    If you've completed a health assessment with your GP, you may have been directed here 
+                    to explore additional resources and educational content tailored to your needs.
+                  </p>
+                  <div className="flex items-center text-sm text-blue-700">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    <span>Personalized content based on your assessment</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Symptoms Tab */}
+          {activeTab === "symptoms" && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Common Symptoms</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      "Hot flashes and night sweats",
+                      "Irregular periods",
+                      "Sleep disturbances",
+                      "Mood changes",
+                      "Memory and concentration issues",
+                      "Physical aches and pains"
+                    ].map((symptom, index) => (
+                      <div key={index} className="flex items-center">
+                        <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                        <span>{symptom}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Understanding Your Experience</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Every woman's menopause journey is unique. Learn about the different stages 
+                    and how symptoms can vary from person to person.
+                  </p>
+                  <Button>
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Read Full Guide
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Wellness Tab */}
+          {activeTab === "wellness" && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="w-5 h-5 mr-2" />
+                    Symptom Tracker
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">Monitor your symptoms and identify patterns.</p>
+                  <Button className="w-full">Start Tracking</Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Moon className="w-5 h-5 mr-2" />
+                    Sleep Support
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">Tools and tips for better sleep during menopause.</p>
+                  <Button className="w-full" variant="outline">Explore Tools</Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Brain className="w-5 h-5 mr-2" />
+                    Mindfulness
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">Meditation and relaxation techniques.</p>
+                  <Button className="w-full" variant="outline">Try Now</Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Support Tab */}
+          {activeTab === "support" && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Connect with Others</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Join our supportive community where you can share experiences, 
+                    ask questions, and learn from others going through similar journeys.
+                  </p>
+                  <Button>Join Community Forum</Button>
+                </CardContent>
+              </Card>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <Users className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Discussion Groups</h3>
+                    <p className="text-sm text-gray-600">Topic-focused conversations</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <Heart className="w-8 h-8 text-pink-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Peer Support</h3>
+                    <p className="text-sm text-gray-600">One-on-one connections</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Expert Q&A</h3>
+                    <p className="text-sm text-gray-600">Professional guidance</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-sm border-t mt-16">
+      <footer className="bg-gray-50 border-t mt-16">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-gray-600">
-            <p>&copy; 2024 SILVIA Health. Supporting women through their menopause journey.</p>
+            <div className="flex items-center justify-center mb-4">
+              <Heart className="w-5 h-5 text-pink-500 mr-2" />
+              <span className="font-semibold">Silvia</span>
+            </div>
+            <p className="text-sm">
+              Supporting your health journey with evidence-based information and community connection.
+            </p>
+            <p className="text-xs mt-2 text-gray-500">
+              Always consult with your healthcare provider for personalized medical advice.
+            </p>
           </div>
         </div>
       </footer>

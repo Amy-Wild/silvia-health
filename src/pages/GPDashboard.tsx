@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Stethoscope,
   Plus,
@@ -12,36 +12,58 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
-import { loadAllAssessments, type StoredAssessment } from "@/utils/assessmentStorage";
+
+interface Assessment {
+  id: string;
+  patientRef: string;
+  completedAt: string;
+  riskLevel: string;
+}
 
 const GPDashboard = () => {
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<StoredAssessment[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPatientForm, setShowPatientForm] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadAssessments();
   }, []);
 
-  const loadAssessments = async () => {
-    console.log('🔍 GP Dashboard: Loading all assessments...');
-    setLoading(true);
-    try {
-      const allAssessments = await loadAllAssessments();
-      console.log('📊 GP Dashboard: Raw data from storage:', allAssessments);
-      console.log('📊 GP Dashboard: Fetched assessments', allAssessments);
-      setAssessments(allAssessments);
-    } catch (error) {
-      console.error("❌ GP Dashboard: Error loading assessments:", error);
-    } finally {
-      setLoading(false);
+  const loadAssessments = () => {
+    // Load assessments from local storage
+    const storedAssessments: Assessment[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('assessment_')) {
+        const assessmentData = localStorage.getItem(key);
+        if (assessmentData) {
+          try {
+            const assessment = JSON.parse(assessmentData);
+            storedAssessments.push({
+              id: assessment.sessionId,
+              patientRef: assessment.patientRef,
+              completedAt: assessment.completedAt ? new Date(assessment.completedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
+              riskLevel: assessment.riskLevel
+            });
+          } catch (error) {
+            console.error("Error parsing assessment data:", error);
+          }
+        }
+      }
     }
+    // Sort by completion date (most recent first) - use the original completedAt for sorting
+    storedAssessments.sort((a, b) => {
+      const aTime = new Date(a.completedAt.split('/').reverse().join('-')).getTime();
+      const bTime = new Date(b.completedAt.split('/').reverse().join('-')).getTime();
+      return bTime - aTime;
+    });
+    console.log("Loaded assessments:", storedAssessments);
+    setAssessments(storedAssessments);
   };
 
   const filteredAssessments = assessments.filter(assessment =>
-    assessment.patient_ref.toLowerCase().includes(searchQuery.toLowerCase())
+    assessment.patientRef.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,13 +71,11 @@ const GPDashboard = () => {
   };
 
   const navigateToResults = (sessionId: string) => {
-    console.log("Navigating to results for sessionId:", sessionId);
-    navigate(`/gp/results/${sessionId}`);
+    navigate(`/gp-results/${sessionId}`);
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
-    console.log("Assessment created:", sessionId, patientRef);
-    // Refresh the assessments list
+    // Refresh the assessments list to show the new entry (though it won't be completed yet)
     loadAssessments();
     setShowPatientForm(false);
   };
@@ -91,14 +111,6 @@ const GPDashboard = () => {
       case 'low':
       default:
         return 'LOW RISK';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-GB');
-    } catch (error) {
-      return 'Unknown date';
     }
   };
 
@@ -139,9 +151,7 @@ const GPDashboard = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            My Patient Assessments ({filteredAssessments.length})
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">My Patient Assessments</h2>
           <div className="relative">
             <Input
               type="text"
@@ -156,26 +166,19 @@ const GPDashboard = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <Stethoscope className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-500">Loading assessments...</p>
-          </div>
-        ) : filteredAssessments.length > 0 ? (
+        {filteredAssessments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAssessments.map((assessment) => (
-              <Card key={assessment.session_id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
+              <Card key={assessment.id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{assessment.patient_ref}</CardTitle>
+                  <CardTitle className="text-lg font-semibold">{assessment.patientRef}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Completed: {formatDate(assessment.completed_at)}</p>
-                  <Badge className={`mt-2 ${getRiskBadgeClass(assessment.risk_level)}`}>
-                    {getRiskLabel(assessment.risk_level)}
+                  <p className="text-gray-600">Completed: {assessment.completedAt}</p>
+                  <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
+                    {getRiskLabel(assessment.riskLevel)}
                   </Badge>
-                  <Button onClick={() => navigateToResults(assessment.session_id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button onClick={() => navigateToResults(assessment.id)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                     View Results
                   </Button>
                 </CardContent>

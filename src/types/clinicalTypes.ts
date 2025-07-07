@@ -2,8 +2,7 @@
 export interface PatientAssessmentData {
   // Core Demographics
   patientRef?: string;
-  age?: string; // Now calculated from dateOfBirth
-  dateOfBirth: string; // Required field
+  age: string;
   occupation?: string;
   
   // Clinical History
@@ -60,9 +59,6 @@ export interface PatientAssessmentData {
   // Additional Information
   primaryConcern?: string;
   additionalInfo?: string;
-  
-  // Age-related risk factors (calculated)
-  ageRelatedRisks?: string[];
   
   // Consent and Metadata
   consentData?: ConsentData;

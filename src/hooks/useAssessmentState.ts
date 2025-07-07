@@ -6,6 +6,7 @@ import type { PatientAssessmentData } from "@/types/clinicalTypes";
 export const useAssessmentState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [assessmentData, setAssessmentData] = useState<PatientAssessmentData>({
+    age: "",
     dateOfBirth: "",
     occupation: "",
     primaryConcern: "",

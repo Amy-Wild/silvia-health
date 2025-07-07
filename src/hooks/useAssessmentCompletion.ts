@@ -1,9 +1,9 @@
 
+
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
 import { useToast } from "@/hooks/use-toast";
-import { storeAssessment } from "@/utils/assessmentStorage";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
 export const useAssessmentCompletion = (sessionId: string | undefined) => {
@@ -12,34 +12,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
     try {
-      console.log("🔄 Processing assessment completion for sessionId:", sessionId, "data:", assessmentData);
-      
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
-      
-      console.log("✅ Assessment processed, determined path:", determinedPath);
-      console.log("📊 Normalized data:", normalizedData);
-
-      // Create assessment object for storage
-      const assessmentToStore = {
-        id: sessionId!,
-        session_id: sessionId!,
-        patient_ref: normalizedData.patientRef || 'Unknown Patient',
-        date_of_birth: normalizedData.dateOfBirth,
-        age: normalizedData.age ? parseInt(normalizedData.age) : undefined,
-        completed_at: new Date().toISOString(),
-        risk_level: result.riskLevel || 'unknown',
-        urgent_flags: result.urgentFlags || [],
-        clinical_summary: result.clinicalSummary || {},
-        recommendations: result.recommendations || {},
-        raw_data: assessmentData,
-        care_path: determinedPath
-      };
-
-      console.log("💾 Assessment completed, saving to storage:", sessionId, assessmentToStore);
-      
-      // Save the assessment
-      const saveResult = await storeAssessment(assessmentToStore);
-      console.log("✅ Save result:", saveResult);
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education') {
@@ -73,7 +46,6 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         navigate(`/patient-results/${sessionId}`);
       }
     } catch (error) {
-      console.error("❌ Error processing assessment:", error);
       toast({
         title: "Error", 
         description: "Failed to process assessment. Please try again.",
@@ -84,3 +56,4 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   return { processAssessmentCompletion };
 };
+

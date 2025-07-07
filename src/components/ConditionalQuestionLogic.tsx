@@ -1,5 +1,5 @@
 
-import { calculateBMI, calculateAgeFromDOB, assessAgeRelatedRisks } from "@/utils/assessmentProcessor";
+import { calculateBMI } from "@/utils/assessmentProcessor";
 
 // Function to determine the appropriate care path based on assessment data
 export const determineCarePath = (data: any): 'self-care' | 'education' | 'gp-routine' | 'gp-urgent' => {
@@ -24,10 +24,6 @@ export const determineCarePath = (data: any): 'self-care' | 'education' | 'gp-ro
 
 // Function to generate a clinical summary based on assessment data
 export const generateClinicalSummary = (data: any) => {
-  // Calculate age from date of birth if available
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
-  const ageString = calculatedAge ? calculatedAge.toString() : data.age || 'Unknown';
-  
   // Vasomotor Symptoms
   const vasomotor = {
     severity: data.hotFlashFrequency || 'None',
@@ -99,15 +95,7 @@ export const generateClinicalSummary = (data: any) => {
 
   const patientComments = data.patientComments || '';
 
-  // Add age-related information
-  const ageInfo = {
-    age: ageString,
-    dateOfBirth: data.dateOfBirth || 'Not provided',
-    ageRelatedRisks: calculatedAge ? assessAgeRelatedRisks(calculatedAge) : []
-  };
-
   return {
-    ageInfo,
     vasomotor,
     psychological,
     medicalHistory,
@@ -121,7 +109,6 @@ export const generateClinicalSummary = (data: any) => {
 // Function to generate NHS recommendations based on assessment data and risk level
 export const generateNHSRecommendations = (data: any, riskLevel: string): string[] => {
   const recommendations: string[] = [];
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
 
   if (riskLevel === 'red' || riskLevel === 'urgent') {
     recommendations.push("🚨 URGENT ACTION REQUIRED: Immediate referral to specialist");
@@ -133,23 +120,11 @@ export const generateNHSRecommendations = (data: any, riskLevel: string): string
     recommendations.push("ℹ️ EDUCATION: Provide patient education resources");
   }
 
-  // Add age-specific recommendations based on NICE NG23
-  if (calculatedAge) {
-    if (calculatedAge < 40) {
-      recommendations.push("🔬 SPECIALIST REFERRAL: Consider early menopause - endocrinology referral");
-    } else if (calculatedAge >= 55 && data.postmenopausalBleeding === 'yes') {
-      recommendations.push("🚨 URGENT: Post-menopausal bleeding - 2-week-wait referral");
-    } else if (calculatedAge >= 60) {
-      recommendations.push("🦴 BONE HEALTH: Consider osteoporosis screening and cardiovascular risk assessment");
-    }
-  }
-
   return recommendations;
 };
 
 // Function to generate patient guidance based on assessment data
 export const generatePatientGuidance = (data: any): string => {
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
   let guidance = "Based on your assessment, here's some general guidance:\n\n";
 
   if (data.hotFlashFrequency === 'severe') {
@@ -164,36 +139,14 @@ export const generatePatientGuidance = (data: any): string => {
     guidance += "- Practice relaxation techniques and mindfulness to improve mental wellbeing.\n";
   }
 
-  // Add age-specific guidance
-  if (calculatedAge) {
-    if (calculatedAge < 40) {
-      guidance += "- Your age suggests possible early menopause - this requires specialist evaluation.\n";
-    } else if (calculatedAge >= 55) {
-      guidance += "- As you are post-menopausal, any unusual bleeding should be reported immediately to your GP.\n";
-    }
-  }
-
   return guidance;
 };
 
 // Function to calculate the risk level based on assessment data
 export const calculateRiskLevel = (data: any): string => {
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
-  
   // Check for high-risk factors first
   if (data.postmenopausalBleeding === 'yes' || data.unexplainedWeightLoss === 'yes' || data.severePelvicPain === 'yes') {
     return 'red';
-  }
-
-  // Age-specific risk factors based on NICE NG23
-  if (calculatedAge) {
-    if (calculatedAge < 40 && (data.menstrualStatus === 'stopped' || data.hotFlashFrequency === 'severe')) {
-      return 'red'; // Early menopause requires urgent assessment
-    }
-    
-    if (calculatedAge >= 55 && data.postmenopausalBleeding === 'yes') {
-      return 'red'; // Post-menopausal bleeding is always urgent
-    }
   }
 
   // Check for severe mental health symptoms
@@ -218,7 +171,6 @@ export const calculateRiskLevel = (data: any): string => {
 // Function to get urgent flags based on assessment data
 export const getUrgentFlags = (data: any): string[] => {
   const urgentFlags: string[] = [];
-  const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
 
   if (data.postmenopausalBleeding === 'yes') {
     urgentFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
@@ -244,24 +196,12 @@ export const getUrgentFlags = (data: any): string[] => {
     urgentFlags.push("🟠 AMBER FLAG: Patient reports occasional thoughts of self-harm");
   }
 
-  // Age-specific urgent flags based on NICE NG23
-  if (calculatedAge) {
-    if (calculatedAge < 40 && (data.menstrualStatus === 'stopped' || data.hotFlashFrequency === 'severe')) {
-      urgentFlags.push("🚨 RED FLAG: Possible early menopause (age < 40) - specialist referral required");
-    }
-    
-    if (calculatedAge >= 55 && data.postmenopausalBleeding === 'yes') {
-      urgentFlags.push("🚨 RED FLAG: Post-menopausal bleeding (age ≥55) - urgent 2-week-wait referral");
-    }
-  }
-
   return urgentFlags;
 };
 
 // Function to get red flags based on assessment data
 export const getRedFlags = (data: any): string[] => {
     const redFlags: string[] = [];
-    const calculatedAge = data.dateOfBirth ? calculateAgeFromDOB(data.dateOfBirth) : null;
   
     if (data.postmenopausalBleeding === 'yes') {
       redFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
@@ -277,13 +217,6 @@ export const getRedFlags = (data: any): string[] => {
 
     if (data.selfHarmRisk === 'frequent') {
       redFlags.push("🚨 RED FLAG: Frequent thoughts of self-harm");
-    }
-
-    // Age-specific red flags
-    if (calculatedAge) {
-      if (calculatedAge < 40 && (data.menstrualStatus === 'stopped' || data.hotFlashFrequency === 'severe')) {
-        redFlags.push("🚨 RED FLAG: Early menopause (age < 40)");
-      }
     }
   
     return redFlags;

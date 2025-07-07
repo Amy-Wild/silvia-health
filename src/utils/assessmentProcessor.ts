@@ -1,3 +1,4 @@
+
 import { 
   calculateRiskLevel, 
   generateClinicalSummary, 
@@ -7,13 +8,10 @@ import {
   getUrgentFlags 
 } from "@/components/ConditionalQuestionLogic";
 import { EmailService } from "@/services/EmailService";
-import { storeAssessment } from "./assessmentStorage";
 
 interface AssessmentData {
   patientRef?: string;
-  dateOfBirth?: string;
-  occupation?: string;
-  primaryConcern?: string;
+  age?: string;
   menstrualStatus?: string;
   periodsStopped?: string;
   postmenopausalBleeding?: string;
@@ -49,62 +47,20 @@ export const calculateBMI = (height?: string, weight?: string): number | null =>
   return null;
 };
 
-export const calculateAgeFromDOB = (dateOfBirth?: string): number | null => {
-  if (!dateOfBirth) return null;
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-};
-
-export const formatDateOfBirth = (dateOfBirth?: string): string => {
-  if (!dateOfBirth) return "Not provided";
-  const date = new Date(dateOfBirth);
-  return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-};
-
-export const assessAgeRelatedRisks = (age: number): string[] => {
-  const risks: string[] = [];
-  
-  // NICE NG23 age-related risk factors
-  if (age < 40) {
-    risks.push("Early menopause consideration - specialist referral may be needed");
-  }
-  
-  if (age >= 45 && age < 55) {
-    risks.push("Typical perimenopause age range - monitor symptoms");
-  }
-  
-  if (age >= 55) {
-    risks.push("Post-menopausal - any bleeding requires urgent investigation");
-  }
-  
-  if (age >= 60) {
-    risks.push("Increased cardiovascular and osteoporosis risk - preventive measures important");
-  }
-  
-  return risks;
+export const getDOBFromAge = (age?: string): string => {
+  if (!age) return "Not provided";
+  const currentDate = new Date();
+  const birthYear = currentDate.getFullYear() - parseInt(age);
+  return `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${birthYear}`;
 };
 
 export const processAssessmentData = async (assessmentData: AssessmentData, sessionId: string) => {
   // Get the patient reference that was stored when the assessment was created
   const storedPatientRef = localStorage.getItem(`patient_ref_${sessionId}`);
   
-  // Calculate age from date of birth
-  const calculatedAge = calculateAgeFromDOB(assessmentData.dateOfBirth);
-  const ageRelatedRisks = calculatedAge ? assessAgeRelatedRisks(calculatedAge) : [];
-  
   // Normalize data
   const normalizedData = {
     ...assessmentData,
-    age: calculatedAge?.toString() || "Unknown",
-    ageRelatedRisks,
     physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
       ? assessmentData.physicalSymptoms 
       : assessmentData.physicalSymptoms 
@@ -122,17 +78,15 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   const recommendations = generateNHSRecommendations(normalizedData, riskLevel);
   const urgentFlags = getUrgentFlags(normalizedData);
   
-  // Use stored patient reference or fallback to DOB-based reference
+  // Use stored patient reference or fallback to age-based reference
   const patientReference = storedPatientRef || 
     normalizedData.patientRef || 
-    `Patient (DOB: ${formatDateOfBirth(assessmentData.dateOfBirth)})`;
+    `Patient (DOB: ${normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age)})`;
   
   const result = {
     sessionId: sessionId,
     patientRef: patientReference,
-    dateOfBirth: formatDateOfBirth(assessmentData.dateOfBirth),
-    age: calculatedAge,
-    ageRelatedRisks,
+    dateOfBirth: normalizedData.dateOfBirth || getDOBFromAge(normalizedData.age),
     completedAt: new Date().toISOString(),
     riskLevel,
     urgentFlags,
@@ -142,23 +96,7 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
     carePath: determinedPath
   };
 
-  // Store result using the new storage system
-  await storeAssessment({
-    id: sessionId,
-    session_id: sessionId,
-    patient_ref: patientReference,
-    date_of_birth: assessmentData.dateOfBirth,
-    age: calculatedAge,
-    completed_at: result.completedAt,
-    risk_level: riskLevel,
-    urgent_flags: urgentFlags,
-    clinical_summary: clinicalSummary,
-    recommendations,
-    raw_data: normalizedData,
-    care_path: determinedPath
-  });
-  
-  // Also keep the old localStorage format for backward compatibility
+  // Store result for GP access
   localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
   
   // Clean up the patient reference storage (no longer needed)

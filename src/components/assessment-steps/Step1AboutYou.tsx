@@ -15,24 +15,34 @@ const Step1AboutYou = ({ data, onUpdate }: Step1Props) => {
     <div className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+          <Label htmlFor="age">Your age</Label>
+          <Input
+            id="age"
+            type="number"
+            value={data.age || ""}
+            onChange={(e) => onUpdate("age", e.target.value)}
+            placeholder="e.g., 45"
+          />
+        </div>
+        <div>
+          <Label htmlFor="dateOfBirth">Date of Birth</Label>
           <Input
             id="dateOfBirth"
             type="date"
             value={data.dateOfBirth || ""}
             onChange={(e) => onUpdate("dateOfBirth", e.target.value)}
-            required
           />
         </div>
-        <div>
-          <Label htmlFor="occupation">Your occupation (optional)</Label>
-          <Input
-            id="occupation"
-            value={data.occupation || ""}
-            onChange={(e) => onUpdate("occupation", e.target.value)}
-            placeholder="e.g., Teacher, Manager"
-          />
-        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="occupation">Your occupation (optional)</Label>
+        <Input
+          id="occupation"
+          value={data.occupation || ""}
+          onChange={(e) => onUpdate("occupation", e.target.value)}
+          placeholder="e.g., Teacher, Manager"
+        />
       </div>
 
       <div>
