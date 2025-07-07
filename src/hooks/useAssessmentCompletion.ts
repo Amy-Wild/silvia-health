@@ -72,7 +72,9 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         rawData: result
       };
 
-      dataStore.completeAssessment(sessionId, completedAssessmentData);
+      const assessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');
+      assessments.push(completedAssessmentData);
+      localStorage.setItem('completed_assessments', JSON.stringify(assessments));
       console.log("✅ Assessment completed using dataStore");
 
       // ALSO store individual assessment for GP results page (keep this for results page compatibility)
