@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3, LogOut } from "lucide-react";
+import { Calendar, TrendingUp, Download, Share2, Plus, BarChart3, LogOut, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DailyTracker from "@/components/tracker/DailyTracker";
+import PeriodTracker from "@/components/tracker/PeriodTracker";
 import TrackerAnalytics from "@/components/tracker/TrackerAnalytics";
 import TrackerHistory from "@/components/tracker/TrackerHistory";
 import TrackerEducation from "@/components/tracker/TrackerEducation";
@@ -16,6 +17,7 @@ const SymptomTracker = () => {
   const [trackedDays, setTrackedDays] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [lastEntry, setLastEntry] = useState<string | null>(null);
+  const [periodData, setPeriodData] = useState({});
 
   useEffect(() => {
     // Load tracking data from localStorage
@@ -25,6 +27,12 @@ const SymptomTracker = () => {
       setTrackedDays(data.totalDays || 0);
       setCurrentStreak(data.currentStreak || 0);
       setLastEntry(data.lastEntry || null);
+    }
+
+    // Load period data
+    const savedPeriodData = localStorage.getItem('period-tracker-data');
+    if (savedPeriodData) {
+      setPeriodData(JSON.parse(savedPeriodData));
     }
   }, []);
 
@@ -38,6 +46,11 @@ const SymptomTracker = () => {
     setLastEntry(today);
     setTrackedDays(prev => prev + 1);
     setCurrentStreak(prev => prev + 1);
+  };
+
+  const handlePeriodDataChange = (data: any) => {
+    setPeriodData(data);
+    localStorage.setItem('period-tracker-data', JSON.stringify(data));
   };
 
   return (
@@ -110,8 +123,12 @@ const SymptomTracker = () => {
 
         {/* Main Tracker Interface */}
         <Tabs defaultValue="daily" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="daily">Daily Entry</TabsTrigger>
+            <TabsTrigger value="period">
+              <Heart className="w-4 h-4 mr-2" />
+              Period & Cycle
+            </TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
             <TabsTrigger value="education">Learn</TabsTrigger>
@@ -119,6 +136,10 @@ const SymptomTracker = () => {
 
           <TabsContent value="daily">
             <DailyTracker onEntryComplete={handleNewEntry} />
+          </TabsContent>
+
+          <TabsContent value="period">
+            <PeriodTracker onDataChange={handlePeriodDataChange} />
           </TabsContent>
 
           <TabsContent value="analytics">
