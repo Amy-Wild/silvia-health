@@ -47,7 +47,7 @@ const App = () => (
               </RouteGuard>
             } />
             
-            {/* GP/Healthcare Provider Routes - Single set only */}
+            {/* GP/Healthcare Provider Routes */}
             <Route path="/gp/dashboard" element={
               <RouteGuard requiresAccess="gp">
                 <GPDashboard />
@@ -59,7 +59,7 @@ const App = () => (
               </RouteGuard>
             } />
             
-            {/* Clinical Dashboard Routes - Single set only */}
+            {/* Clinical Dashboard Routes */}
             <Route path="/clinical/dashboard" element={
               <RouteGuard requiresAccess="clinical_admin">
                 <ClinicalDashboard />

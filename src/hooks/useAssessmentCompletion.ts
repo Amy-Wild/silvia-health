@@ -1,5 +1,4 @@
 
-
 import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
@@ -12,7 +11,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
     try {
+      console.log("Processing assessment completion for sessionId:", sessionId, "data:", assessmentData);
+      
       const { result, normalizedData, determinedPath } = await processAssessmentData(assessmentData, sessionId!);
+      
+      console.log("Assessment processed, determined path:", determinedPath);
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education') {
@@ -46,6 +49,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         navigate(`/patient-results/${sessionId}`);
       }
     } catch (error) {
+      console.error("Error processing assessment:", error);
       toast({
         title: "Error", 
         description: "Failed to process assessment. Please try again.",
@@ -56,4 +60,3 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
   return { processAssessmentCompletion };
 };
-

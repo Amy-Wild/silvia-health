@@ -29,7 +29,7 @@ const GPDashboard = () => {
     setLoading(true);
     try {
       const allAssessments = await loadAllAssessments();
-      console.log("Loaded assessments:", allAssessments);
+      console.log("Fetched assessments", allAssessments);
       setAssessments(allAssessments);
     } catch (error) {
       console.error("Error loading assessments:", error);
@@ -47,10 +47,12 @@ const GPDashboard = () => {
   };
 
   const navigateToResults = (sessionId: string) => {
-    navigate(`/gp-results/${sessionId}`);
+    console.log("Navigating to results for sessionId:", sessionId);
+    navigate(`/gp/results/${sessionId}`);
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
+    console.log("Assessment created:", sessionId, patientRef);
     // Refresh the assessments list
     loadAssessments();
     setShowPatientForm(false);

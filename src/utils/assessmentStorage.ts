@@ -31,6 +31,8 @@ interface SessionData {
 
 export const storeAssessment = async (assessment: StoredAssessment): Promise<boolean> => {
   try {
+    console.log("Saving assessment", assessment.session_id, assessment);
+    
     // Store in Supabase if user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -61,8 +63,11 @@ export const storeAssessment = async (assessment: StoredAssessment): Promise<boo
         // Fall back to localStorage
         storeInLocalStorage(assessment);
         return true;
+      } else {
+        console.log('Assessment successfully stored in Supabase');
       }
     } else {
+      console.log('No user authenticated, storing in localStorage');
       // Not authenticated, store in localStorage
       storeInLocalStorage(assessment);
     }
@@ -76,6 +81,7 @@ export const storeAssessment = async (assessment: StoredAssessment): Promise<boo
 };
 
 const storeInLocalStorage = (assessment: StoredAssessment) => {
+  console.log('Storing assessment in localStorage', assessment.session_id);
   // Store individual assessment with unique key
   localStorage.setItem(`assessment_${assessment.session_id}`, JSON.stringify(assessment));
   
@@ -98,10 +104,12 @@ const isSessionData = (data: any): data is SessionData => {
 
 export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
   try {
+    console.log('Loading all assessments...');
     // Try to load from Supabase first
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
+      console.log('Loading assessments from Supabase for user:', user.id);
       const { data, error } = await supabase
         .from('assessment_links')
         .select('*')
@@ -110,6 +118,7 @@ export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
         .order('completed_at', { ascending: false });
 
       if (!error && data) {
+        console.log('Fetched assessments from Supabase:', data);
         return data.map(item => {
           const sessionData: SessionData = isSessionData(item.session_data) ? item.session_data : {};
           
@@ -129,10 +138,13 @@ export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
             created_by: item.created_by
           };
         });
+      } else {
+        console.error('Error loading from Supabase:', error);
       }
     }
     
     // Fall back to localStorage
+    console.log('Loading assessments from localStorage');
     return loadFromLocalStorage();
   } catch (error) {
     console.error('Error loading assessments:', error);
@@ -154,6 +166,8 @@ const loadFromLocalStorage = (): StoredAssessment[] => {
       }
     }
   }
+  
+  console.log('Loading assessments from localStorage, found IDs:', assessmentIds);
   
   // Load all assessments
   for (const sessionId of assessmentIds) {
@@ -181,8 +195,77 @@ const loadFromLocalStorage = (): StoredAssessment[] => {
     }
   }
   
+  console.log('Loaded assessments from localStorage:', assessments);
+  
   // Sort by completion date (most recent first)
   return assessments.sort((a, b) => 
     new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
   );
+};
+
+export const loadSingleAssessment = async (sessionId: string): Promise<StoredAssessment | null> => {
+  try {
+    console.log('Loading single assessment for sessionId:', sessionId);
+    
+    // Try Supabase first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { data, error } = await supabase
+        .from('assessment_links')
+        .select('*')
+        .eq('id', sessionId)
+        .eq('status', 'completed')
+        .single();
+
+      if (!error && data) {
+        console.log('Found assessment in Supabase:', data);
+        const sessionData: SessionData = isSessionData(data.session_data) ? data.session_data : {};
+        
+        return {
+          id: data.id,
+          session_id: data.id,
+          patient_ref: data.patient_identifier,
+          completed_at: data.completed_at || new Date().toISOString(),
+          risk_level: sessionData.riskLevel || 'unknown',
+          urgent_flags: sessionData.urgentFlags || [],
+          clinical_summary: sessionData.clinicalSummary || {},
+          recommendations: sessionData.recommendations || {},
+          raw_data: sessionData.rawData || {},
+          care_path: sessionData.carePath,
+          date_of_birth: sessionData.dateOfBirth,
+          age: sessionData.age,
+          created_by: data.created_by
+        };
+      }
+    }
+    
+    // Fall back to localStorage
+    console.log('Trying localStorage for sessionId:', sessionId);
+    const stored = localStorage.getItem(`assessment_${sessionId}`);
+    if (stored) {
+      const assessment = JSON.parse(stored);
+      console.log('Found assessment in localStorage:', assessment);
+      return {
+        id: assessment.sessionId || sessionId,
+        session_id: assessment.sessionId || sessionId,
+        patient_ref: assessment.patientRef || 'Unknown Patient',
+        completed_at: assessment.completedAt || new Date().toISOString(),
+        risk_level: assessment.riskLevel || 'unknown',
+        urgent_flags: assessment.urgentFlags || [],
+        clinical_summary: assessment.clinicalSummary || {},
+        recommendations: assessment.recommendations || {},
+        raw_data: assessment.rawData || {},
+        care_path: assessment.carePath,
+        date_of_birth: assessment.dateOfBirth,
+        age: assessment.age
+      };
+    }
+    
+    console.log('No assessment found for sessionId:', sessionId);
+    return null;
+  } catch (error) {
+    console.error('Error loading single assessment:', error);
+    return null;
+  }
 };

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
 import { generateClinicalSummary, generateNHSRecommendations, getRedFlags, getUrgentFlags, calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
+import { loadSingleAssessment, type StoredAssessment } from "@/utils/assessmentStorage";
 import { useState, useEffect } from "react";
 
 const GPResults = () => {
@@ -14,66 +15,95 @@ const GPResults = () => {
   const navigate = useNavigate();
   const [clinicalResults, setClinicalResults] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load actual patient assessment data
-    const storedData = localStorage.getItem(`assessment_${sessionId}`);
-    if (storedData) {
-      const assessmentResult = JSON.parse(storedData);
-      setClinicalResults(generateEnhancedGPResults(assessmentResult));
-    } else {
-      // Fallback to demo data
-      setClinicalResults(generateDemoResults());
+    if (sessionId) {
+      console.log("Loading results for", sessionId);
+      loadAssessmentData();
     }
-    setLoading(false);
   }, [sessionId]);
 
-  const generateEnhancedGPResults = (assessmentResult: any) => {
-    const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
+  const loadAssessmentData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!sessionId) {
+        setError("No session ID provided");
+        return;
+      }
+
+      const assessment = await loadSingleAssessment(sessionId);
+      
+      if (assessment) {
+        console.log("Found assessment data:", assessment);
+        setClinicalResults(generateEnhancedGPResults(assessment));
+      } else {
+        console.log("No assessment found for sessionId:", sessionId);
+        setError("Assessment not found");
+      }
+    } catch (error) {
+      console.error("Error loading assessment:", error);
+      setError("Failed to load assessment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateEnhancedGPResults = (assessment: StoredAssessment) => {
+    const { raw_data, risk_level, recommendations, urgent_flags } = assessment;
     
-    console.log('Raw assessment data:', rawData); // Debug log
+    console.log('Raw assessment data:', raw_data);
     
-    // Generate comprehensive clinical summary with proper psychological mapping
-    const clinicalSummary = generateClinicalSummary(rawData);
+    // If no raw_data, create a basic summary from stored data
+    const dataToAnalyze = raw_data || {
+      patientRef: assessment.patient_ref,
+      age: assessment.age?.toString() || '0',
+      riskLevel: assessment.risk_level
+    };
     
-    // Ensure urgent flags are properly captured
-    const allRedFlags = getRedFlags(rawData);
-    const allUrgentFlags = getUrgentFlags(rawData);
+    // Generate comprehensive clinical summary
+    const clinicalSummary = generateClinicalSummary(dataToAnalyze);
+    
+    // Get flags and recommendations
+    const allRedFlags = getRedFlags(dataToAnalyze);
+    const allUrgentFlags = getUrgentFlags(dataToAnalyze);
     
     // Generate treatment options
-    const treatmentOptions = generateTreatmentOptions(rawData, clinicalSummary, riskLevel);
+    const treatmentOptions = generateTreatmentOptions(dataToAnalyze, clinicalSummary, risk_level);
     
-    // CORRECTED URGENCY SCORE CALCULATION
-    const urgencyScore = calculateCorrectUrgencyScore(rawData, calculateRiskLevel(rawData));
+    // Calculate urgency score
+    const urgencyScore = calculateCorrectUrgencyScore(dataToAnalyze, risk_level);
     
-    // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
-    const psychologicalRisk = assessCorrectPsychologicalRisk(rawData);
+    // Assess psychological risk
+    const psychologicalRisk = assessCorrectPsychologicalRisk(dataToAnalyze);
     
-    console.log('Generated clinical summary:', clinicalSummary); // Debug log
-    console.log('Psychological risk assessment:', psychologicalRisk); // Debug log
-    console.log('Urgency score:', urgencyScore); // Debug log
+    console.log('Generated clinical summary:', clinicalSummary);
+    console.log('Psychological risk assessment:', psychologicalRisk);
+    console.log('Urgency score:', urgencyScore);
     
     return {
-      patientRef: assessmentResult.patientRef,
-      completedAt: new Date(assessmentResult.completedAt).toLocaleDateString('en-GB'),
+      patientRef: assessment.patient_ref,
+      completedAt: new Date(assessment.completed_at).toLocaleDateString('en-GB'),
       sessionId: sessionId,
-      riskLevel: calculateRiskLevel(rawData), // Recalculate to ensure accuracy
+      riskLevel: risk_level,
       redFlags: allRedFlags,
       urgentFlags: allUrgentFlags,
       clinicalSummary: clinicalSummary,
       treatmentOptions: treatmentOptions,
-      rawData: rawData,
+      rawData: dataToAnalyze,
       patientProfile: {
-        age: parseInt(rawData.age || "0"),
-        riskFactors: generateRiskFactors(rawData),
-        preferences: rawData.treatmentPreferences || []
+        age: assessment.age || 0,
+        riskFactors: generateRiskFactors(dataToAnalyze),
+        preferences: dataToAnalyze.treatmentPreferences || []
       },
       analyticsData: {
         urgencyScore: urgencyScore,
         qualityOfLifeImpact: assessQualityOfLifeImpact(clinicalSummary),
         psychologicalRisk: psychologicalRisk
       },
-      clinicalRecommendations: generateNHSRecommendations(rawData, calculateRiskLevel(rawData))
+      clinicalRecommendations: Array.isArray(recommendations) ? recommendations : generateNHSRecommendations(dataToAnalyze, risk_level)
     };
   };
 
@@ -319,13 +349,13 @@ const GPResults = () => {
     );
   }
 
-  if (!clinicalResults) {
+  if (error || !clinicalResults) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <p className="text-gray-600">No assessment data found</p>
-          <Button onClick={() => navigate('/gp-dashboard')} className="mt-4">
+          <p className="text-gray-600">{error || "No assessment data found"}</p>
+          <Button onClick={() => navigate('/gp/dashboard')} className="mt-4">
             Return to Dashboard
           </Button>
         </div>
@@ -343,7 +373,7 @@ const GPResults = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate('/gp-dashboard')}
+                onClick={() => navigate('/gp/dashboard')}
                 className="flex items-center"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -413,7 +443,7 @@ const GPResults = () => {
           {/* Enhanced GP Summary */}
           <GPClinicalSummary clinicalResults={clinicalResults} />
           
-          {/* Patient Comments Section - NEW */}
+          {/* Patient Comments Section */}
           {clinicalResults.clinicalSummary?.patientComments && (
             <Card className="mt-6 border-blue-200 bg-blue-50">
               <CardHeader>
