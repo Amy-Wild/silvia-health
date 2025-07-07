@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -216,20 +215,66 @@ const PatientResults = () => {
   };
 
   const generateEducationalTopics = (rawData: any) => {
-    const topics = ["Understanding menopause and your symptoms"];
+    const topics = [];
+    const priorities = [];
 
+    // High priority topics based on symptoms
+    if (rawData.hotFlashFrequency === 'severe' || rawData.nightSweats === 'severe') {
+      topics.push("Managing Hot Flashes and Night Sweats");
+      priorities.push("high");
+    }
+
+    if (rawData.moodSymptoms === 'severe' || rawData.cognitiveSymptoms === 'severe') {
+      topics.push("Mental Health and Wellbeing During Menopause");
+      priorities.push("high");
+    }
+
+    if (rawData.sleepQuality === 'poor' || rawData.sleepQuality === 'very-poor') {
+      topics.push("Improving Sleep Quality During Menopause");
+      priorities.push("high");
+    }
+
+    // Medium priority based on treatment preferences
     if (rawData.treatmentPreferences?.includes('hrt')) {
-      topics.push("Hormone replacement therapy explained");
+      topics.push("Hormone Replacement Therapy: Benefits and Risks");
+      priorities.push("medium");
     }
 
     if (rawData.treatmentPreferences?.includes('lifestyle')) {
-      topics.push("Lifestyle approaches for managing symptoms");
+      topics.push("Lifestyle Approaches for Managing Symptoms");
+      priorities.push("medium");
     }
 
-    topics.push("Supporting your bone health during menopause");
-    topics.push("Managing mood and wellbeing");
+    if (rawData.treatmentPreferences?.includes('complementary')) {
+      topics.push("Complementary and Alternative Therapies");
+      priorities.push("medium");
+    }
 
-    return topics;
+    // General topics
+    if (rawData.vaginalSymptoms === 'moderate' || rawData.vaginalSymptoms === 'severe') {
+      topics.push("Vaginal Health and Intimacy");
+      priorities.push("medium");
+    }
+
+    if (rawData.exerciseLevel === 'none') {
+      topics.push("Exercise and Physical Activity for Menopause");
+      priorities.push("low");
+    }
+
+    // Always include basics if not many specific topics
+    if (topics.length < 3) {
+      topics.unshift("Understanding Your Menopause Journey");
+      priorities.unshift("medium");
+    }
+
+    // Bone health for all patients
+    topics.push("Supporting Your Bone Health");
+    priorities.push("medium");
+
+    return topics.map((topic, index) => ({
+      title: topic,
+      priority: priorities[index] || "low"
+    }));
   };
 
   const getDefaultResults = () => ({
@@ -257,10 +302,25 @@ const PatientResults = () => {
   };
 
   const handleExploreEducation = () => {
-    const treatmentPreferences = assessmentData?.rawData?.treatmentPreferences || [];
-    const educationUrl = treatmentPreferences.length > 0 
-      ? `/education?preferences=${treatmentPreferences.join(',')}&sessionId=${sessionId}&source=results`
+    const rawData = assessmentData?.rawData;
+    if (!rawData) {
+      window.open('/education', '_blank');
+      return;
+    }
+
+    // Build personalized education URL with specific focus areas
+    const focusAreas = [];
+    
+    if (rawData.treatmentPreferences?.includes('hrt')) focusAreas.push('hrt');
+    if (rawData.treatmentPreferences?.includes('lifestyle')) focusAreas.push('lifestyle');
+    if (rawData.hotFlashFrequency === 'severe' || rawData.nightSweats === 'severe') focusAreas.push('vasomotor');
+    if (rawData.moodSymptoms === 'severe') focusAreas.push('mental-health');
+    if (rawData.sleepQuality === 'poor') focusAreas.push('sleep');
+
+    const educationUrl = focusAreas.length > 0 
+      ? `/education?focus=${focusAreas.join(',')}&sessionId=${sessionId}&source=results&personalized=true`
       : `/education?sessionId=${sessionId}&source=results`;
+    
     window.open(educationUrl, '_blank');
   };
 
@@ -276,6 +336,7 @@ const PatientResults = () => {
   }
 
   const results = generateDynamicResults();
+  const educationalTopics = generateEducationalTopics(assessmentData?.rawData || {});
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#dbeafe] via-white to-[#ede9fe]">
@@ -473,25 +534,46 @@ const PatientResults = () => {
             </CardHeader>
             <CardContent>
               <p className="text-[#425563] mb-4">
-                Explore helpful resources about your symptoms and treatment options. 
-                The more you know, the better conversations you can have with your GP.
+                Based on your assessment, these educational resources are specifically selected to help you understand your symptoms and prepare for your GP appointment.
               </p>
               <div className="space-y-2 mb-4">
-                <h4 className="font-medium text-[#425563]">Topics that might interest you:</h4>
+                <h4 className="font-medium text-[#425563]">Personalized topics for you:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {results.educationalTopics.map((topic, index) => (
-                    <Badge key={index} variant="outline" className="border-[#425563] text-[#425563]">
-                      {topic}
-                    </Badge>
-                  ))}
+                  {educationalTopics.map((topic, index) => {
+                    const getPriorityColor = (priority: string) => {
+                      switch(priority) {
+                        case 'high': return 'border-red-500 text-red-700 bg-red-50';
+                        case 'medium': return 'border-[#425563] text-[#425563] bg-[#dbeafe]';
+                        default: return 'border-gray-400 text-gray-600 bg-gray-50';
+                      }
+                    };
+
+                    return (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className={`${getPriorityColor(topic.priority)} relative`}
+                      >
+                        {topic.priority === 'high' && (
+                          <div className="w-2 h-2 bg-red-500 rounded-full absolute -top-1 -right-1"></div>
+                        )}
+                        {topic.title}
+                      </Badge>
+                    );
+                  })}
                 </div>
+              </div>
+              <div className="bg-white p-3 rounded border-l-4 border-[#425563] mb-4">
+                <p className="text-sm text-[#425563]">
+                  💡 <strong>Tip:</strong> The more you understand about your symptoms, the better conversations you can have with your GP. These resources are chosen based on your specific assessment responses.
+                </p>
               </div>
               <Button 
                 onClick={handleExploreEducation}
                 className="w-full bg-[#425563] hover:bg-[#425563]/90 text-white"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Explore Helpful Resources
+                Explore Your Personalized Resources
               </Button>
             </CardContent>
           </Card>
