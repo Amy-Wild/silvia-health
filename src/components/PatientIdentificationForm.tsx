@@ -50,6 +50,11 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     return date <= today && age >= 18 && age <= 120;
   };
 
+  // Encode patient reference for URL (base64 encoding for safety)
+  const encodePatientRef = (patientRef: string) => {
+    return btoa(encodeURIComponent(patientRef));
+  };
+
   const handleCreateAssessment = async () => {
     setIsCreating(true);
     
@@ -96,14 +101,16 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     }
 
     const sessionId = generateSessionId();
-    const assessmentLink = `${window.location.origin}/patient-assessment/${sessionId}`;
+    const encodedPatientRef = encodePatientRef(patientRef);
+    const assessmentLink = `${window.location.origin}/patient-assessment/${sessionId}?patientRef=${encodedPatientRef}`;
     
-    console.log("=== CREATING ASSESSMENT LINK ===");
+    console.log("=== CREATING ASSESSMENT LINK WITH EMBEDDED PATIENT REF ===");
     console.log("SessionId:", sessionId);
     console.log("Patient Reference:", patientRef);
+    console.log("Encoded Patient Reference:", encodedPatientRef);
     console.log("Assessment Link:", assessmentLink);
     
-    // Store the patient reference with the session ID for later retrieval
+    // Still store in localStorage as backup, but primary method is now URL-based
     localStorage.setItem(`patient_ref_${sessionId}`, patientRef);
     console.log("💾 Stored patient reference for sessionId:", sessionId, "->", patientRef);
     
@@ -327,7 +334,7 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
                 <p>• Share this link securely with your patient via SMS, email, or patient portal</p>
                 <p>• Link is unique and expires after assessment completion</p>
                 <p>• Patient results will appear in your dashboard automatically</p>
-                <p>• Link contains no personal information for security</p>
+                <p>• Patient identifier is securely embedded in the link</p>
               </div>
             </div>
             

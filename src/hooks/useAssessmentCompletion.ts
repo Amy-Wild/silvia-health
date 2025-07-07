@@ -9,6 +9,16 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Decode patient reference from URL parameter
+  const decodePatientRef = (encodedRef: string) => {
+    try {
+      return decodeURIComponent(atob(encodedRef));
+    } catch (error) {
+      console.warn("Failed to decode patient reference:", error);
+      return null;
+    }
+  };
+
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
     console.log("=== ASSESSMENT COMPLETION HOOK CALLED ===");
     console.log("Session ID:", sessionId);
@@ -26,14 +36,32 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       
       console.log("📊 Assessment processed:", { result, determinedPath });
       
-      // Get the stored patient reference from localStorage (set during link creation)
-      const storedPatientRef = localStorage.getItem(`patient_ref_${sessionId}`);
-      console.log("📋 Retrieved patient reference for sessionId:", sessionId, "->", storedPatientRef);
+      // Get patient reference from multiple sources (URL parameter first, then localStorage backup)
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedPatientRef = urlParams.get('patientRef');
+      let patientRef = null;
       
+      if (encodedPatientRef) {
+        patientRef = decodePatientRef(encodedPatientRef);
+        console.log("📋 Retrieved patient reference from URL:", patientRef);
+      }
+      
+      // Fallback to localStorage if URL method fails
+      if (!patientRef) {
+        patientRef = localStorage.getItem(`patient_ref_${sessionId}`);
+        console.log("📋 Retrieved patient reference from localStorage:", patientRef);
+      }
+      
+      // Final fallback to assessment data
+      if (!patientRef) {
+        patientRef = assessmentData.patientRef;
+        console.log("📋 Using patient reference from assessment data:", patientRef);
+      }
+
       // Create assessment with proper patient identification
       const assessment = {
         id: sessionId,
-        patientName: storedPatientRef || assessmentData.patientRef || "Anonymous Patient",
+        patientName: patientRef || "Anonymous Patient",
         dateOfBirth: assessmentData.dateOfBirth || "",
         completedAt: new Date().toISOString(),
         riskLevel: result.riskLevel.toLowerCase(),
@@ -43,7 +71,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
       console.log("=== SAVING ASSESSMENT WITH PATIENT REFERENCE ===");
       console.log("SessionId being used:", sessionId);
-      console.log("Patient reference used:", storedPatientRef);
+      console.log("Final patient reference used:", patientRef);
       console.log("Assessment to save:", assessment);
 
       // Get existing assessments and filter out any with the same ID (avoid duplicates)
