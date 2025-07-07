@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { calculateRiskLevel, getUrgentFlags } from "@/components/ConditionalQuestionLogic";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
@@ -39,7 +38,7 @@ export const useAssessmentState = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [riskLevel, setRiskLevel] = useState("low");
 
-  const totalSteps = 8;
+  const totalSteps = 7;
   const steps = [
     "About You",
     "Your Periods & Health", 
@@ -47,8 +46,7 @@ export const useAssessmentState = () => {
     "Physical Symptoms",
     "Mental Health & Wellbeing",
     "Sleep & Intimacy",
-    "Medical History & Lifestyle",
-    "Complete"
+    "Medical History & Lifestyle"
   ];
 
   // Calculate risk level in real-time as data changes

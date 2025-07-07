@@ -42,11 +42,29 @@ const PatientAssessment = () => {
     console.log("Total steps:", totalSteps);
     console.log("Assessment data:", assessmentData);
     
-    // Check if this is the final step (step 8)
-    if (currentStep === totalSteps) {
+    // Check if this is the final step (step 7)
+    if (currentStep === 7) {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
       console.log("Session ID:", sessionId);
       console.log("Assessment data before completion:", assessmentData);
+      
+      // Save to localStorage directly for testing
+      const testData = {
+        id: sessionId,
+        patientName: assessmentData.patientRef || "Test Patient",
+        dateOfBirth: assessmentData.dateOfBirth || "",
+        completedAt: new Date().toISOString(),
+        riskLevel: "low",
+        status: "completed"
+      };
+      localStorage.setItem('test-assessment', JSON.stringify(testData));
+      console.log("SAVED TEST DATA:", testData);
+      
+      // Also save to the assessments array
+      const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
+      existingAssessments.push(testData);
+      localStorage.setItem('assessments', JSON.stringify(existingAssessments));
+      console.log("SAVED TO ASSESSMENTS ARRAY:", existingAssessments);
       
       setIsSubmitting(true);
       try {
