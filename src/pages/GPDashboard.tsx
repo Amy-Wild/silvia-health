@@ -7,7 +7,8 @@ import {
   Stethoscope,
   Plus,
   Search,
-  Activity
+  Activity,
+  LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
@@ -29,6 +30,11 @@ const GPDashboard = () => {
   useEffect(() => {
     loadAssessments();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_user");
+    navigate("/auth");
+  };
 
   const loadAssessments = async () => {
     console.log("🔄 Loading assessments from localStorage...");
@@ -132,6 +138,14 @@ const GPDashboard = () => {
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Assessment
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>

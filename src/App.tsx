@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import PatientAssessment from "./pages/PatientAssessment";
 import PatientResults from "./pages/PatientResults";
 import GPDashboard from "./pages/GPDashboard";
@@ -26,6 +27,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
           <Route path="/patient-results/:sessionId" element={<PatientResults />} />
           <Route path="/gp-dashboard" element={<GPDashboard />} />

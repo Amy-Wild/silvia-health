@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus } from "lucide-react";
+import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
@@ -35,6 +35,11 @@ const ClinicalDashboard = () => {
   useEffect(() => {
     loadAssessments();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_user");
+    navigate("/auth");
+  };
 
   const loadAssessments = () => {
     const storedAssessments: Assessment[] = [];
@@ -173,6 +178,15 @@ const ClinicalDashboard = () => {
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Assessment
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
