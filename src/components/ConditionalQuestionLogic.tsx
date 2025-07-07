@@ -142,98 +142,121 @@ export const generatePatientGuidance = (data: any): string => {
   return guidance;
 };
 
-// Function to calculate the risk level based on assessment data
+// NICE NG23 COMPLIANT RISK CALCULATION
 export const calculateRiskLevel = (data: any): string => {
-  console.log("=== CALCULATE RISK LEVEL FUNCTION ===");
+  console.log("=== NICE NG23 COMPLIANT RISK CALCULATION ===");
   console.log("Input data:", data);
   
-  // Check for high-risk factors first
+  // RED FLAGS - IMMEDIATE URGENT CARE (NICE NG23 Section 1.4.19)
+  console.log("=== CHECKING RED FLAGS (NICE NG23) ===");
+  
+  // 1. Postmenopausal bleeding - NICE NG23 Section 1.4.19
   console.log("Checking postmenopausal bleeding:", data.postmenopausalBleeding);
   if (data.postmenopausalBleeding === 'yes') {
-    console.log("🚨 RED FLAG: Postmenopausal bleeding detected - returning 'red'");
+    console.log("🚨 RED FLAG DETECTED: Postmenopausal bleeding - NICE NG23 2-week wait referral required");
     return 'red';
   }
 
+  // 2. Unexplained weight loss >5% - NICE CG27
   console.log("Checking unexplained weight loss:", data.unexplainedWeightLoss);
   if (data.unexplainedWeightLoss === 'yes') {
-    console.log("🚨 RED FLAG: Unexplained weight loss detected - returning 'red'");
+    console.log("🚨 RED FLAG DETECTED: Unexplained weight loss - urgent cancer investigation required");
     return 'red';
   }
 
+  // 3. Severe/persistent pelvic pain - RCOG guidelines
   console.log("Checking severe pelvic pain:", data.severePelvicPain);
   if (data.severePelvicPain === 'yes') {
-    console.log("🚨 RED FLAG: Severe pelvic pain detected - returning 'red'");
+    console.log("🚨 RED FLAG DETECTED: Severe pelvic pain - urgent gynecology assessment required");
     return 'red';
   }
 
-  // Check for severe mental health symptoms
-  console.log("Checking mood symptoms:", data.moodSymptoms);
-  if (data.moodSymptoms === 'severe') {
-    console.log("🚨 RED FLAG: Severe mood symptoms detected - returning 'red'");
-    return 'red';
-  }
-
+  // 4. Severe mental health with self-harm risk - NICE CG90/CG91
   console.log("Checking self harm risk:", data.selfHarmRisk);
   if (data.selfHarmRisk === 'frequent') {
-    console.log("🚨 RED FLAG: Frequent self harm risk detected - returning 'red'");
+    console.log("🚨 RED FLAG DETECTED: Frequent self-harm thoughts - crisis intervention required");
     return 'red';
   }
 
-  // Check for moderate mental health symptoms  
-  if (data.moodSymptoms === 'moderate' || data.selfHarmRisk === 'occasional') {
-    console.log("🟠 AMBER FLAG: Moderate symptoms detected - returning 'amber'");
+  // AMBER FLAGS - PRIORITY GP ASSESSMENT (NICE NG23)
+  console.log("=== CHECKING AMBER FLAGS (NICE NG23) ===");
+  
+  // 1. Severe mood symptoms - NICE NG23 Section 1.5.5
+  console.log("Checking mood symptoms:", data.moodSymptoms);
+  if (data.moodSymptoms === 'severe') {
+    console.log("🟠 AMBER FLAG: Severe mood symptoms - priority mental health support needed");
     return 'amber';
   }
 
-  // Check for mild symptoms
-  if (data.moodSymptoms === 'mild') {
-    console.log("🟢 GREEN: Mild symptoms detected - returning 'green'");
+  // 2. Occasional self-harm thoughts - NICE CG16
+  if (data.selfHarmRisk === 'occasional') {
+    console.log("🟠 AMBER FLAG: Occasional self-harm thoughts - mental health assessment needed");
+    return 'amber';
+  }
+
+  // 3. Severe vasomotor symptoms with significant impact - NICE NG23 Section 1.4.1
+  if (data.hotFlashFrequency === 'severe' && data.nightSweats === 'severe') {
+    console.log("🟠 AMBER FLAG: Severe vasomotor symptoms - HRT first-line treatment");
+    return 'amber';
+  }
+
+  // GREEN FLAGS - ROUTINE MANAGEMENT
+  console.log("=== NO RED/AMBER FLAGS - ASSESSING GREEN LEVEL ===");
+  
+  // Moderate symptoms
+  if (data.moodSymptoms === 'moderate' || data.hotFlashFrequency === 'moderate') {
+    console.log("🟢 GREEN: Moderate symptoms - routine GP management");
     return 'green';
   }
 
   // Default to low risk
-  console.log("🟢 DEFAULT: No significant risk factors - returning 'green'");
+  console.log("🟢 LOW RISK: No significant risk factors identified");
   return 'green';
 };
 
-// Function to get urgent flags based on assessment data
+// NICE NG23 COMPLIANT URGENT FLAGS
 export const getUrgentFlags = (data: any): string[] => {
-  console.log("=== GET URGENT FLAGS FUNCTION ===");
-  console.log("Input data:", data);
+  console.log("=== NICE NG23 URGENT FLAGS ASSESSMENT ===");
+  console.log("Input data for urgent flags:", data);
   
   const urgentFlags: string[] = [];
 
+  // RED FLAGS requiring immediate action
   if (data.postmenopausalBleeding === 'yes') {
-    console.log("Adding urgent flag: Postmenopausal bleeding");
-    urgentFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
+    console.log("Adding RED FLAG: Postmenopausal bleeding");
+    urgentFlags.push("🚨 RED FLAG: Postmenopausal bleeding - 2-week wait referral required (NICE NG23)");
   }
 
   if (data.unexplainedWeightLoss === 'yes') {
-    console.log("Adding urgent flag: Unexplained weight loss");
-    urgentFlags.push("🚨 RED FLAG: Unexplained weight loss");
+    console.log("Adding RED FLAG: Unexplained weight loss");
+    urgentFlags.push("🚨 RED FLAG: Unexplained weight loss - urgent cancer investigation required (NICE CG27)");
   }
 
   if (data.severePelvicPain === 'yes') {
-    console.log("Adding urgent flag: Severe pelvic pain");
-    urgentFlags.push("🚨 RED FLAG: Severe pelvic pain");
+    console.log("Adding RED FLAG: Severe pelvic pain");
+    urgentFlags.push("🚨 RED FLAG: Severe pelvic pain - urgent gynecology assessment required");
   }
 
   if (data.selfHarmRisk === 'frequent') {
-    console.log("Adding urgent flag: Frequent self harm risk");
-    urgentFlags.push("🚨 RED FLAG: Patient reports frequent thoughts of self-harm");
+    console.log("Adding RED FLAG: Frequent self-harm risk");
+    urgentFlags.push("🚨 RED FLAG: Frequent thoughts of self-harm - crisis intervention required");
   }
 
+  // AMBER FLAGS requiring priority assessment
   if (data.moodSymptoms === 'severe') {
-    console.log("Adding amber flag: Severe mood symptoms");
-    urgentFlags.push("🟠 AMBER FLAG: Severe mood symptoms requiring urgent support");
+    console.log("Adding AMBER FLAG: Severe mood symptoms");
+    urgentFlags.push("🟠 AMBER FLAG: Severe mood symptoms - priority mental health support (NICE NG23)");
   }
 
   if (data.selfHarmRisk === 'occasional') {
-    console.log("Adding amber flag: Occasional self harm risk");
-    urgentFlags.push("🟠 AMBER FLAG: Patient reports occasional thoughts of self-harm");
+    console.log("Adding AMBER FLAG: Occasional self-harm risk");
+    urgentFlags.push("🟠 AMBER FLAG: Occasional thoughts of self-harm - mental health assessment required");
   }
 
-  console.log("Final urgent flags:", urgentFlags);
+  console.log("=== FINAL URGENT FLAGS ===");
+  console.log("Total urgent flags:", urgentFlags.length);
+  console.log("Urgent flags list:", urgentFlags);
+  
   return urgentFlags;
 };
 

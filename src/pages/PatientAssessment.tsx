@@ -20,7 +20,7 @@ const PatientAssessment = () => {
     ? sessionId 
     : `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
-  console.log("=== PATIENT ASSESSMENT COMPONENT ===");
+  console.log("=== PATIENT ASSESSMENT COMPONENT LOAD ===");
   console.log("Raw sessionId from params:", sessionId);
   console.log("Actual sessionId being used:", actualSessionId);
   
@@ -50,15 +50,22 @@ const PatientAssessment = () => {
 
   const handleNext = async () => {
     console.log("=== HANDLE NEXT CLICKED ===");
-    console.log("Next clicked, step:", currentStep, "of", totalSteps);
-    console.log("Assessment data:", assessmentData);
+    console.log("Current step:", currentStep, "of", totalSteps);
+    console.log("Assessment data at handleNext:", assessmentData);
+    console.log("Red flag status at next:", {
+      postmenopausalBleeding: assessmentData.postmenopausalBleeding,
+      unexplainedWeightLoss: assessmentData.unexplainedWeightLoss,
+      severePelvicPain: assessmentData.severePelvicPain,
+      moodSymptoms: assessmentData.moodSymptoms,
+      selfHarmRisk: assessmentData.selfHarmRisk
+    });
     console.log("Using sessionId:", actualSessionId);
     
     // Check if this is the final step
     if (currentStep === totalSteps) {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
       console.log("Session ID:", actualSessionId);
-      console.log("Assessment data before completion:", assessmentData);
+      console.log("Final assessment data before completion:", assessmentData);
       
       setIsSubmitting(true);
       try {
@@ -68,18 +75,25 @@ const PatientAssessment = () => {
       }
     } else {
       console.log("=== MOVING TO NEXT STEP ===");
+      console.log("Moving from step", currentStep, "to step", currentStep + 1);
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
+      console.log("Moving from step", currentStep, "to step", currentStep - 1);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const riskBadge = getRiskBadge();
   const shouldShowRiskBadge = riskBadge.className !== "bg-green-500 text-white";
+
+  console.log("=== RISK DISPLAY CHECK ===");
+  console.log("Risk badge:", riskBadge);
+  console.log("Should show risk badge:", shouldShowRiskBadge);
+  console.log("Show urgent warning:", showUrgentWarning());
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">

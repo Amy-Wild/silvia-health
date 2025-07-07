@@ -16,6 +16,15 @@ const AssessmentFormSection = ({
   assessmentData, 
   onDataChange 
 }: AssessmentFormSectionProps) => {
+  console.log("=== ASSESSMENT FORM SECTION ===");
+  console.log("Current step:", currentStep);
+  console.log("Assessment data in form section:", assessmentData);
+  console.log("Red flag values:", {
+    postmenopausalBleeding: assessmentData.postmenopausalBleeding,
+    unexplainedWeightLoss: assessmentData.unexplainedWeightLoss,
+    severePelvicPain: assessmentData.severePelvicPain
+  });
+
   return (
     <Card>
       <CardHeader>
