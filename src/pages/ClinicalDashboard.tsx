@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, LogOut } from "lucide-react";
+import { AlertTriangle, Eye, Mail, Search, Download, Clock, CheckCircle, Plus, LogOut, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 
@@ -43,9 +44,6 @@ const ClinicalDashboard = () => {
 
   const loadAssessments = () => {
     console.log("=== LOADING ASSESSMENTS (CLINICAL DASHBOARD) ===");
-    console.log("Raw from localStorage:", localStorage.getItem('assessments'));
-    
-    console.log("🔄 Loading assessments for clinical dashboard...");
     
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
@@ -65,13 +63,13 @@ const ClinicalDashboard = () => {
         return acc;
       }, []);
       
-      // Transform to match expected interface
+      // Transform to match expected interface - USE STORED RISK LEVEL
       const transformedAssessments = uniqueAssessments.map((assessment: any) => ({
         id: assessment.id,
         patientRef: assessment.patientName,
         completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
         status: assessment.status,
-        riskLevel: assessment.riskLevel,
+        riskLevel: assessment.riskLevel, // Use the stored risk level directly
         redFlags: assessment.urgentFlags || [],
         symptoms: {},
         priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
@@ -112,23 +110,30 @@ const ClinicalDashboard = () => {
     });
   };
 
+  // NICE NG23 compliant risk badge mapping - SAME AS GP DASHBOARD
   const getRiskBadge = (level: string | null) => {
     if (!level) return <Badge variant="outline">Pending</Badge>;
+    
+    console.log("=== CLINICAL DASHBOARD RISK BADGE MAPPING ===");
+    console.log("Risk level received:", level);
     
     const getBadgeProps = (level: string) => {
       switch (level.toLowerCase()) {
         case 'red':
         case 'urgent':
         case 'high':
+          console.log("Mapping to HIGH RISK (red)");
           return { className: "bg-red-500 hover:bg-red-600 text-white border-red-600", label: "HIGH RISK" };
         case 'amber':
         case 'moderate': 
         case 'medium':
+          console.log("Mapping to MODERATE RISK (amber)");
           return { className: "bg-amber-500 hover:bg-amber-600 text-white border-amber-600", label: "MODERATE RISK" };
         case 'green':
         case 'low':
         case 'mild':
         default:
+          console.log("Mapping to LOW RISK (green)");
           return { className: "bg-green-500 hover:bg-green-600 text-white border-green-600", label: "LOW RISK" };
       }
     };
@@ -294,10 +299,9 @@ const ClinicalDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Risk Levels</SelectItem>
-                    <SelectItem value="red">Red Flag</SelectItem>
-                    <SelectItem value="amber">Amber</SelectItem>
-                    <SelectItem value="yellow">Yellow</SelectItem>
-                    <SelectItem value="green">Green</SelectItem>
+                    <SelectItem value="red">High Risk</SelectItem>
+                    <SelectItem value="amber">Moderate Risk</SelectItem>
+                    <SelectItem value="green">Low Risk</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -388,7 +392,8 @@ const ClinicalDashboard = () => {
                                   size="sm"
                                   onClick={() => handleCopySMS(assessment)}
                                 >
-                                  Copy SMS
+                                  <MessageSquare className="w-4 h-4 mr-1" />
+                                  SMS
                                 </Button>
                               </>
                             )}

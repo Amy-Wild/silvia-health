@@ -1,15 +1,22 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   Stethoscope,
   Plus,
   Search,
   Activity,
-  LogOut
+  LogOut,
+  Eye,
+  Mail,
+  MessageSquare,
+  AlertTriangle,
+  Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
@@ -42,9 +49,6 @@ const GPDashboard = () => {
 
   const loadAssessments = () => {
     console.log("=== LOADING ASSESSMENTS (GP DASHBOARD) ===");
-    console.log("Raw from localStorage:", localStorage.getItem('assessments'));
-    
-    console.log("🔄 Loading assessments from localStorage...");
     
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
@@ -114,32 +118,52 @@ const GPDashboard = () => {
     });
   };
 
+  // NICE NG23 compliant risk badge mapping
   const getRiskBadgeClass = (riskLevel: string) => {
+    console.log("=== GP DASHBOARD RISK BADGE MAPPING ===");
+    console.log("Risk level received:", riskLevel);
+    
     switch (riskLevel.toLowerCase()) {
+      case 'red':
       case 'urgent':
       case 'high':
+        console.log("Mapping to HIGH RISK (red)");
         return 'bg-red-500 hover:bg-red-600 text-white border-red-600';
+      case 'amber':
       case 'medium':
       case 'moderate':
+        console.log("Mapping to MODERATE RISK (amber)");
         return 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600';
+      case 'green':
       case 'low':
       default:
+        console.log("Mapping to LOW RISK (green)");
         return 'bg-green-500 hover:bg-green-600 text-white border-green-600';
     }
   };
 
   const getRiskLabel = (riskLevel: string) => {
     switch (riskLevel.toLowerCase()) {
+      case 'red':
       case 'urgent':
       case 'high':
         return 'HIGH RISK';
+      case 'amber':
       case 'medium':
       case 'moderate':
         return 'MODERATE RISK';
+      case 'green':
       case 'low':
       default:
         return 'LOW RISK';
     }
+  };
+
+  const getPriorityIcon = (assessment: Assessment) => {
+    if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
+      return <AlertTriangle className="w-4 h-4 text-red-500" />;
+    }
+    return <Clock className="w-4 h-4 text-gray-500" />;
   };
 
   return (
@@ -203,41 +227,85 @@ const GPDashboard = () => {
         </div>
 
         {filteredAssessments.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAssessments.map((assessment, index) => (
-              <Card key={`${assessment.id}-${index}`} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{assessment.patientName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Completed: {new Date(assessment.completedAt).toLocaleDateString('en-GB')}</p>
-                  <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
-                    {getRiskLabel(assessment.riskLevel)}
-                  </Badge>
-                  {assessment.urgentFlags && assessment.urgentFlags.length > 0 && (
-                    <div className="mt-2">
-                      <Badge variant="destructive" className="text-xs">
-                        {assessment.urgentFlags.length} Red Flag(s)
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="mt-4 space-y-2">
-                    <Button onClick={() => navigateToResults(assessment.id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      View Results
-                    </Button>
-                    <div className="flex space-x-2">
-                      <Button onClick={() => handleEmail(assessment)} variant="outline" size="sm" className="flex-1">
-                        Email
-                      </Button>
-                      <Button onClick={() => handleCopySMS(assessment)} variant="outline" size="sm" className="flex-1">
-                        Copy SMS
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Patient Assessments ({filteredAssessments.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Patient</TableHead>
+                    <TableHead>Date of Birth</TableHead>
+                    <TableHead>Risk Level</TableHead>
+                    <TableHead>Red Flags</TableHead>
+                    <TableHead>Completed</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAssessments.map((assessment, index) => (
+                    <TableRow key={`${assessment.id}-${index}`}>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {getPriorityIcon(assessment)}
+                          <span className="font-medium">
+                            {assessment.patientName}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {assessment.dateOfBirth}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getRiskBadgeClass(assessment.riskLevel)}>
+                          {getRiskLabel(assessment.riskLevel)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {assessment.urgentFlags && assessment.urgentFlags.length > 0 ? (
+                          <Badge variant="destructive" className="text-xs">
+                            {assessment.urgentFlags.length} Red Flag(s)
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-500">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {new Date(assessment.completedAt).toLocaleDateString('en-GB')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            onClick={() => navigateToResults(assessment.id)} 
+                            variant="outline" size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Results
+                          </Button>
+                          <Button 
+                            onClick={() => handleEmail(assessment)} 
+                            variant="outline" size="sm"
+                          >
+                            <Mail className="w-4 h-4 mr-1" />
+                            Email
+                          </Button>
+                          <Button 
+                            onClick={() => handleCopySMS(assessment)} 
+                            variant="outline" size="sm"
+                          >
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            SMS
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         ) : (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
