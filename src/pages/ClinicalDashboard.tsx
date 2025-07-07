@@ -42,10 +42,15 @@ const ClinicalDashboard = () => {
   };
 
   const loadAssessments = () => {
+    console.log("=== LOADING ASSESSMENTS (CLINICAL DASHBOARD) ===");
+    console.log("Raw from localStorage:", localStorage.getItem('assessments'));
+    
     console.log("🔄 Loading assessments for clinical dashboard...");
     
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
+      console.log("📋 Raw assessments from localStorage:", storedAssessments);
+      console.log("Parsed assessments:", storedAssessments);
       
       // Transform to match expected interface
       const transformedAssessments = storedAssessments.map((assessment: any) => ({

@@ -41,11 +41,15 @@ const GPDashboard = () => {
   };
 
   const loadAssessments = () => {
+    console.log("=== LOADING ASSESSMENTS (GP DASHBOARD) ===");
+    console.log("Raw from localStorage:", localStorage.getItem('assessments'));
+    
     console.log("🔄 Loading assessments from localStorage...");
     
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
       console.log("📋 Raw assessments from localStorage:", storedAssessments);
+      console.log("Parsed assessments:", storedAssessments);
       
       // Sort by completion date (most recent first)
       const sortedAssessments = storedAssessments.sort((a: any, b: any) => {

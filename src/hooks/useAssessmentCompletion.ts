@@ -10,6 +10,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
   const { toast } = useToast();
 
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
+    console.log("=== ASSESSMENT COMPLETE ===");
+    console.log("Session ID:", sessionId);
+    console.log("Assessment data:", assessmentData);
+    console.log("About to save to localStorage");
+    
     console.log("🎯 Assessment completed, processing data:", { sessionId, assessmentData });
     
     try {
@@ -28,12 +33,19 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         status: "completed"
       };
 
+      console.log("=== SAVING ASSESSMENT ===");
+      console.log("Current assessments:", localStorage.getItem('assessments'));
+      console.log("New assessment to save:", assessment);
+
       // Get existing assessments and add new one
       const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
+      console.log("Existing assessments parsed:", existingAssessments);
+      
       existingAssessments.push(assessment);
       localStorage.setItem('assessments', JSON.stringify(existingAssessments));
       
       console.log("💾 Assessment saved to localStorage:", assessment);
+      console.log("Final assessments array:", JSON.parse(localStorage.getItem('assessments') || '[]'));
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education') {

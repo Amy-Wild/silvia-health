@@ -24,13 +24,26 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
   const [showConsent, setShowConsent] = useState(!data.consentData);
   const { toast } = useToast();
 
+  console.log("=== PATIENT ASSESSMENT FORM ===");
+  console.log("Current step:", step);
+  console.log("Form data:", formData);
+
   const updateData = (key: string, value: any) => {
+    console.log("=== UPDATING FORM DATA ===");
+    console.log("Key:", key);
+    console.log("Value:", value);
+    
     const newData = { ...formData, [key]: value };
+    console.log("New form data:", newData);
+    
     setFormData(newData);
     onDataChange(newData);
   };
 
   const handleConsentGiven = (consentData: ConsentData) => {
+    console.log("=== CONSENT GIVEN ===");
+    console.log("Consent data:", consentData);
+    
     const newData = { ...formData, consentData };
     setFormData(newData);
     onDataChange(newData);
@@ -58,6 +71,9 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
   }
 
   const renderStep = () => {
+    console.log("=== RENDERING STEP ===");
+    console.log("Step number:", step);
+    
     switch (step) {
       case 1:
         return <Step1AboutYou data={formData} onUpdate={updateData} />;
@@ -74,6 +90,7 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
       case 7:
         return <Step7Lifestyle data={formData} onUpdate={updateData} />;
       case 8:
+        console.log("=== STEP 8 COMPLETE - CALLING COMPLETION ===");
         return <Step8Complete data={formData} onUpdate={updateData} />;
       default:
         return <div>Step not found</div>;
