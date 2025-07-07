@@ -50,10 +50,23 @@ const ClinicalDashboard = () => {
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
       console.log("📋 Raw assessments from localStorage:", storedAssessments);
-      console.log("Parsed assessments:", storedAssessments);
+      
+      // Filter out duplicate IDs and ensure unique assessments
+      const uniqueAssessments = storedAssessments.reduce((acc: any[], current: any) => {
+        const existingIndex = acc.findIndex(item => item.id === current.id);
+        if (existingIndex >= 0) {
+          // Keep the most recent one
+          if (new Date(current.completedAt) > new Date(acc[existingIndex].completedAt)) {
+            acc[existingIndex] = current;
+          }
+        } else {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
       
       // Transform to match expected interface
-      const transformedAssessments = storedAssessments.map((assessment: any) => ({
+      const transformedAssessments = uniqueAssessments.map((assessment: any) => ({
         id: assessment.id,
         patientRef: assessment.patientName,
         completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
@@ -71,7 +84,7 @@ const ClinicalDashboard = () => {
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       });
       
-      console.log("✅ Clinical dashboard loaded assessments:", transformedAssessments);
+      console.log("✅ Clinical dashboard loaded unique assessments:", transformedAssessments);
       setAssessments(transformedAssessments);
     } catch (error) {
       console.error("❌ Error loading assessments:", error);
@@ -311,8 +324,8 @@ const ClinicalDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAssessments.map((assessment) => (
-                      <TableRow key={assessment.id}>
+                    {filteredAssessments.map((assessment, index) => (
+                      <TableRow key={`${assessment.id}-${index}`}>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             {getPriorityIcon(assessment.priority)}

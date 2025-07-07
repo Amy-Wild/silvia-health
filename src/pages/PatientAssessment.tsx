@@ -15,8 +15,8 @@ const PatientAssessment = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   
-  // Generate a unique session ID if one isn't provided or is invalid
-  const actualSessionId = sessionId && sessionId !== ':sessionId' 
+  // Generate a proper unique session ID if one isn't provided or is the placeholder
+  const actualSessionId = (sessionId && sessionId !== ':sessionId') 
     ? sessionId 
     : `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
@@ -41,11 +41,12 @@ const PatientAssessment = () => {
   } = useAssessmentState();
 
   useEffect(() => {
+    // If sessionId is invalid, redirect after generating a new one
     if (!sessionId || sessionId === ':sessionId') {
-      console.log("Invalid sessionId, redirecting to home");
-      navigate('/');
+      console.log("Invalid sessionId, redirecting with new sessionId:", actualSessionId);
+      navigate(`/patient-assessment/${actualSessionId}`, { replace: true });
     }
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, actualSessionId]);
 
   const handleNext = async () => {
     console.log("=== HANDLE NEXT CLICKED ===");
@@ -58,24 +59,6 @@ const PatientAssessment = () => {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
       console.log("Session ID:", actualSessionId);
       console.log("Assessment data before completion:", assessmentData);
-      
-      // Save to localStorage directly for testing
-      const testData = {
-        id: actualSessionId,
-        patientName: assessmentData.patientRef || "Test Patient",
-        dateOfBirth: assessmentData.dateOfBirth || "",
-        completedAt: new Date().toISOString(),
-        riskLevel: "low",
-        status: "completed"
-      };
-      localStorage.setItem('test-assessment', JSON.stringify(testData));
-      console.log("SAVED TEST DATA:", testData);
-      
-      // Also save to the assessments array
-      const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
-      existingAssessments.push(testData);
-      localStorage.setItem('assessments', JSON.stringify(existingAssessments));
-      console.log("SAVED TO ASSESSMENTS ARRAY:", existingAssessments);
       
       setIsSubmitting(true);
       try {

@@ -26,9 +26,9 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       
       console.log("📊 Assessment processed:", { result, determinedPath });
       
-      // Save assessment to localStorage
+      // Create assessment with unique ID
       const assessment = {
-        id: sessionId,
+        id: sessionId, // Use the actual sessionId, not a placeholder
         patientName: assessmentData.patientRef || "Anonymous Patient",
         dateOfBirth: assessmentData.dateOfBirth || "",
         completedAt: new Date().toISOString(),
@@ -37,21 +37,25 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         status: "completed"
       };
 
-      console.log("=== SAVING ASSESSMENT ===");
-      console.log("Current assessments:", localStorage.getItem('assessments'));
-      console.log("New assessment to save:", assessment);
+      console.log("=== SAVING ASSESSMENT WITH UNIQUE ID ===");
+      console.log("SessionId being used:", sessionId);
+      console.log("Assessment to save:", assessment);
 
-      // Get existing assessments and add new one
+      // Get existing assessments and filter out any with the same ID (avoid duplicates)
       const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
-      console.log("Existing assessments parsed:", existingAssessments);
+      console.log("Existing assessments before save:", existingAssessments);
       
-      existingAssessments.push(assessment);
-      localStorage.setItem('assessments', JSON.stringify(existingAssessments));
+      // Remove any existing assessment with the same ID
+      const filteredAssessments = existingAssessments.filter((a: any) => a.id !== sessionId);
       
-      console.log("💾 Assessment saved to localStorage:", assessment);
+      // Add the new assessment
+      filteredAssessments.push(assessment);
+      localStorage.setItem('assessments', JSON.stringify(filteredAssessments));
+      
+      console.log("💾 Assessment saved to localStorage with unique ID:", assessment);
       console.log("Final assessments array:", JSON.parse(localStorage.getItem('assessments') || '[]'));
 
-      // Route based on care pathway - Updated to redirect to educational website
+      // Route based on care pathway
       if (determinedPath === 'self-care' || determinedPath === 'education') {
         const treatmentPreferences = normalizedData.treatmentPreferences || [];
         const educationUrl = treatmentPreferences.length > 0 

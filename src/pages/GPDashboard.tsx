@@ -49,16 +49,29 @@ const GPDashboard = () => {
     try {
       const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
       console.log("📋 Raw assessments from localStorage:", storedAssessments);
-      console.log("Parsed assessments:", storedAssessments);
+      
+      // Filter out duplicate IDs and ensure unique assessments
+      const uniqueAssessments = storedAssessments.reduce((acc: any[], current: any) => {
+        const existingIndex = acc.findIndex(item => item.id === current.id);
+        if (existingIndex >= 0) {
+          // Keep the most recent one (or replace with current if it has more data)
+          if (new Date(current.completedAt) > new Date(acc[existingIndex].completedAt)) {
+            acc[existingIndex] = current;
+          }
+        } else {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
       
       // Sort by completion date (most recent first)
-      const sortedAssessments = storedAssessments.sort((a: any, b: any) => {
+      const sortedAssessments = uniqueAssessments.sort((a: any, b: any) => {
         const aTime = new Date(a.completedAt).getTime();
         const bTime = new Date(b.completedAt).getTime();
         return bTime - aTime;
       });
       
-      console.log("✅ Loaded and sorted assessments:", sortedAssessments);
+      console.log("✅ Loaded and sorted unique assessments:", sortedAssessments);
       setAssessments(sortedAssessments);
     } catch (error) {
       console.error("❌ Error loading assessments:", error);
@@ -191,8 +204,8 @@ const GPDashboard = () => {
 
         {filteredAssessments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAssessments.map((assessment) => (
-              <Card key={assessment.id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
+            {filteredAssessments.map((assessment, index) => (
+              <Card key={`${assessment.id}-${index}`} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">{assessment.patientName}</CardTitle>
                 </CardHeader>
