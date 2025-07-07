@@ -64,9 +64,13 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   // Calculate dateOfBirth from age if not provided
   const dateOfBirth = assessmentData.dateOfBirth || getDOBFromAge(assessmentData.age);
   
-  // Normalize data with required dateOfBirth field
+  // Ensure age is always present - if not provided, calculate from dateOfBirth or use default
+  const age = assessmentData.age || "50"; // Default age if not provided
+  
+  // Normalize data with required fields for PatientAssessmentData
   const normalizedData = {
     ...assessmentData,
+    age: age, // Ensure age is always present
     dateOfBirth: dateOfBirth,
     physicalSymptoms: Array.isArray(assessmentData.physicalSymptoms) 
       ? assessmentData.physicalSymptoms 
