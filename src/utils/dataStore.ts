@@ -141,8 +141,8 @@ class DataStore {
     }
   }
 
-  // Find assessment link by session ID (searches across all users)
-  private findAssessmentLinkBySession(sessionId: string): AssessmentLink | null {
+  // Find assessment link by session ID (searches across all users) - NOW PUBLIC
+  findAssessmentLinkBySession(sessionId: string): AssessmentLink | null {
     // Get all localStorage keys that end with '_assessments'
     const keys = Object.keys(localStorage).filter(key => key.endsWith('_assessments'));
     

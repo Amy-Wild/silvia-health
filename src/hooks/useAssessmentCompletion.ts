@@ -58,11 +58,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         console.log("📋 Using patient reference from assessment data:", patientRef);
       }
 
-      console.log("=== USING DATASTORE TO COMPLETE ASSESSMENT ===");
+      console.log("=== SAVING COMPLETED ASSESSMENT ===");
       console.log("SessionId:", sessionId);
       console.log("Final patient reference:", patientRef);
 
-      // Use dataStore to complete the assessment
+      // Save to completed_assessments
       const completedAssessmentData = {
         sessionId,
         patientRef: patientRef || "Anonymous Patient",
@@ -75,11 +75,31 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       const assessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');
       assessments.push(completedAssessmentData);
       localStorage.setItem('completed_assessments', JSON.stringify(assessments));
-      console.log("✅ Assessment completed using dataStore");
+      console.log("✅ Assessment saved to completed_assessments");
 
       // ALSO store individual assessment for GP results page (keep this for results page compatibility)
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
       console.log("💾 Individual assessment also stored for GP results");
+
+      // Update the original assessment link status to "completed"
+      console.log("🔄 Updating assessment link status to completed");
+      const assessmentLink = dataStore.findAssessmentLinkBySession(sessionId);
+      if (assessmentLink) {
+        const userEmail = assessmentLink.createdBy;
+        const assessmentLinks = dataStore.getAssessmentLinks(userEmail);
+        const updatedLinks = assessmentLinks.map(link => 
+          link.sessionId === sessionId 
+            ? { ...link, status: 'completed' as const }
+            : link
+        );
+        
+        // Save updated links back to localStorage
+        const userKey = `${userEmail}_assessments`;
+        localStorage.setItem(userKey, JSON.stringify(updatedLinks));
+        console.log("✅ Assessment link status updated to completed");
+      } else {
+        console.log("⚠️ No assessment link found for sessionId:", sessionId);
+      }
 
       // Route based on care pathway
       if (determinedPath === 'self-care' || determinedPath === 'education') {
