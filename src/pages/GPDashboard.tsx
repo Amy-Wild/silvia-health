@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Stethoscope,
   Plus,
@@ -12,13 +13,15 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
-import { getAllAssessments } from "@/utils/assessmentStorage";
 
 interface Assessment {
-  sessionId: string;
-  patientRef: string;
+  id: string;
+  patientName: string;
+  dateOfBirth: string;
   completedAt: string;
   riskLevel: string;
+  urgentFlags: string[];
+  status: string;
 }
 
 const GPDashboard = () => {
@@ -26,6 +29,7 @@ const GPDashboard = () => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPatientForm, setShowPatientForm] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadAssessments();
@@ -36,15 +40,15 @@ const GPDashboard = () => {
     navigate("/auth");
   };
 
-  const loadAssessments = async () => {
+  const loadAssessments = () => {
     console.log("🔄 Loading assessments from localStorage...");
     
     try {
-      const storedAssessments = await getAllAssessments();
+      const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
       console.log("📋 Raw assessments from localStorage:", storedAssessments);
       
       // Sort by completion date (most recent first)
-      const sortedAssessments = storedAssessments.sort((a, b) => {
+      const sortedAssessments = storedAssessments.sort((a: any, b: any) => {
         const aTime = new Date(a.completedAt).getTime();
         const bTime = new Date(b.completedAt).getTime();
         return bTime - aTime;
@@ -58,7 +62,7 @@ const GPDashboard = () => {
   };
 
   const filteredAssessments = assessments.filter(assessment =>
-    assessment.patientRef.toLowerCase().includes(searchQuery.toLowerCase())
+    assessment.patientName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,17 +80,31 @@ const GPDashboard = () => {
     setShowPatientForm(false);
   };
 
+  const handleEmail = (assessment: Assessment) => {
+    const subject = `Assessment Results for ${assessment.patientName}`;
+    const body = `Dear ${assessment.patientName},\n\nYour recent health assessment has been completed. Please contact the surgery to discuss your results.\n\nBest regards,\nYour Healthcare Team`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+  };
+
+  const handleCopySMS = (assessment: Assessment) => {
+    const smsText = `Please contact the surgery regarding your recent assessment. Call: 01234 567890`;
+    navigator.clipboard.writeText(smsText).then(() => {
+      toast({
+        title: "SMS template copied to clipboard",
+        description: "You can now paste this message to send to your patient.",
+      });
+    });
+  };
+
   const getRiskBadgeClass = (riskLevel: string) => {
     switch (riskLevel.toLowerCase()) {
-      case 'red':
       case 'urgent':
       case 'high':
         return 'bg-red-500 hover:bg-red-600 text-white border-red-600';
-      case 'amber':
-      case 'moderate':
       case 'medium':
+      case 'moderate':
         return 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600';
-      case 'green':
       case 'low':
       default:
         return 'bg-green-500 hover:bg-green-600 text-white border-green-600';
@@ -95,15 +113,12 @@ const GPDashboard = () => {
 
   const getRiskLabel = (riskLevel: string) => {
     switch (riskLevel.toLowerCase()) {
-      case 'red':
       case 'urgent':
       case 'high':
         return 'HIGH RISK';
-      case 'amber':
-      case 'moderate':
       case 'medium':
+      case 'moderate':
         return 'MODERATE RISK';
-      case 'green':
       case 'low':
       default:
         return 'LOW RISK';
@@ -173,18 +188,35 @@ const GPDashboard = () => {
         {filteredAssessments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAssessments.map((assessment) => (
-              <Card key={assessment.sessionId} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
+              <Card key={assessment.id} className="bg-white shadow-md rounded-md hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold">{assessment.patientRef}</CardTitle>
+                  <CardTitle className="text-lg font-semibold">{assessment.patientName}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Completed: {new Date(assessment.completedAt).toLocaleDateString('en-GB')}</p>
                   <Badge className={`mt-2 ${getRiskBadgeClass(assessment.riskLevel)}`}>
                     {getRiskLabel(assessment.riskLevel)}
                   </Badge>
-                  <Button onClick={() => navigateToResults(assessment.sessionId)} className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white">
-                    View Results
-                  </Button>
+                  {assessment.urgentFlags && assessment.urgentFlags.length > 0 && (
+                    <div className="mt-2">
+                      <Badge variant="destructive" className="text-xs">
+                        {assessment.urgentFlags.length} Red Flag(s)
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="mt-4 space-y-2">
+                    <Button onClick={() => navigateToResults(assessment.id)} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      View Results
+                    </Button>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleEmail(assessment)} variant="outline" size="sm" className="flex-1">
+                        Email
+                      </Button>
+                      <Button onClick={() => handleCopySMS(assessment)} variant="outline" size="sm" className="flex-1">
+                        Copy SMS
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}

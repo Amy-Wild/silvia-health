@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { processAssessmentData } from "@/utils/assessmentProcessor";
 import { generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
 import { useToast } from "@/hooks/use-toast";
-import { saveAssessment } from "@/utils/assessmentStorage";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
 export const useAssessmentCompletion = (sessionId: string | undefined) => {
@@ -18,10 +17,23 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       
       console.log("📊 Assessment processed:", { result, determinedPath });
       
-      // Save to localStorage instead of Supabase
-      await saveAssessment(sessionId!, assessmentData, result);
+      // Save assessment to localStorage
+      const assessment = {
+        id: sessionId!,
+        patientName: assessmentData.patientRef || "Anonymous Patient",
+        dateOfBirth: assessmentData.dateOfBirth || "",
+        completedAt: new Date().toISOString(),
+        riskLevel: result.riskLevel.toLowerCase(),
+        urgentFlags: result.urgentFlags || [],
+        status: "completed"
+      };
+
+      // Get existing assessments and add new one
+      const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
+      existingAssessments.push(assessment);
+      localStorage.setItem('assessments', JSON.stringify(existingAssessments));
       
-      console.log("💾 Assessment saved successfully");
+      console.log("💾 Assessment saved to localStorage:", assessment);
 
       // Route based on care pathway - Updated to redirect to educational website
       if (determinedPath === 'self-care' || determinedPath === 'education') {

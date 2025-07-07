@@ -42,65 +42,56 @@ const ClinicalDashboard = () => {
   };
 
   const loadAssessments = () => {
-    const storedAssessments: Assessment[] = [];
+    console.log("🔄 Loading assessments for clinical dashboard...");
     
-    // Load completed assessments from localStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('assessment_')) {
-        const assessmentData = localStorage.getItem(key);
-        if (assessmentData) {
-          try {
-            const assessment = JSON.parse(assessmentData);
-            
-            // Determine priority based on risk level and urgent flags
-            let priority = "routine";
-            if (assessment.urgentFlags && assessment.urgentFlags.length > 0) {
-              // Check for red flags
-              const hasRedFlags = assessment.urgentFlags.some((flag: string) => 
-                flag.includes('🚨 RED') || flag.includes('Postmenopausal bleeding') || 
-                flag.includes('Unexplained weight loss') || flag.includes('Severe pelvic pain')
-              );
-              if (hasRedFlags) {
-                priority = "urgent";
-              }
-            }
-            
-            storedAssessments.push({
-              id: assessment.sessionId,
-              patientRef: assessment.patientRef || "Anonymous Patient",
-              completed: assessment.completedAt ? new Date(assessment.completedAt).toLocaleString('en-GB') : null,
-              status: "completed",
-              riskLevel: assessment.riskLevel,
-              redFlags: assessment.urgentFlags || [],
-              symptoms: assessment.clinicalSummary || {},
-              bmi: assessment.rawData?.bmi ? parseFloat(assessment.rawData.bmi) : undefined,
-              smoking: assessment.rawData?.smokingStatus,
-              alcohol: assessment.rawData?.alcoholConsumption,
-              priority,
-              completedAt: assessment.completedAt
-            });
-          } catch (error) {
-            console.error("Error parsing assessment data:", error);
-          }
-        }
-      }
+    try {
+      const storedAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
+      
+      // Transform to match expected interface
+      const transformedAssessments = storedAssessments.map((assessment: any) => ({
+        id: assessment.id,
+        patientRef: assessment.patientName,
+        completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
+        status: assessment.status,
+        riskLevel: assessment.riskLevel,
+        redFlags: assessment.urgentFlags || [],
+        symptoms: {},
+        priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
+        completedAt: assessment.completedAt
+      }));
+      
+      // Sort by completion date (most recent first)
+      transformedAssessments.sort((a: any, b: any) => {
+        if (!a.completedAt || !b.completedAt) return 0;
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      });
+      
+      console.log("✅ Clinical dashboard loaded assessments:", transformedAssessments);
+      setAssessments(transformedAssessments);
+    } catch (error) {
+      console.error("❌ Error loading assessments:", error);
     }
-    
-    // Sort by completion date (most recent first)
-    storedAssessments.sort((a, b) => {
-      if (!a.completedAt || !b.completedAt) return 0;
-      return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
-    });
-    
-    console.log("Clinical dashboard loaded assessments:", storedAssessments);
-    setAssessments(storedAssessments);
   };
 
   const handleAssessmentCreated = (sessionId: string, patientRef: string) => {
     // Refresh the assessments list
     loadAssessments();
     setShowPatientForm(false);
+  };
+
+  const handleEmail = (assessment: Assessment) => {
+    const subject = `Assessment Results for ${assessment.patientRef}`;
+    const body = `Dear ${assessment.patientRef},\n\nYour recent health assessment has been completed. Please contact the surgery to discuss your results.\n\nBest regards,\nYour Healthcare Team`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+  };
+
+  const handleCopySMS = (assessment: Assessment) => {
+    const smsText = `Please contact the surgery regarding your recent assessment. Call: 01234 567890`;
+    navigator.clipboard.writeText(smsText).then(() => {
+      // Show toast notification
+      console.log("SMS template copied to clipboard");
+    });
   };
 
   const getRiskBadge = (level: string | null) => {
@@ -366,9 +357,20 @@ const ClinicalDashboard = () => {
                                   <Eye className="w-4 h-4 mr-1" />
                                   Clinical View
                                 </Button>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEmail(assessment)}
+                                >
                                   <Mail className="w-4 h-4 mr-1" />
                                   Email
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleCopySMS(assessment)}
+                                >
+                                  Copy SMS
                                 </Button>
                               </>
                             )}
