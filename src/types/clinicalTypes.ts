@@ -35,6 +35,8 @@ export interface PatientAssessmentData {
   moodSymptoms: 'none' | 'mild' | 'moderate' | 'severe';
   cognitiveSymptoms: 'none' | 'mild' | 'moderate' | 'severe';
   moodImpact?: string;
+  selfHarmRisk?: 'no' | 'occasional' | 'frequent';
+  mentalWellbeing?: 'excellent' | 'good' | 'fair' | 'poor';
   
   // Quality of Life
   sleepQuality: 'good' | 'fair' | 'poor' | 'very-poor';
