@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PasswordGate from "./components/PasswordGate";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PatientAssessment from "./pages/PatientAssessment";
@@ -23,56 +24,58 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Protected patient routes */}
-          <Route path="/symptom-tracker" element={
-            <ProtectedRoute requiredRole="patient">
-              <SymptomTracker />
-            </ProtectedRoute>
-          } />
-          
-          {/* Protected GP routes */}
-          <Route path="/gp-dashboard" element={
-            <ProtectedRoute requiredRole="gp">
-              <GPDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/gp-results/:sessionId" element={
-            <ProtectedRoute requiredRole="gp">
-              <GPResults />
-            </ProtectedRoute>
-          } />
-          
-          {/* Protected admin routes */}
-          <Route path="/clinical-dashboard" element={
-            <ProtectedRoute requiredRole="admin">
-              <ClinicalDashboard />
-            </ProtectedRoute>
-          } />
-          
-          {/* Assessment routes - these can remain as they were */}
-          <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
-          <Route path="/patient-results/:sessionId" element={<PatientResults />} />
-          <Route path="/instructions" element={<Instructions />} />
-          <Route path="/patientinstructions" element={<PatientInstructions />} />
-          <Route path="/clinics-gpinstructions" element={<ClinicsGPInstructions />} />
-          <Route path="/education" element={<Education />} />
-          <Route path="/partner-zone" element={<PartnerZone />} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <PasswordGate>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Protected patient routes */}
+            <Route path="/symptom-tracker" element={
+              <ProtectedRoute requiredRole="patient">
+                <SymptomTracker />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected GP routes */}
+            <Route path="/gp-dashboard" element={
+              <ProtectedRoute requiredRole="gp">
+                <GPDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/gp-results/:sessionId" element={
+              <ProtectedRoute requiredRole="gp">
+                <GPResults />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected admin routes */}
+            <Route path="/clinical-dashboard" element={
+              <ProtectedRoute requiredRole="admin">
+                <ClinicalDashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Assessment routes - these can remain as they were */}
+            <Route path="/patient-assessment/:sessionId" element={<PatientAssessment />} />
+            <Route path="/patient-results/:sessionId" element={<PatientResults />} />
+            <Route path="/instructions" element={<Instructions />} />
+            <Route path="/patientinstructions" element={<PatientInstructions />} />
+            <Route path="/clinics-gpinstructions" element={<ClinicsGPInstructions />} />
+            <Route path="/education" element={<Education />} />
+            <Route path="/partner-zone" element={<PartnerZone />} />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </PasswordGate>
 );
 
 export default App;
