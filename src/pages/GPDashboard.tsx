@@ -26,13 +26,15 @@ const GPDashboard = () => {
   }, []);
 
   const loadAssessments = async () => {
+    console.log('🔍 GP Dashboard: Loading all assessments...');
     setLoading(true);
     try {
       const allAssessments = await loadAllAssessments();
-      console.log("Fetched assessments", allAssessments);
+      console.log('📊 GP Dashboard: Raw data from storage:', allAssessments);
+      console.log('📊 GP Dashboard: Fetched assessments', allAssessments);
       setAssessments(allAssessments);
     } catch (error) {
-      console.error("Error loading assessments:", error);
+      console.error("❌ GP Dashboard: Error loading assessments:", error);
     } finally {
       setLoading(false);
     }

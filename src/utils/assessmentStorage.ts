@@ -31,12 +31,14 @@ interface SessionData {
 
 export const storeAssessment = async (assessment: StoredAssessment): Promise<boolean> => {
   try {
-    console.log("Saving assessment", assessment.session_id, assessment);
+    console.log("💾 Saving assessment", assessment.session_id, assessment);
     
     // Store in Supabase if user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
+    console.log("👤 Supabase user:", user ? `${user.email} (${user.id})` : 'Not authenticated');
     
     if (user) {
+      console.log("🔄 Attempting to save to Supabase assessment_links table...");
       const { error } = await supabase
         .from('assessment_links')
         .insert({
@@ -59,38 +61,37 @@ export const storeAssessment = async (assessment: StoredAssessment): Promise<boo
         });
 
       if (error) {
-        console.error('Error storing assessment in Supabase:', error);
-        // Fall back to localStorage
+        console.error('❌ Error storing assessment in Supabase:', error);
+        console.log("🔄 Falling back to localStorage...");
         storeInLocalStorage(assessment);
         return true;
       } else {
-        console.log('Assessment successfully stored in Supabase');
+        console.log('✅ Assessment successfully stored in Supabase');
       }
     } else {
-      console.log('No user authenticated, storing in localStorage');
-      // Not authenticated, store in localStorage
+      console.log('⚠️ No user authenticated, storing in localStorage');
       storeInLocalStorage(assessment);
     }
     
     return true;
   } catch (error) {
-    console.error('Error storing assessment:', error);
+    console.error('❌ Error storing assessment:', error);
+    console.log("🔄 Falling back to localStorage...");
     storeInLocalStorage(assessment);
     return true;
   }
 };
 
 const storeInLocalStorage = (assessment: StoredAssessment) => {
-  console.log('Storing assessment in localStorage', assessment.session_id);
-  // Store individual assessment with unique key
+  console.log('💾 Storing assessment in localStorage', assessment.session_id);
   localStorage.setItem(`assessment_${assessment.session_id}`, JSON.stringify(assessment));
   
-  // Also maintain a list of all assessment IDs
   const existingIds = getStoredAssessmentIds();
   if (!existingIds.includes(assessment.session_id)) {
     existingIds.push(assessment.session_id);
     localStorage.setItem('assessment_ids', JSON.stringify(existingIds));
   }
+  console.log('✅ Stored in localStorage. Current assessment IDs:', existingIds);
 };
 
 const getStoredAssessmentIds = (): string[] => {
@@ -104,12 +105,11 @@ const isSessionData = (data: any): data is SessionData => {
 
 export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
   try {
-    console.log('Loading all assessments...');
-    // Try to load from Supabase first
+    console.log('🔍 Loading all assessments...');
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
-      console.log('Loading assessments from Supabase for user:', user.id);
+      console.log('🔍 Loading assessments from Supabase for user:', user.email, user.id);
       const { data, error } = await supabase
         .from('assessment_links')
         .select('*')
@@ -117,9 +117,11 @@ export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
         .eq('status', 'completed')
         .order('completed_at', { ascending: false });
 
+      console.log('📊 Raw Supabase query result:', { data, error });
+
       if (!error && data) {
-        console.log('Fetched assessments from Supabase:', data);
-        return data.map(item => {
+        console.log('✅ Fetched assessments from Supabase:', data);
+        const processedData = data.map(item => {
           const sessionData: SessionData = isSessionData(item.session_data) ? item.session_data : {};
           
           return {
@@ -138,21 +140,23 @@ export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
             created_by: item.created_by
           };
         });
+        console.log('✅ Processed Supabase data:', processedData);
+        return processedData;
       } else {
-        console.error('Error loading from Supabase:', error);
+        console.error('❌ Error loading from Supabase:', error);
       }
     }
     
-    // Fall back to localStorage
-    console.log('Loading assessments from localStorage');
+    console.log('🔍 Loading assessments from localStorage');
     return loadFromLocalStorage();
   } catch (error) {
-    console.error('Error loading assessments:', error);
+    console.error('❌ Error loading assessments:', error);
     return loadFromLocalStorage();
   }
 };
 
 const loadFromLocalStorage = (): StoredAssessment[] => {
+  console.log('🔍 Loading from localStorage...');
   const assessments: StoredAssessment[] = [];
   const assessmentIds = getStoredAssessmentIds();
   
@@ -167,9 +171,8 @@ const loadFromLocalStorage = (): StoredAssessment[] => {
     }
   }
   
-  console.log('Loading assessments from localStorage, found IDs:', assessmentIds);
+  console.log('📋 Loading assessments from localStorage, found IDs:', assessmentIds);
   
-  // Load all assessments
   for (const sessionId of assessmentIds) {
     const stored = localStorage.getItem(`assessment_${sessionId}`);
     if (stored) {
@@ -190,14 +193,12 @@ const loadFromLocalStorage = (): StoredAssessment[] => {
           age: assessment.age
         });
       } catch (error) {
-        console.error(`Error parsing assessment ${sessionId}:`, error);
+        console.error(`❌ Error parsing assessment ${sessionId}:`, error);
       }
     }
   }
   
-  console.log('Loaded assessments from localStorage:', assessments);
-  
-  // Sort by completion date (most recent first)
+  console.log('✅ Loaded assessments from localStorage:', assessments);
   return assessments.sort((a, b) => 
     new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
   );
@@ -205,12 +206,12 @@ const loadFromLocalStorage = (): StoredAssessment[] => {
 
 export const loadSingleAssessment = async (sessionId: string): Promise<StoredAssessment | null> => {
   try {
-    console.log('Loading single assessment for sessionId:', sessionId);
+    console.log('🔍 Loading single assessment for sessionId:', sessionId);
     
-    // Try Supabase first
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
+      console.log('🔍 Checking Supabase for assessment...');
       const { data, error } = await supabase
         .from('assessment_links')
         .select('*')
@@ -218,8 +219,10 @@ export const loadSingleAssessment = async (sessionId: string): Promise<StoredAss
         .eq('status', 'completed')
         .single();
 
+      console.log('📊 Supabase single query result:', { data, error });
+
       if (!error && data) {
-        console.log('Found assessment in Supabase:', data);
+        console.log('✅ Found assessment in Supabase:', data);
         const sessionData: SessionData = isSessionData(data.session_data) ? data.session_data : {};
         
         return {
@@ -240,12 +243,11 @@ export const loadSingleAssessment = async (sessionId: string): Promise<StoredAss
       }
     }
     
-    // Fall back to localStorage
-    console.log('Trying localStorage for sessionId:', sessionId);
+    console.log('🔍 Trying localStorage for sessionId:', sessionId);
     const stored = localStorage.getItem(`assessment_${sessionId}`);
     if (stored) {
       const assessment = JSON.parse(stored);
-      console.log('Found assessment in localStorage:', assessment);
+      console.log('✅ Found assessment in localStorage:', assessment);
       return {
         id: assessment.sessionId || sessionId,
         session_id: assessment.sessionId || sessionId,
@@ -262,10 +264,10 @@ export const loadSingleAssessment = async (sessionId: string): Promise<StoredAss
       };
     }
     
-    console.log('No assessment found for sessionId:', sessionId);
+    console.log('❌ No assessment found for sessionId:', sessionId);
     return null;
   } catch (error) {
-    console.error('Error loading single assessment:', error);
+    console.error('❌ Error loading single assessment:', error);
     return null;
   }
 };
