@@ -10,7 +10,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
   const { toast } = useToast();
 
   const processAssessmentCompletion = async (assessmentData: PatientAssessmentData) => {
-    console.log("=== ASSESSMENT COMPLETE ===");
+    console.log("=== ASSESSMENT COMPLETION HOOK CALLED ===");
     console.log("Session ID:", sessionId);
     console.log("Assessment data:", assessmentData);
     console.log("About to save to localStorage");

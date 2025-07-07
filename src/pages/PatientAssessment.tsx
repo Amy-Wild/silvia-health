@@ -37,9 +37,18 @@ const PatientAssessment = () => {
   }, [sessionId, navigate]);
 
   const handleNext = async () => {
+    console.log("=== HANDLE NEXT CLICKED ===");
+    console.log("Current step:", currentStep);
+    console.log("Total steps:", totalSteps);
+    console.log("Assessment data:", assessmentData);
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
+      console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
+      console.log("Session ID:", sessionId);
+      console.log("Assessment data before completion:", assessmentData);
+      
       setIsSubmitting(true);
       try {
         await processAssessmentCompletion(assessmentData);
