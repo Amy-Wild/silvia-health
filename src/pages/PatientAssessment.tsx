@@ -49,13 +49,12 @@ const PatientAssessment = () => {
 
   const handleNext = async () => {
     console.log("=== HANDLE NEXT CLICKED ===");
-    console.log("Current step:", currentStep);
-    console.log("Total steps:", totalSteps);
+    console.log("Next clicked, step:", currentStep, "of", totalSteps);
     console.log("Assessment data:", assessmentData);
     console.log("Using sessionId:", actualSessionId);
     
-    // Check if this is the final step (step 7)
-    if (currentStep === 7) {
+    // Check if this is the final step
+    if (currentStep === totalSteps) {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
       console.log("Session ID:", actualSessionId);
       console.log("Assessment data before completion:", assessmentData);

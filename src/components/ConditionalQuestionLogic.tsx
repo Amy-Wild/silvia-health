@@ -144,58 +144,96 @@ export const generatePatientGuidance = (data: any): string => {
 
 // Function to calculate the risk level based on assessment data
 export const calculateRiskLevel = (data: any): string => {
+  console.log("=== CALCULATE RISK LEVEL FUNCTION ===");
+  console.log("Input data:", data);
+  
   // Check for high-risk factors first
-  if (data.postmenopausalBleeding === 'yes' || data.unexplainedWeightLoss === 'yes' || data.severePelvicPain === 'yes') {
+  console.log("Checking postmenopausal bleeding:", data.postmenopausalBleeding);
+  if (data.postmenopausalBleeding === 'yes') {
+    console.log("🚨 RED FLAG: Postmenopausal bleeding detected - returning 'red'");
+    return 'red';
+  }
+
+  console.log("Checking unexplained weight loss:", data.unexplainedWeightLoss);
+  if (data.unexplainedWeightLoss === 'yes') {
+    console.log("🚨 RED FLAG: Unexplained weight loss detected - returning 'red'");
+    return 'red';
+  }
+
+  console.log("Checking severe pelvic pain:", data.severePelvicPain);
+  if (data.severePelvicPain === 'yes') {
+    console.log("🚨 RED FLAG: Severe pelvic pain detected - returning 'red'");
     return 'red';
   }
 
   // Check for severe mental health symptoms
-  if (data.moodSymptoms === 'severe' || data.selfHarmRisk === 'frequent') {
+  console.log("Checking mood symptoms:", data.moodSymptoms);
+  if (data.moodSymptoms === 'severe') {
+    console.log("🚨 RED FLAG: Severe mood symptoms detected - returning 'red'");
+    return 'red';
+  }
+
+  console.log("Checking self harm risk:", data.selfHarmRisk);
+  if (data.selfHarmRisk === 'frequent') {
+    console.log("🚨 RED FLAG: Frequent self harm risk detected - returning 'red'");
     return 'red';
   }
 
   // Check for moderate mental health symptoms  
   if (data.moodSymptoms === 'moderate' || data.selfHarmRisk === 'occasional') {
+    console.log("🟠 AMBER FLAG: Moderate symptoms detected - returning 'amber'");
     return 'amber';
   }
 
   // Check for mild symptoms
   if (data.moodSymptoms === 'mild') {
+    console.log("🟢 GREEN: Mild symptoms detected - returning 'green'");
     return 'green';
   }
 
   // Default to low risk
+  console.log("🟢 DEFAULT: No significant risk factors - returning 'green'");
   return 'green';
 };
 
 // Function to get urgent flags based on assessment data
 export const getUrgentFlags = (data: any): string[] => {
+  console.log("=== GET URGENT FLAGS FUNCTION ===");
+  console.log("Input data:", data);
+  
   const urgentFlags: string[] = [];
 
   if (data.postmenopausalBleeding === 'yes') {
+    console.log("Adding urgent flag: Postmenopausal bleeding");
     urgentFlags.push("🚨 RED FLAG: Postmenopausal bleeding");
   }
 
   if (data.unexplainedWeightLoss === 'yes') {
+    console.log("Adding urgent flag: Unexplained weight loss");
     urgentFlags.push("🚨 RED FLAG: Unexplained weight loss");
   }
 
   if (data.severePelvicPain === 'yes') {
+    console.log("Adding urgent flag: Severe pelvic pain");
     urgentFlags.push("🚨 RED FLAG: Severe pelvic pain");
   }
 
   if (data.selfHarmRisk === 'frequent') {
+    console.log("Adding urgent flag: Frequent self harm risk");
     urgentFlags.push("🚨 RED FLAG: Patient reports frequent thoughts of self-harm");
   }
 
   if (data.moodSymptoms === 'severe') {
+    console.log("Adding amber flag: Severe mood symptoms");
     urgentFlags.push("🟠 AMBER FLAG: Severe mood symptoms requiring urgent support");
   }
 
   if (data.selfHarmRisk === 'occasional') {
+    console.log("Adding amber flag: Occasional self harm risk");
     urgentFlags.push("🟠 AMBER FLAG: Patient reports occasional thoughts of self-harm");
   }
 
+  console.log("Final urgent flags:", urgentFlags);
   return urgentFlags;
 };
 

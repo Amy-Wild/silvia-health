@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { calculateRiskLevel, getUrgentFlags } from "@/components/ConditionalQuestionLogic";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
@@ -38,7 +39,7 @@ export const useAssessmentState = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [riskLevel, setRiskLevel] = useState("low");
 
-  const totalSteps = 7;
+  const totalSteps = 8; // Changed from 7 to 8 to include Step8Complete
   const steps = [
     "About You",
     "Your Periods & Health", 
@@ -46,16 +47,27 @@ export const useAssessmentState = () => {
     "Physical Symptoms",
     "Mental Health & Wellbeing",
     "Sleep & Intimacy",
-    "Medical History & Lifestyle"
+    "Medical History & Lifestyle",
+    "Complete Assessment" // Added 8th step
   ];
 
   // Calculate risk level in real-time as data changes
   useEffect(() => {
+    console.log("=== CALCULATING RISK LEVEL ===");
+    console.log("Assessment data for risk calculation:", assessmentData);
+    console.log("Checking postmenopausal bleeding:", assessmentData.postmenopausalBleeding);
+    console.log("Checking unexplained weight loss:", assessmentData.unexplainedWeightLoss);
+    console.log("Checking severe pelvic pain:", assessmentData.severePelvicPain);
+    console.log("Checking mood symptoms:", assessmentData.moodSymptoms);
+    
     const currentRisk = calculateRiskLevel(assessmentData);
+    console.log("Calculated risk level:", currentRisk);
     setRiskLevel(currentRisk);
   }, [assessmentData]);
 
   const handleDataChange = (data: PatientAssessmentData) => {
+    console.log("=== DATA CHANGE ===");
+    console.log("New data:", data);
     setAssessmentData(data);
     // Remove validation to prevent blocking navigation
     setIsValid(true);
