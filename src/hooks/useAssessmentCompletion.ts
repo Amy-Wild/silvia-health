@@ -74,19 +74,25 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       console.log("Final patient reference used:", patientRef);
       console.log("Assessment to save:", assessment);
 
-      // Get existing assessments and filter out any with the same ID (avoid duplicates)
+      // CRITICAL FIX: Use the SAME storage key that dashboards read from
       const existingAssessments = JSON.parse(localStorage.getItem('assessments') || '[]');
       console.log("Existing assessments before save:", existingAssessments);
       
-      // Remove any existing assessment with the same ID
+      // Remove any existing assessment with the same ID to avoid duplicates
       const filteredAssessments = existingAssessments.filter((a: any) => a.id !== sessionId);
       
       // Add the new assessment
       filteredAssessments.push(assessment);
+      
+      // Store using the SAME key that dashboards use: 'assessments'
       localStorage.setItem('assessments', JSON.stringify(filteredAssessments));
       
-      console.log("💾 Assessment saved to localStorage with patient reference:", assessment);
+      console.log("💾 Assessment saved to localStorage with key 'assessments':", assessment);
       console.log("Final assessments array:", JSON.parse(localStorage.getItem('assessments') || '[]'));
+
+      // ALSO store individual assessment for GP results page
+      localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
+      console.log("💾 Individual assessment also stored for GP results");
 
       // Route based on care pathway
       if (determinedPath === 'self-care' || determinedPath === 'education') {
