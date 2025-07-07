@@ -17,6 +17,18 @@ export interface StoredAssessment {
   created_by?: string;
 }
 
+interface SessionData {
+  riskLevel?: string;
+  urgentFlags?: string[];
+  clinicalSummary?: any;
+  recommendations?: any;
+  rawData?: any;
+  carePath?: string;
+  patientRef?: string;
+  dateOfBirth?: string;
+  age?: number;
+}
+
 export const storeAssessment = async (assessment: StoredAssessment): Promise<boolean> => {
   try {
     // Store in Supabase if user is authenticated
@@ -80,6 +92,10 @@ const getStoredAssessmentIds = (): string[] => {
   return stored ? JSON.parse(stored) : [];
 };
 
+const isSessionData = (data: any): data is SessionData => {
+  return data && typeof data === 'object';
+};
+
 export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
   try {
     // Try to load from Supabase first
@@ -94,21 +110,25 @@ export const loadAllAssessments = async (): Promise<StoredAssessment[]> => {
         .order('completed_at', { ascending: false });
 
       if (!error && data) {
-        return data.map(item => ({
-          id: item.id,
-          session_id: item.id,
-          patient_ref: item.patient_identifier,
-          completed_at: item.completed_at || new Date().toISOString(),
-          risk_level: item.session_data?.riskLevel || 'unknown',
-          urgent_flags: item.session_data?.urgentFlags || [],
-          clinical_summary: item.session_data?.clinicalSummary || {},
-          recommendations: item.session_data?.recommendations || {},
-          raw_data: item.session_data?.rawData || {},
-          care_path: item.session_data?.carePath,
-          date_of_birth: item.session_data?.dateOfBirth,
-          age: item.session_data?.age,
-          created_by: item.created_by
-        }));
+        return data.map(item => {
+          const sessionData: SessionData = isSessionData(item.session_data) ? item.session_data : {};
+          
+          return {
+            id: item.id,
+            session_id: item.id,
+            patient_ref: item.patient_identifier,
+            completed_at: item.completed_at || new Date().toISOString(),
+            risk_level: sessionData.riskLevel || 'unknown',
+            urgent_flags: sessionData.urgentFlags || [],
+            clinical_summary: sessionData.clinicalSummary || {},
+            recommendations: sessionData.recommendations || {},
+            raw_data: sessionData.rawData || {},
+            care_path: sessionData.carePath,
+            date_of_birth: sessionData.dateOfBirth,
+            age: sessionData.age,
+            created_by: item.created_by
+          };
+        });
       }
     }
     
