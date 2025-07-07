@@ -83,64 +83,24 @@ const GPDashboard = () => {
     console.log("=== LOADING COMPLETED ASSESSMENTS (GP DASHBOARD) ===");
     
     try {
-      const userEmail = getCurrentUserEmail();
-      const allAssessments: Assessment[] = [];
+      // Read completed assessments from the unified localStorage key
+      const completedAssessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');
+      console.log("📋 Completed assessments from localStorage:", completedAssessments);
       
-      // Get completed assessments from dataStore
-      const completedFromDataStore: CompletedAssessment[] = dataStore.getCompletedAssessments(userEmail);
-      console.log("📋 Completed assessments from dataStore:", completedFromDataStore);
-      
-      // Transform dataStore assessments to match expected interface
-      const dataStoreAssessments = completedFromDataStore.map((assessment: CompletedAssessment) => ({
+      // Transform assessments to match expected interface
+      const allAssessments = completedAssessments.map((assessment: any) => ({
         id: assessment.sessionId,
-        patientRef: assessment.patientRef,
+        patientRef: assessment.patientRef || 'Anonymous Patient',
         completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
         status: "completed",
         riskLevel: assessment.riskLevel,
         redFlags: assessment.urgentFlags || [],
-        symptoms: {},
+        symptoms: assessment.rawData || {},
         priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
         completedAt: assessment.completedAt,
-        source: 'dataStore' as const
+        source: 'localStorage' as const
       }));
 
-      allAssessments.push(...dataStoreAssessments);
-
-      // RESTORE: Get assessments from individual localStorage entries (for backward compatibility)
-      const storageKeys = Object.keys(localStorage);
-      const assessmentKeys = storageKeys.filter(key => key.startsWith('assessment_'));
-      
-      console.log("📋 Found individual assessment keys:", assessmentKeys);
-      
-      assessmentKeys.forEach(key => {
-        try {
-          const assessmentData = JSON.parse(localStorage.getItem(key) || '{}');
-          const sessionId = key.replace('assessment_', '');
-          
-          // Check if this assessment is already in dataStore to avoid duplicates
-          const existsInDataStore = dataStoreAssessments.some(ds => ds.id === sessionId);
-          if (!existsInDataStore && assessmentData.riskLevel) {
-            // Get patient reference from localStorage or URL parameter backup
-            let patientRef = localStorage.getItem(`patient_ref_${sessionId}`) || 'Anonymous Patient';
-            
-            allAssessments.push({
-              id: sessionId,
-              patientRef: patientRef,
-              completed: new Date().toLocaleString('en-GB'), // Use current time as fallback
-              status: "completed",
-              riskLevel: assessmentData.riskLevel,
-              redFlags: assessmentData.urgentFlags || [],
-              symptoms: assessmentData,
-              priority: (assessmentData.urgentFlags && assessmentData.urgentFlags.length > 0) ? "urgent" : "routine",
-              completedAt: new Date().toISOString(),
-              source: 'localStorage' as const
-            });
-          }
-        } catch (error) {
-          console.error(`Error parsing assessment ${key}:`, error);
-        }
-      });
-      
       // Sort by completion date (most recent first)
       allAssessments.sort((a: any, b: any) => {
         if (!a.completedAt || !b.completedAt) return 0;
