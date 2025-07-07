@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from './AuthProvider';
 import { useToast } from '@/hooks/use-toast';
-import { Stethoscope, LogOut } from 'lucide-react';
+import { Stethoscope } from 'lucide-react';
 
 const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,9 +22,27 @@ const AuthPage = () => {
     role: 'patient' as 'patient' | 'gp' | 'clinical_admin'
   });
   
-  const { signIn, signUp, signOut, user, userRole } = useAuth();
+  const { signIn, signUp, user, userRole } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user && userRole) {
+      switch (userRole) {
+        case 'gp':
+          navigate('/gp/dashboard');
+          break;
+        case 'clinical_admin':
+          navigate('/clinical/dashboard');
+          break;
+        case 'patient':
+        default:
+          navigate('/');
+          break;
+      }
+    }
+  }, [user, userRole, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +61,6 @@ const AuthPage = () => {
         title: "Welcome back!",
         description: "You have been signed in successfully."
       });
-      // Navigation will be handled by the auth state change
     }
     
     setIsLoading(false);
@@ -77,36 +94,6 @@ const AuthPage = () => {
     setIsLoading(false);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Signed Out",
-      description: "You have been signed out successfully."
-    });
-  };
-
-  const redirectToDashboard = () => {
-    if (userRole === 'gp') {
-      navigate('/gp/dashboard');
-    } else if (userRole === 'clinical_admin') {
-      navigate('/clinical/dashboard');
-    } else {
-      navigate('/');
-    }
-  };
-
-  const getRoleDisplayName = () => {
-    switch (userRole) {
-      case 'gp':
-        return 'GP';
-      case 'clinical_admin':
-        return 'Clinical Admin';
-      case 'patient':
-      default:
-        return 'Patient';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -118,33 +105,9 @@ const AuthPage = () => {
           <p className="text-gray-600">Healthcare Assessment Platform</p>
         </div>
 
-        {/* Show current user info if logged in */}
-        {user && userRole && (
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Currently signed in as:</p>
-                <p className="font-medium">{user.email}</p>
-                <p className="text-sm text-blue-600">{getRoleDisplayName()}</p>
-                <div className="flex gap-2 mt-4">
-                  <Button onClick={redirectToDashboard} className="flex-1">
-                    Go to Dashboard
-                  </Button>
-                  <Button onClick={handleSignOut} variant="outline" className="flex-1">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">
-              {user ? 'Switch Account' : 'Access Your Account'}
-            </CardTitle>
+            <CardTitle className="text-center">Access Your Account</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">

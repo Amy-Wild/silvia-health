@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,36 +61,6 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// Brand colors - Calm Healthcare Palette
-				'gentle-blue': {
-					DEFAULT: 'hsl(var(--gentle-blue))',
-					dark: 'hsl(var(--gentle-blue-dark))'
-				},
-				'soft-green': {
-					DEFAULT: 'hsl(var(--soft-green))',
-					dark: 'hsl(var(--soft-green-dark))'
-				},
-				'light-purple': {
-					DEFAULT: 'hsl(var(--light-purple))',
-					dark: 'hsl(var(--light-purple-dark))'
-				},
-				'soft-coral': {
-					DEFAULT: 'hsl(var(--soft-coral))',
-					dark: 'hsl(var(--soft-coral-dark))'
-				},
-				// Risk Indicator Colors - Traffic Light System
-				'risk-high': {
-					DEFAULT: 'hsl(var(--risk-high))',
-					dark: 'hsl(var(--risk-high-dark))'
-				},
-				'risk-medium': {
-					DEFAULT: 'hsl(var(--risk-medium))',
-					alt: 'hsl(var(--risk-medium-alt))'
-				},
-				'risk-low': {
-					DEFAULT: 'hsl(var(--risk-low))',
-					dark: 'hsl(var(--risk-low-dark))'
 				}
 			},
 			borderRadius: {

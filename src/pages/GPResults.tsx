@@ -8,93 +8,56 @@ import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
 import { generateClinicalSummary, generateNHSRecommendations, getRedFlags, getUrgentFlags, calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 const GPResults = () => {
-  const params = useParams();
-  const sessionId = params.sessionId;
+  const { sessionId } = useParams();
   const navigate = useNavigate();
   const [clinicalResults, setClinicalResults] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('GPResults loading for sessionId:', sessionId);
-
   useEffect(() => {
-    const loadAssessmentData = async () => {
-      if (!sessionId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // First try to load from Supabase
-        const { data: assessmentLink, error } = await supabase
-          .from('assessment_links')
-          .select('*')
-          .eq('id', sessionId)
-          .single();
-
-        if (assessmentLink && assessmentLink.session_data) {
-          console.log('Loading assessment from Supabase:', assessmentLink);
-          const results = generateEnhancedGPResults({
-            rawData: assessmentLink.session_data,
-            sessionId,
-            patientRef: assessmentLink.patient_identifier,
-            completedAt: assessmentLink.completed_at
-          });
-          setClinicalResults(results);
-        } else {
-          // Fallback to localStorage
-          const storedData = localStorage.getItem(`assessment_${sessionId}`);
-          if (storedData) {
-            console.log('Loading assessment from localStorage');
-            const assessmentResult = JSON.parse(storedData);
-            setClinicalResults(generateEnhancedGPResults(assessmentResult));
-          } else {
-            console.log('No assessment data found');
-            setClinicalResults(null);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading assessment data:', error);
-        setClinicalResults(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAssessmentData();
+    // Load actual patient assessment data
+    const storedData = localStorage.getItem(`assessment_${sessionId}`);
+    if (storedData) {
+      const assessmentResult = JSON.parse(storedData);
+      setClinicalResults(generateEnhancedGPResults(assessmentResult));
+    } else {
+      // Fallback to demo data
+      setClinicalResults(generateDemoResults());
+    }
+    setLoading(false);
   }, [sessionId]);
 
   const generateEnhancedGPResults = (assessmentResult: any) => {
-    const { rawData, sessionId: resultSessionId, patientRef, completedAt } = assessmentResult;
+    const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
     
-    console.log('Raw assessment data:', rawData);
+    console.log('Raw assessment data:', rawData); // Debug log
     
-    // Generate comprehensive clinical summary
+    // Generate comprehensive clinical summary with proper psychological mapping
     const clinicalSummary = generateClinicalSummary(rawData);
     
-    // Calculate risk level and flags
-    const riskLevel = calculateRiskLevel(rawData);
+    // Ensure urgent flags are properly captured
     const allRedFlags = getRedFlags(rawData);
     const allUrgentFlags = getUrgentFlags(rawData);
     
     // Generate treatment options
     const treatmentOptions = generateTreatmentOptions(rawData, clinicalSummary, riskLevel);
     
-    // Calculate urgency score and psychological risk
-    const urgencyScore = calculateCorrectUrgencyScore(rawData, riskLevel);
+    // CORRECTED URGENCY SCORE CALCULATION
+    const urgencyScore = calculateCorrectUrgencyScore(rawData, calculateRiskLevel(rawData));
+    
+    // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
     const psychologicalRisk = assessCorrectPsychologicalRisk(rawData);
     
-    console.log('Generated clinical summary:', clinicalSummary);
-    console.log('Psychological risk assessment:', psychologicalRisk);
-    console.log('Urgency score:', urgencyScore);
+    console.log('Generated clinical summary:', clinicalSummary); // Debug log
+    console.log('Psychological risk assessment:', psychologicalRisk); // Debug log
+    console.log('Urgency score:', urgencyScore); // Debug log
     
     return {
-      patientRef: patientRef || 'Patient Assessment',
-      completedAt: completedAt ? new Date(completedAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB'),
-      sessionId: resultSessionId || sessionId,
-      riskLevel: riskLevel,
+      patientRef: assessmentResult.patientRef,
+      completedAt: new Date(assessmentResult.completedAt).toLocaleDateString('en-GB'),
+      sessionId: sessionId,
+      riskLevel: calculateRiskLevel(rawData), // Recalculate to ensure accuracy
       redFlags: allRedFlags,
       urgentFlags: allUrgentFlags,
       clinicalSummary: clinicalSummary,
@@ -110,31 +73,37 @@ const GPResults = () => {
         qualityOfLifeImpact: assessQualityOfLifeImpact(clinicalSummary),
         psychologicalRisk: psychologicalRisk
       },
-      clinicalRecommendations: generateNHSRecommendations(rawData, riskLevel)
+      clinicalRecommendations: generateNHSRecommendations(rawData, calculateRiskLevel(rawData))
     };
   };
 
+  // CORRECTED URGENCY SCORE CALCULATION
   const calculateCorrectUrgencyScore = (rawData: any, riskLevel: string): number => {
     let baseScore = 0;
     
+    // Base score from risk level
     if (riskLevel === 'red') baseScore = 10;
     else if (riskLevel === 'amber') baseScore = 6;
     else if (riskLevel === 'yellow') baseScore = 4;
     else baseScore = 2;
     
-    if (rawData.selfHarmRisk === 'frequent') baseScore = 10;
+    // CRITICAL: Additional scoring for psychological risk
+    if (rawData.selfHarmRisk === 'frequent') baseScore = 10; // Maximum urgency
     else if (rawData.selfHarmRisk === 'occasional') baseScore = Math.max(baseScore, 8);
     
     if (rawData.moodSymptoms === 'severe') baseScore = Math.max(baseScore, 7);
     
+    // Additional urgent medical conditions
     if (rawData.postmenopausalBleeding === 'yes') baseScore = 10;
     if (rawData.unexplainedWeightLoss === 'yes') baseScore = 10;
     if (rawData.severePelvicPain === 'yes') baseScore = 10;
     
-    return Math.min(baseScore, 10);
+    return Math.min(baseScore, 10); // Cap at 10
   };
 
+  // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
   const assessCorrectPsychologicalRisk = (rawData: any): string => {
+    // CRITICAL mapping for self-harm risk
     if (rawData.selfHarmRisk === 'frequent') {
       return 'CRITICAL - Immediate intervention required (frequent suicidal ideation reported)';
     }
@@ -142,14 +111,17 @@ const GPResults = () => {
       return 'HIGH - Urgent mental health review needed (occasional suicidal thoughts reported)';
     }
     
+    // Severe mood symptoms
     if (rawData.moodSymptoms === 'severe') {
       return 'MODERATE-HIGH - Mental health support recommended (severe mood symptoms)';
     }
     
+    // Moderate mood symptoms
     if (rawData.moodSymptoms === 'moderate') {
       return 'MODERATE - Mental health monitoring advised';
     }
     
+    // Poor mental wellbeing
     if (rawData.mentalWellbeing === 'poor') {
       return 'MODERATE - Support recommended for poor mental wellbeing';
     }
@@ -160,6 +132,7 @@ const GPResults = () => {
   const generateTreatmentOptions = (rawData: any, clinicalSummary: any, riskLevel: string) => {
     const options = [];
     
+    // HRT Assessment
     const hrtSuitability = assessHRTSuitability(rawData, clinicalSummary);
     if (hrtSuitability.suitable) {
       options.push({
@@ -171,6 +144,7 @@ const GPResults = () => {
       });
     }
     
+    // Lifestyle interventions
     options.push({
       name: "Lifestyle Interventions",
       probability: 95,
@@ -179,6 +153,7 @@ const GPResults = () => {
       considerations: generateLifestyleInterventions(rawData)
     });
     
+    // CBT if psychological symptoms
     if (clinicalSummary.psychological.severity !== 'None') {
       options.push({
         name: "Cognitive Behavioral Therapy",
@@ -197,6 +172,7 @@ const GPResults = () => {
     let suitability = 70;
     const considerations = [];
     
+    // Increase based on symptom severity
     if (clinicalSummary.vasomotor.severity === 'Severe') {
       probability = 95;
       suitability = 90;
@@ -207,6 +183,7 @@ const GPResults = () => {
       considerations.push("Moderate symptoms - HRT recommended");
     }
     
+    // Only add contraindications that are actually present in patient history
     const personalHistory = rawData.personalMedicalHistory || [];
     
     if (personalHistory.includes('breast-cancer')) {
@@ -227,6 +204,7 @@ const GPResults = () => {
       considerations.push("Liver disease history - contraindication to HRT");
     }
     
+    // If no contraindications, add positive note
     if (personalHistory.length === 0 || !personalHistory.some(condition => 
       ['breast-cancer', 'blood-clots', 'liver-disease'].includes(condition))) {
       considerations.push("No major contraindications identified");
@@ -287,11 +265,54 @@ const GPResults = () => {
     return impacts;
   };
 
+  const generateDemoResults = () => {
+    return {
+      patientRef: "Demo Patient (DOB: 15/03/1968)",
+      completedAt: new Date().toLocaleDateString('en-GB'),
+      sessionId: sessionId,
+      riskLevel: "amber",
+      redFlags: [],
+      clinicalSummary: {
+        vasomotor: { severity: 'Moderate' },
+        psychological: { severity: 'Mild' },
+        medicalHistory: { 
+          riskLevel: 'Low', 
+          personal: [], 
+          family: [], 
+          clinicalNotes: 'No medical history recorded - ensure contraindications are assessed' 
+        },
+        treatmentPreferences: { selected: ['hrt'], educationNeeded: true, clinicalNotes: 'Patient interested in HRT education' },
+        lifestyle: { 
+          smoking: 'never', 
+          exercise: 'moderate', 
+          alcohol: '1-7', 
+          bmi: '24.5', 
+          height: '165', 
+          weight: '67', 
+          riskLevel: 'Low', 
+          clinicalNotes: 'Good lifestyle profile' 
+        },
+        patientComments: '',
+        overallComplexity: 'Low - Routine GP management appropriate'
+      },
+      treatmentOptions: [{
+        name: "HRT",
+        probability: 80,
+        evidence: "Grade A",
+        suitability: 85,
+        considerations: ["Moderate symptoms - HRT recommended"]
+      }],
+      patientProfile: { age: 56, riskFactors: [], preferences: ['hrt'] },
+      analyticsData: { urgencyScore: 6, qualityOfLifeImpact: ["Moderate vasomotor impact"], psychologicalRisk: 'LOW - No immediate psychological concerns' },
+      clinicalRecommendations: ["💊 DISCUSS HRT: First-line treatment recommended", "📅 FOLLOW-UP: Review in 6-8 weeks"]
+    };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gentle-blue-dark mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading clinical assessment...</p>
         </div>
       </div>
@@ -302,9 +323,9 @@ const GPResults = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-risk-medium mx-auto mb-4" />
-          <p className="text-gray-600">No assessment data found for session: {sessionId}</p>
-          <Button onClick={() => navigate('/gp-dashboard')} className="mt-4 bg-gentle-blue-dark hover:bg-gentle-blue-dark/80">
+          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <p className="text-gray-600">No assessment data found</p>
+          <Button onClick={() => navigate('/gp-dashboard')} className="mt-4">
             Return to Dashboard
           </Button>
         </div>
@@ -323,7 +344,7 @@ const GPResults = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/gp-dashboard')}
-                className="flex items-center hover:bg-gentle-blue"
+                className="flex items-center"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Dashboard
@@ -343,11 +364,11 @@ const GPResults = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="hover:bg-light-purple">
+              <Button variant="outline" size="sm">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
-              <Button size="sm" className="bg-gentle-blue-dark hover:bg-gentle-blue-dark/80 text-white">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                 <Mail className="w-4 h-4 mr-2" />
                 Email
               </Button>
@@ -358,12 +379,12 @@ const GPResults = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-6xl mx-auto">
-          {/* Critical Alerts */}
+          {/* Critical Alerts - Show psychological risks prominently */}
           {clinicalResults.analyticsData.psychologicalRisk.startsWith('CRITICAL') && (
-            <Card className="mb-6 border-risk-high bg-red-50">
+            <Card className="mb-6 border-red-500 bg-red-50">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-6 h-6 text-risk-high" />
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
                   <div>
                     <h3 className="font-bold text-red-800">URGENT MENTAL HEALTH ALERT</h3>
                     <p className="text-red-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
@@ -375,10 +396,10 @@ const GPResults = () => {
           )}
 
           {clinicalResults.analyticsData.psychologicalRisk.startsWith('HIGH') && (
-            <Card className="mb-6 border-risk-medium bg-orange-50">
+            <Card className="mb-6 border-orange-500 bg-orange-50">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-6 h-6 text-risk-medium" />
+                  <AlertTriangle className="w-6 h-6 text-orange-500" />
                   <div>
                     <h3 className="font-bold text-orange-800">HIGH PRIORITY MENTAL HEALTH CONCERN</h3>
                     <p className="text-orange-700">{clinicalResults.analyticsData.psychologicalRisk}</p>
@@ -392,9 +413,9 @@ const GPResults = () => {
           {/* Enhanced GP Summary */}
           <GPClinicalSummary clinicalResults={clinicalResults} />
           
-          {/* Patient Comments Section */}
+          {/* Patient Comments Section - NEW */}
           {clinicalResults.clinicalSummary?.patientComments && (
-            <Card className="mt-6 border-gentle-blue-dark bg-gentle-blue">
+            <Card className="mt-6 border-blue-200 bg-blue-50">
               <CardHeader>
                 <CardTitle className="flex items-center text-blue-900">
                   <User className="w-5 h-5 mr-2" />
@@ -402,7 +423,7 @@ const GPResults = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-4 rounded border-l-4 border-gentle-blue-dark">
+                <div className="bg-white p-4 rounded border-l-4 border-blue-500">
                   <p className="text-gray-800 italic">"{clinicalResults.clinicalSummary.patientComments}"</p>
                 </div>
               </CardContent>
@@ -411,8 +432,8 @@ const GPResults = () => {
           
           {/* Detailed Treatment Options */}
           <div className="mt-8">
-            <Card className="bg-white border-gentle-blue-dark/20">
-              <CardHeader className="bg-gentle-blue/30">
+            <Card>
+              <CardHeader>
                 <CardTitle>Clinical Decision Support</CardTitle>
                 <p className="text-sm text-gray-600">Evidence-based treatment analysis with transparent reasoning</p>
               </CardHeader>
@@ -428,7 +449,7 @@ const GPResults = () => {
           </div>
 
           {/* Session Information */}
-          <Card className="mt-6 bg-light-purple/20 border-light-purple-dark/20">
+          <Card className="mt-6 bg-gray-100">
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
                 <div>

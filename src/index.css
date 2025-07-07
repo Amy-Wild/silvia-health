@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,13 +7,13 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 210 22% 35%; /* #425563 - dark grey for readability */
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 22% 35%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 22% 35%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
@@ -37,33 +36,20 @@
 
     --radius: 0.5rem;
 
-    /* Brand Colors - Calm Healthcare Palette */
-    --gentle-blue: 214 100% 92%; /* #dbeafe */
-    --soft-green: 142 76% 92%; /* #dcfce7 */
-    --light-purple: 250 100% 95%; /* #ede9fe */
-    --soft-coral: 24 65% 60%; /* #bf7e5c - Updated color */
-    
-    /* Darker versions for buttons (20-30% darker) */
-    --gentle-blue-dark: 214 100% 75%;
-    --soft-green-dark: 142 76% 75%;
-    --light-purple-dark: 250 100% 80%;
-    --soft-coral-dark: 24 65% 45%; /* Darker version of #bf7e5c */
-
-    /* Risk Indicator Colors - Traffic Light System */
-    --risk-high: 0 84% 55%; /* #ef4444 */
-    --risk-high-dark: 0 91% 39%; /* #dc2626 */
-    --risk-medium: 32 95% 50%; /* #f59e0b */
-    --risk-medium-alt: 24 95% 53%; /* #f97316 */
-    --risk-low: 142 71% 45%; /* #22c55e */
-    --risk-low-dark: 142 76% 36%; /* #16a34a */
-
     --sidebar-background: 0 0% 98%;
+
     --sidebar-foreground: 240 5.3% 26.1%;
+
     --sidebar-primary: 240 5.9% 10%;
+
     --sidebar-primary-foreground: 0 0% 98%;
+
     --sidebar-accent: 240 4.8% 95.9%;
+
     --sidebar-accent-foreground: 240 5.9% 10%;
+
     --sidebar-border: 220 13% 91%;
+
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
