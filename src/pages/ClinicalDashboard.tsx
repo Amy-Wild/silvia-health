@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +25,7 @@ interface Assessment {
   alcohol?: string;
   priority: string | null;
   completedAt?: string;
+  source: 'dataStore' | 'localStorage';
 }
 
 const ClinicalDashboard = () => {
@@ -63,13 +63,14 @@ const ClinicalDashboard = () => {
     
     try {
       const userEmail = getCurrentUserEmail();
+      const allAssessments: Assessment[] = [];
       
       // Get completed assessments from dataStore
       const completedAssessments: CompletedAssessment[] = dataStore.getCompletedAssessments(userEmail);
       console.log("📋 Completed assessments from dataStore:", completedAssessments);
       
-      // Transform to match expected interface
-      const transformedAssessments = completedAssessments.map((assessment: CompletedAssessment) => ({
+      // Transform dataStore assessments to match expected interface
+      const dataStoreAssessments = completedAssessments.map((assessment: CompletedAssessment) => ({
         id: assessment.sessionId,
         patientRef: assessment.patientRef,
         completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
@@ -78,17 +79,55 @@ const ClinicalDashboard = () => {
         redFlags: assessment.urgentFlags || [],
         symptoms: {},
         priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
-        completedAt: assessment.completedAt
+        completedAt: assessment.completedAt,
+        source: 'dataStore' as const
       }));
+
+      allAssessments.push(...dataStoreAssessments);
+
+      // RESTORE: Get assessments from individual localStorage entries (for backward compatibility)
+      const storageKeys = Object.keys(localStorage);
+      const assessmentKeys = storageKeys.filter(key => key.startsWith('assessment_'));
+      
+      console.log("📋 Found individual assessment keys:", assessmentKeys);
+      
+      assessmentKeys.forEach(key => {
+        try {
+          const assessmentData = JSON.parse(localStorage.getItem(key) || '{}');
+          const sessionId = key.replace('assessment_', '');
+          
+          // Check if this assessment is already in dataStore to avoid duplicates
+          const existsInDataStore = dataStoreAssessments.some(ds => ds.id === sessionId);
+          if (!existsInDataStore && assessmentData.riskLevel) {
+            // Get patient reference from localStorage or URL parameter backup
+            let patientRef = localStorage.getItem(`patient_ref_${sessionId}`) || 'Anonymous Patient';
+            
+            allAssessments.push({
+              id: sessionId,
+              patientRef: patientRef,
+              completed: new Date().toLocaleString('en-GB'), // Use current time as fallback
+              status: "completed",
+              riskLevel: assessmentData.riskLevel,
+              redFlags: assessmentData.urgentFlags || [],
+              symptoms: assessmentData,
+              priority: (assessmentData.urgentFlags && assessmentData.urgentFlags.length > 0) ? "urgent" : "routine",
+              completedAt: new Date().toISOString(),
+              source: 'localStorage' as const
+            });
+          }
+        } catch (error) {
+          console.error(`Error parsing assessment ${key}:`, error);
+        }
+      });
       
       // Sort by completion date (most recent first)
-      transformedAssessments.sort((a: any, b: any) => {
+      allAssessments.sort((a: any, b: any) => {
         if (!a.completedAt || !b.completedAt) return 0;
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       });
       
-      console.log("✅ Clinical dashboard loaded assessments from dataStore:", transformedAssessments);
-      setAssessments(transformedAssessments);
+      console.log("✅ Clinical dashboard loaded all assessments:", allAssessments);
+      setAssessments(allAssessments);
     } catch (error) {
       console.error("❌ Error loading assessments:", error);
     }

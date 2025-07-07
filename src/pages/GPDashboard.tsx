@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,11 +24,25 @@ import {
 import { useNavigate } from "react-router-dom";
 import PatientIdentificationForm from "@/components/PatientIdentificationForm";
 import GPInstructions from "@/components/instructions/GPInstructions";
-import { dataStore, AssessmentLink } from "@/utils/dataStore";
+import { dataStore, AssessmentLink, CompletedAssessment } from "@/utils/dataStore";
+
+interface Assessment {
+  id: string;
+  patientRef: string;
+  completed: string | null;
+  status: string;
+  riskLevel: string | null;
+  redFlags: string[];
+  symptoms: any;
+  priority: string | null;
+  completedAt?: string;
+  source: 'dataStore' | 'localStorage';
+}
 
 const GPDashboard = () => {
   const navigate = useNavigate();
   const [assessmentLinks, setAssessmentLinks] = useState<AssessmentLink[]>([]);
+  const [completedAssessments, setCompletedAssessments] = useState<Assessment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPatientForm, setShowPatientForm] = useState(false);
   const { toast } = useToast();
@@ -49,6 +62,7 @@ const GPDashboard = () => {
 
   useEffect(() => {
     loadAssessmentLinks();
+    loadCompletedAssessments();
   }, []);
 
   const handleLogout = () => {
@@ -65,10 +79,90 @@ const GPDashboard = () => {
     console.log("Loaded assessment links:", links);
   };
 
+  const loadCompletedAssessments = () => {
+    console.log("=== LOADING COMPLETED ASSESSMENTS (GP DASHBOARD) ===");
+    
+    try {
+      const userEmail = getCurrentUserEmail();
+      const allAssessments: Assessment[] = [];
+      
+      // Get completed assessments from dataStore
+      const completedFromDataStore: CompletedAssessment[] = dataStore.getCompletedAssessments(userEmail);
+      console.log("📋 Completed assessments from dataStore:", completedFromDataStore);
+      
+      // Transform dataStore assessments to match expected interface
+      const dataStoreAssessments = completedFromDataStore.map((assessment: CompletedAssessment) => ({
+        id: assessment.sessionId,
+        patientRef: assessment.patientRef,
+        completed: new Date(assessment.completedAt).toLocaleString('en-GB'),
+        status: "completed",
+        riskLevel: assessment.riskLevel,
+        redFlags: assessment.urgentFlags || [],
+        symptoms: {},
+        priority: assessment.urgentFlags && assessment.urgentFlags.length > 0 ? "urgent" : "routine",
+        completedAt: assessment.completedAt,
+        source: 'dataStore' as const
+      }));
+
+      allAssessments.push(...dataStoreAssessments);
+
+      // RESTORE: Get assessments from individual localStorage entries (for backward compatibility)
+      const storageKeys = Object.keys(localStorage);
+      const assessmentKeys = storageKeys.filter(key => key.startsWith('assessment_'));
+      
+      console.log("📋 Found individual assessment keys:", assessmentKeys);
+      
+      assessmentKeys.forEach(key => {
+        try {
+          const assessmentData = JSON.parse(localStorage.getItem(key) || '{}');
+          const sessionId = key.replace('assessment_', '');
+          
+          // Check if this assessment is already in dataStore to avoid duplicates
+          const existsInDataStore = dataStoreAssessments.some(ds => ds.id === sessionId);
+          if (!existsInDataStore && assessmentData.riskLevel) {
+            // Get patient reference from localStorage or URL parameter backup
+            let patientRef = localStorage.getItem(`patient_ref_${sessionId}`) || 'Anonymous Patient';
+            
+            allAssessments.push({
+              id: sessionId,
+              patientRef: patientRef,
+              completed: new Date().toLocaleString('en-GB'), // Use current time as fallback
+              status: "completed",
+              riskLevel: assessmentData.riskLevel,
+              redFlags: assessmentData.urgentFlags || [],
+              symptoms: assessmentData,
+              priority: (assessmentData.urgentFlags && assessmentData.urgentFlags.length > 0) ? "urgent" : "routine",
+              completedAt: new Date().toISOString(),
+              source: 'localStorage' as const
+            });
+          }
+        } catch (error) {
+          console.error(`Error parsing assessment ${key}:`, error);
+        }
+      });
+      
+      // Sort by completion date (most recent first)
+      allAssessments.sort((a: any, b: any) => {
+        if (!a.completedAt || !b.completedAt) return 0;
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      });
+      
+      console.log("✅ GP dashboard loaded all completed assessments:", allAssessments);
+      setCompletedAssessments(allAssessments);
+    } catch (error) {
+      console.error("❌ Error loading completed assessments:", error);
+    }
+  };
+
   const filteredAssessmentLinks = assessmentLinks.filter(link =>
     (link.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
     (link.surname?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
     link.sessionId.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredCompletedAssessments = completedAssessments.filter(assessment =>
+    assessment.patientRef.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    assessment.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,6 +214,7 @@ const GPDashboard = () => {
 
     // Refresh the assessments list and close the form
     loadAssessmentLinks();
+    loadCompletedAssessments();
     setShowPatientForm(false);
   };
 
@@ -193,8 +288,33 @@ const GPDashboard = () => {
     } else if (hoursLeft < 24) {
       return `${hoursLeft}h left`;
     } else {
-      return `${Math.floor(hoursLeft / 24)}d ${hoursLeft % 24}h left`;
+      return `${Math.floor(hoursLeft / 24)}d ${Math.floor(hoursLeft / 24)}h left`;
     }
+  };
+
+  const getRiskBadge = (level: string | null) => {
+    if (!level) return <Badge variant="outline">Pending</Badge>;
+    
+    const getBadgeProps = (level: string) => {
+      switch (level.toLowerCase()) {
+        case 'red':
+        case 'urgent':
+        case 'high':
+          return { className: "bg-red-500 hover:bg-red-600 text-white border-red-600", label: "HIGH RISK" };
+        case 'amber':
+        case 'moderate': 
+        case 'medium':
+          return { className: "bg-amber-500 hover:bg-amber-600 text-white border-amber-600", label: "MODERATE RISK" };
+        case 'green':
+        case 'low':
+        case 'mild':
+        default:
+          return { className: "bg-green-500 hover:bg-green-600 text-white border-green-600", label: "LOW RISK" };
+      }
+    };
+    
+    const { className, label } = getBadgeProps(level);
+    return <Badge className={className}>{label}</Badge>;
   };
 
   return (
@@ -270,8 +390,9 @@ const GPDashboard = () => {
               </div>
             </div>
 
+            {/* Assessment Links Section */}
             {filteredAssessmentLinks.length > 0 ? (
-              <Card>
+              <Card className="mb-8">
                 <CardHeader>
                   <CardTitle>Assessment Links ({filteredAssessmentLinks.length})</CardTitle>
                 </CardHeader>
@@ -359,25 +480,107 @@ const GPDashboard = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Stethoscope className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessment Links Found</h3>
-                <p className="text-gray-500 mb-4">
-                  {searchQuery ? "No assessment links match your search criteria." : "Create your first patient assessment link to get started."}
-                </p>
-                {!searchQuery && (
-                  <Button 
-                    onClick={() => setShowPatientForm(true)} 
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New Assessment Link
-                  </Button>
-                )}
-              </div>
+              <Card className="mb-8">
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Stethoscope className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Assessment Links Found</h3>
+                    <p className="text-gray-500 mb-4">
+                      {searchQuery ? "No assessment links match your search criteria." : "Create your first patient assessment link to get started."}
+                    </p>
+                    {!searchQuery && (
+                      <Button 
+                        onClick={() => setShowPatientForm(true)} 
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Assessment Link
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             )}
+
+            {/* Completed Assessments Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Completed Assessments ({filteredCompletedAssessments.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredCompletedAssessments.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Patient</TableHead>
+                        <TableHead>Session ID</TableHead>
+                        <TableHead>Risk Level</TableHead>
+                        <TableHead>Red Flags</TableHead>
+                        <TableHead>Completed</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCompletedAssessments.map((assessment, index) => (
+                        <TableRow key={`completed-${assessment.id}-${index}`}>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">
+                                {assessment.patientRef}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {assessment.id.slice(-8)}
+                          </TableCell>
+                          <TableCell>
+                            {getRiskBadge(assessment.riskLevel)}
+                          </TableCell>
+                          <TableCell>
+                            {assessment.redFlags.length > 0 ? (
+                              <Badge variant="destructive">
+                                {assessment.redFlags.length} flag(s)
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-500">None</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-gray-600">
+                              {assessment.completed}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                onClick={() => navigateToResults(assessment.id)} 
+                                variant="outline" size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                View Results
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Completed Assessments</h3>
+                    <p className="text-gray-500">
+                      Completed assessments will appear here once patients finish their evaluations.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="instructions">
