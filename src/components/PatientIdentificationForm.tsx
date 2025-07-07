@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 interface PatientIdentificationFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onAssessmentCreated: (sessionId: string, patientRef: string) => void;
+  onAssessmentCreated: (sessionId: string, patientRef: string, patientData: any) => void;
 }
 
 const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: PatientIdentificationFormProps) => {
@@ -59,12 +59,17 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     setIsCreating(true);
     
     let patientRef = "";
+    let patientData: any = {};
     let isValid = false;
 
     switch (selectedTab) {
       case "name":
         if (nameForm.firstName && nameForm.surname) {
           patientRef = `${nameForm.firstName} ${nameForm.surname}`;
+          patientData = {
+            firstName: nameForm.firstName,
+            surname: nameForm.surname
+          };
           isValid = true;
         }
         break;
@@ -72,6 +77,9 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
         if (dobForm.dateOfBirth && validateDateOfBirth(dobForm.dateOfBirth)) {
           const date = new Date(dobForm.dateOfBirth);
           patientRef = `DOB: ${date.toLocaleDateString('en-GB')}`;
+          patientData = {
+            dateOfBirth: dobForm.dateOfBirth
+          };
           isValid = true;
         }
         break;
@@ -79,12 +87,18 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
         if (nhsForm.nhsNumber && validateNHSNumber(nhsForm.nhsNumber)) {
           const maskedNHS = nhsForm.nhsNumber.replace(/(\d{3})\s(\d{3})\s(\d{4})/, '$1 $2 ****');
           patientRef = `NHS: ${maskedNHS}`;
+          patientData = {
+            nhsId: nhsForm.nhsNumber
+          };
           isValid = true;
         }
         break;
       case "custom":
         if (customForm.customId) {
           patientRef = `ID: ${customForm.customId}`;
+          patientData = {
+            customId: customForm.customId
+          };
           isValid = true;
         }
         break;
@@ -107,6 +121,7 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     console.log("=== CREATING ASSESSMENT LINK WITH EMBEDDED PATIENT REF ===");
     console.log("SessionId:", sessionId);
     console.log("Patient Reference:", patientRef);
+    console.log("Patient Data:", patientData);
     console.log("Encoded Patient Reference:", encodedPatientRef);
     console.log("Assessment Link:", assessmentLink);
     
@@ -119,7 +134,8 @@ const PatientIdentificationForm = ({ isOpen, onClose, onAssessmentCreated }: Pat
     setIsCreating(false);
     setShowSuccessModal(true);
     
-    onAssessmentCreated(sessionId, patientRef);
+    // Pass the patient data as the third parameter
+    onAssessmentCreated(sessionId, patientRef, patientData);
 
     toast({
       title: "Assessment Link Created",
