@@ -42,9 +42,8 @@ const PatientAssessment = () => {
     console.log("Total steps:", totalSteps);
     console.log("Assessment data:", assessmentData);
     
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
+    // Check if this is the final step (step 8)
+    if (currentStep === totalSteps) {
       console.log("=== FINAL STEP - PROCESSING COMPLETION ===");
       console.log("Session ID:", sessionId);
       console.log("Assessment data before completion:", assessmentData);
@@ -55,6 +54,9 @@ const PatientAssessment = () => {
       } finally {
         setIsSubmitting(false);
       }
+    } else {
+      console.log("=== MOVING TO NEXT STEP ===");
+      setCurrentStep(currentStep + 1);
     }
   };
 
