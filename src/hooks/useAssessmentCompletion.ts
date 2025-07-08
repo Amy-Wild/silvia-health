@@ -76,7 +76,23 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       assessments.push(completedAssessmentData);
       localStorage.setItem('completed_assessments', JSON.stringify(assessments));
       console.log("✅ Assessment saved to completed_assessments");
-
+      // CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
+      try {
+      localStorage.setItem('sylvia_completed_assessments', JSON.stringify(assessments));
+      localStorage.setItem('all_assessments', JSON.stringify(assessments));
+  
+      // Also ensure the assessment appears in the GP's personal list
+      if (assessmentLink) {
+      const userEmail = assessmentLink.createdBy;
+      const userCompletedKey = `${userEmail}_completed_assessments`;
+      const userCompleted = JSON.parse(localStorage.getItem(userCompletedKey) || '[]');
+      userCompleted.push(completedAssessmentData);
+      localStorage.setItem(userCompletedKey, JSON.stringify(userCompleted));
+      console.log(`✅ Also saved to ${userEmail} personal completed list`);
+      }
+      } catch (error) {
+      console.log('Cross-domain save failed:', error);
+      }
       // ALSO store individual assessment for GP results page (keep this for results page compatibility)
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
       console.log("💾 Individual assessment also stored for GP results");
