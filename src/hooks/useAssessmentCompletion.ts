@@ -71,9 +71,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         urgentFlags: result.urgentFlags || [],
         rawData: result
       };
-
-      // EMERGENCY FIX - Save to localStorage
-      localStorage.setItem('completed_assessments', JSON.stringify([completedAssessmentData]));
+      // Save to completed_assessments
+      const assessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');
+      assessments.push(completedAssessmentData);
+      localStorage.setItem('completed_assessments', JSON.stringify(assessments));
+      
       assessments.push(completedAssessmentData);
       localStorage.setItem('completed_assessments', JSON.stringify(assessments));
       console.log("✅ Assessment saved to completed_assessments");
