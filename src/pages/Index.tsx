@@ -105,7 +105,7 @@ const Index = () => {
                       Monitor your menopause journey with our comprehensive symptom tracker. 
                       Identify patterns, share insights with your healthcare provider, and take control of your health.
                     </p>
-                    <Button onClick={handleTrackSymptoms} className="w-full bg-pink-500 hover:bg-pink-600">
+                    <Button onClick={handleTrackSymptoms} variant="outline" className="w-full bg-pink-500 hover:bg-pink-600">
                       <Activity className="w-4 h-4 mr-2" />
                       Begin Symptom Tracking
                     </Button>
@@ -127,25 +127,25 @@ const Index = () => {
                     <Button onClick={handleHealthcareLogin} variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
                       <UserCheck className="w-4 h-4 mr-2" />
                       Healthcare Login
-                    </Button>
+                    </Button> 
                   </CardContent>
                 </Card>
               </div>
 
               {/* Information Cards */}
-              <div className="grid md:grid-cols-3 gap-6">
-                <Card className="hover:shadow-lg transition-shadow">
+              <div className="grid md:grid-cols-3 gap-6 items-stretch">
+                <Card className="hover:shadow-lg transition-shadow flex flex-col h-full">
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
                       Learn About Menopause
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
+                  <CardContent className="flex flex-col flex-grow">
+                    <p className="text-gray-600 mb-4 flex-grow">
                       Comprehensive guides covering symptoms, stages, and what to expect during your journey.
                     </p>
-                    <Button className="w-full" variant="outline">Explore Guides</Button>
+                    <Button onClick={() => navigate("/education")} className="w-full justify-center" variant="outline">Explore Guides</Button>
                   </CardContent>
                 </Card>
 
@@ -156,28 +156,28 @@ const Index = () => {
                       Video Library
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
+                  <CardContent className="flex flex-col flex-grow">
+                    <p className="text-gray-600 mb-4 flex-grow">
                       Expert interviews, exercise routines, and practical tips from healthcare professionals.
                     </p>
-                    <Button className="w-full" variant="outline">Watch Videos</Button>
+                    <Button onClick={() => navigate("/education?section=videos")} className="w-full flex items-center justify-center" variant="outline">Watch Videos</Button>
                   </CardContent>
                 </Card>
 
                 <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Users className="w-5 h-5 mr-2 text-purple-600" />
-                      Community Support
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Connect with others on similar journeys and share experiences in a supportive environment.
-                    </p>
-                    <Button className="w-full" variant="outline">Join Community</Button>
-                  </CardContent>
-                </Card>
+                 <CardHeader>
+                 <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-purple-600" />
+                 Partner Zone
+                 </CardTitle>
+                 </CardHeader>
+                 <CardContent className="flex flex-col flex-grow">
+                 <p className="text-gray-600 mb-4 flex-grow">
+                 Videos and resources to help partners and family members understand and support someone through peri/menopause and beyond.
+                 </p>
+                 <Button onClick={() => navigate("/partner-zone")} className="w-full justify-center" variant="outline">Explore Resources</Button>
+                 </CardContent> 
+                 </Card>
               </div>
 
               {/* Assessment Integration Notice */}
@@ -193,7 +193,7 @@ const Index = () => {
                   </p>
                   <div className="flex items-center text-sm text-blue-700">
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    <span>Personalized content based on your assessment</span>
+                    <span>Personalised content based on your assessment</span>
                   </div>
                 </CardContent>
               </Card>
