@@ -38,7 +38,7 @@ const SymptomTracker = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("auth_user");
-    navigate("/auth");
+    navigate("/");
   };
 
   const handleNewEntry = () => {

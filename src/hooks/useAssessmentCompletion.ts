@@ -73,12 +73,21 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
         rawData: result
       };
       // Save to completed_assessments
-      const assessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');      
-      assessments.push(completedAssessmentData);
-      localStorage.setItem('completed_assessments', JSON.stringify(assessments));
-      console.log("✅ Assessment saved to completed_assessments");
-      localStorage.setItem('all_assessments', JSON.stringify(assessments));
-      localStorage.setItem('gp_assessments', JSON.stringify(assessments));
+      // Save to completed_assessments - FIXED VERSION
+      const keys = ['completed_assessments', 'all_assessments', 'gp_assessments', 'sylvia_completed_assessments'];
+
+      keys.forEach(key => {
+    try {
+    const existingAssessments = JSON.parse(localStorage.getItem(key) || '[]');
+    existingAssessments.push(completedAssessmentData);
+    localStorage.setItem(key, JSON.stringify(existingAssessments));
+    console.log(`✅ Assessment saved to ${key}`);
+    } catch (error) {
+    console.error(`❌ Failed to save to ${key}:`, error);
+  }
+});
+
+// CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
       // CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
       try {
       localStorage.setItem('sylvia_completed_assessments', JSON.stringify(assessments));
