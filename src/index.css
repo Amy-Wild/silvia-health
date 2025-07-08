@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,12 +46,23 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* SYLVIA Health Brand Colors */
-    --sylvia-gentle-blue: 214 100% 92%; /* #dbeafe */
-    --sylvia-soft-green: 142 76% 92%; /* #dcfce7 */
-    --sylvia-light-purple: 253 91% 95%; /* #ede9fe */
-    --sylvia-soft-coral: 25 95% 87%; /* #fed7c3 */
-    --sylvia-text: 215 25% 27%; /* #425563 */
-    --sylvia-background: 0 0% 100%; /* #ffffff */
+    /* SYLVIA Health Brand Colors */
+   /* SYLVIA Health Brand Colors - Enhanced */
+   --sylvia-gentle-blue: 214 100% 96%; /* #eff6ff - Lighter blue */
+   --sylvia-soft-green: 142 76% 95%; /* #f0fdf4 - Softer green */
+   --sylvia-light-purple: 253 91% 97%; /* #faf5ff - Softer purple */
+   --sylvia-soft-coral: 25 95% 92%; /* #fef3e2 - Warmer coral */
+   --sylvia-text: 215 35% 20%; /* #2d3748 - Darker text */
+   --sylvia-background: 0 0% 100%; /* #ffffff */
+   --sylvia-primary-pink: 337 80% 65%; /* #e879a6 - New vibrant pink */
+   --sylvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
+   --sylvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
+   --sylvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
+    
+    /* Clinical Status Colors */
+    --sylvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
+    --sylvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
+    --sylvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
   }
 
   .dark {
