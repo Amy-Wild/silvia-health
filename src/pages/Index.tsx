@@ -60,7 +60,7 @@ const Index = () => {
             <p className="text-lg text-gray-700 max-w-3xl mx-auto">
               Comprehensive menopause education, symptom tracking, and wellness tools 
               to help you navigate your health journey with confidence. Connect with healthcare 
-              professionals and access personalized support.
+              professionals and access personalised support.
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ const Index = () => {
                   <CardContent>
                     <p className="text-gray-700 mb-4">
                       Access your clinical dashboard to manage patient assessments, 
-                      review symptom data, and provide personalized care recommendations.
+                      review symptom data, and provide personalised care recommendations.
                     </p>
                     <Button onClick={handleHealthcareLogin} variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
                       <UserCheck className="w-4 h-4 mr-2" />
@@ -346,7 +346,7 @@ const Index = () => {
               Supporting your health journey with evidence-based information and community connection.
             </p>
             <p className="text-xs mt-2 text-gray-500">
-              Always consult with your healthcare provider for personalized medical advice.
+              Always consult with your healthcare provider for personalised medical advice.
             </p>
           </div>
         </div>
