@@ -61,6 +61,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       console.log("=== SAVING COMPLETED ASSESSMENT ===");
       console.log("SessionId:", sessionId);
       console.log("Final patient reference:", patientRef);
+      const assessmentLink = dataStore.findAssessmentLinkBySession(sessionId);
 
       // Save to completed_assessments
       const completedAssessmentData = {
@@ -76,6 +77,8 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       assessments.push(completedAssessmentData);
       localStorage.setItem('completed_assessments', JSON.stringify(assessments));
       console.log("✅ Assessment saved to completed_assessments");
+      localStorage.setItem('all_assessments', JSON.stringify(assessments));
+      localStorage.setItem('gp_assessments', JSON.stringify(assessments));
       // CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
       try {
       localStorage.setItem('sylvia_completed_assessments', JSON.stringify(assessments));
@@ -99,7 +102,6 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
 
       // Update the original assessment link status to "completed"
       console.log("🔄 Updating assessment link status to completed");
-      const assessmentLink = dataStore.findAssessmentLinkBySession(sessionId);
       if (assessmentLink) {
         const userEmail = assessmentLink.createdBy;
         const assessmentLinks = dataStore.getAssessmentLinks(userEmail);
