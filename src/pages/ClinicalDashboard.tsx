@@ -55,7 +55,7 @@ const ClinicalDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("auth_user");
-    navigate("/");
+    navigate("/auth");
   };
 
   const loadAssessments = () => {
