@@ -37,8 +37,10 @@ const SymptomTracker = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_user");
-    navigate("/auth");
+    // Clear all authentication data
+    localStorage.clear();
+    // Force reload to the landing page
+    window.location.replace("/");
   };
 
   const handleNewEntry = () => {
