@@ -167,15 +167,21 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Users className="w-5 h-5 mr-2 text-purple-600" />
-                      Community Support
+                      <Heart className="w-5 h-5 mr-2 text-pink-600" />
+                      Partner Zone
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-4">
-                      Connect with others on similar journeys and share experiences in a supportive environment.
+                      Resources and support for partners, family and friends to understand and help during the menopause journey.
                     </p>
-                    <Button className="w-full" variant="outline">Join Community</Button>
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => navigate("/partner-zone")}
+                    >
+                      Visit Partner Zone
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
