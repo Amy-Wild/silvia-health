@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
-interface Step7LifestyleProps {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step7LifestyleProps = AssessmentStepProps;
 
 const Step7Lifestyle = ({ data, onUpdate }: Step7LifestyleProps) => {
   const handlePersonalHistoryChange = (condition: string, checked: boolean) => {

@@ -2,6 +2,8 @@
 // Enhanced clinical validation based on NICE Guidelines NG23
 // Evidence-based validation for menopause assessment data
 
+import { PatientAssessmentData } from "@/types/clinicalTypes";
+
 export interface ClinicalValidationResult {
   isValid: boolean;
   warnings: string[];
@@ -10,7 +12,7 @@ export interface ClinicalValidationResult {
 }
 
 // Risk assessment scoring based on NICE NG23 + latest evidence
-export const calculateEnhancedRiskScore = (data: any): {
+export const calculateEnhancedRiskScore = (data: PatientAssessmentData): {
   score: number;
   level: 'low' | 'medium' | 'high' | 'urgent';
   factors: string[];
@@ -79,7 +81,7 @@ export const calculateEnhancedRiskScore = (data: any): {
 };
 
 // Validate clinical data completeness and accuracy
-export const validateClinicalAssessment = (data: any): ClinicalValidationResult => {
+export const validateClinicalAssessment = (data: PatientAssessmentData): ClinicalValidationResult => {
   const warnings: string[] = [];
   const errors: string[] = [];
   const clinicalNotes: string[] = [];
@@ -132,7 +134,7 @@ export const validateClinicalAssessment = (data: any): ClinicalValidationResult 
 };
 
 // Evidence-based treatment pathway validation
-export const validateTreatmentPathway = (data: any, riskLevel: string): {
+export const validateTreatmentPathway = (data: PatientAssessmentData, riskLevel: string): {
   pathway: 'urgent' | 'gp-routine' | 'education' | 'self-care';
   rationale: string[];
   evidence: string[];

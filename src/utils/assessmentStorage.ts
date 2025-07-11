@@ -1,6 +1,8 @@
 
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
+import { ClinicalSummary } from "@/types/clinicalTypes";
+
 export interface AssessmentResult {
   sessionId: string;
   patientRef: string;
@@ -8,7 +10,7 @@ export interface AssessmentResult {
   completedAt: string;
   riskLevel: string;
   urgentFlags: string[];
-  clinicalSummary: any;
+  clinicalSummary: ClinicalSummary;
   recommendations: string[];
   rawData: PatientAssessmentData;
   carePath: string;
@@ -31,7 +33,7 @@ export const saveAssessment = async (sessionId: string, assessmentData: PatientA
     };
     
     // Add or update the assessment
-    const existingIndex = existingAssessments.findIndex((a: any) => a.sessionId === sessionId);
+    const existingIndex = existingAssessments.findIndex((a: AssessmentResult) => a.sessionId === sessionId);
     if (existingIndex >= 0) {
       existingAssessments[existingIndex] = assessmentSummary;
     } else {

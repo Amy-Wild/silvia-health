@@ -5,11 +5,9 @@ import MenstrualStatusSelector from "./step2-components/MenstrualStatusSelector"
 import PostmenopausalQuestions from "./step2-components/PostmenopausalQuestions";
 import RedFlagSymptoms from "./step2-components/RedFlagSymptoms";
 import UTIHistoryQuestion from "./step2-components/UTIHistoryQuestion";
+import { AssessmentStepProps } from "@/types/componentTypes";
 
-interface Step2YourPeriodsProps {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+type Step2YourPeriodsProps = AssessmentStepProps;
 
 const Step2YourPeriods = ({ data, onUpdate }: Step2YourPeriodsProps) => {
   const [showPostmenopausalQuestions, setShowPostmenopausalQuestions] = useState(

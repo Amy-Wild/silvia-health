@@ -3,10 +3,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface Step8Props {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step8Props = AssessmentStepProps;
 
 const Step8Complete = ({ data, onUpdate }: Step8Props) => {
   return (

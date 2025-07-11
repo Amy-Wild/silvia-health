@@ -28,7 +28,7 @@ const PatientAssessmentForm = ({ step, data, onDataChange }: PatientAssessmentFo
   console.log("Current step:", step);
   console.log("Form data:", formData);
 
-  const updateData = (key: string, value: any) => {
+  const updateData = (key: keyof PatientAssessmentData, value: string | string[] | boolean) => {
     console.log("=== UPDATING FORM DATA ===");
     console.log("Key:", key);
     console.log("Value:", value);

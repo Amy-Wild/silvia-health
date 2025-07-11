@@ -4,10 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
-interface Step4Props {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step4Props = AssessmentStepProps;
 
 const Step4PhysicalSymptoms = ({ data, onUpdate }: Step4Props) => {
   // Simplified symptom list without clinical evidence

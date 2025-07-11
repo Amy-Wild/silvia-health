@@ -12,7 +12,7 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
   // Decode patient reference from URL parameter
   const decodePatientRef = (encodedRef: string) => {
     try {
-      return decodeURIComponent(atob(encodedRef));
+      return decodeURIComponent(encodedRef);
     } catch (error) {
       console.warn("Failed to decode patient reference:", error);
       return null;
@@ -37,13 +37,18 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       console.log("📊 Assessment processed:", { result, determinedPath });
       
       // Get patient reference from multiple sources (URL parameter first, then localStorage backup)
+      console.log("🔍 Current URL:", window.location.href);
       const urlParams = new URLSearchParams(window.location.search);
+      console.log("🔍 URL search params:", window.location.search);
       const encodedPatientRef = urlParams.get('patientRef');
+      console.log("🔍 Encoded patientRef from URL:", encodedPatientRef);
       let patientRef = null;
       
       if (encodedPatientRef) {
         patientRef = decodePatientRef(encodedPatientRef);
         console.log("📋 Retrieved patient reference from URL:", patientRef);
+      } else {
+        console.log("⚠️ No patientRef found in URL parameters");
       }
       
       // Fallback to localStorage if URL method fails
@@ -62,48 +67,58 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       console.log("SessionId:", sessionId);
       console.log("Final patient reference:", patientRef);
       const assessmentLink = dataStore.findAssessmentLinkBySession(sessionId);
+      console.log("Found assessment link:", assessmentLink);
+
+      // Generate patient reference from assessment link if available
+      let finalPatientRef = patientRef;
+      if (!finalPatientRef && assessmentLink) {
+        console.log("Using assessment link data for patient name:", {
+          firstName: assessmentLink.firstName,
+          surname: assessmentLink.surname
+        });
+        if (assessmentLink.firstName && assessmentLink.surname) {
+          finalPatientRef = `${assessmentLink.firstName} ${assessmentLink.surname}`;
+        } else if (assessmentLink.firstName) {
+          finalPatientRef = assessmentLink.firstName;
+        }
+      }
+      console.log("Final patient reference will be:", finalPatientRef);
 
       // Save to completed_assessments
       const completedAssessmentData = {
         sessionId,
-        patientRef: patientRef || "Anonymous Patient",
+        patientRef: finalPatientRef || "Anonymous Patient",
         completedAt: new Date().toISOString(),
         riskLevel: result.riskLevel.toLowerCase(),
         urgentFlags: result.urgentFlags || [],
         rawData: result
       };
-      // Save to completed_assessments
-      // Save to completed_assessments - FIXED VERSION
+      // Save to completed_assessments - multiple keys for dashboard compatibility
       const keys = ['completed_assessments', 'all_assessments', 'gp_assessments', 'sylvia_completed_assessments'];
 
       keys.forEach(key => {
-    try {
-    const existingAssessments = JSON.parse(localStorage.getItem(key) || '[]');
-    existingAssessments.push(completedAssessmentData);
-    localStorage.setItem(key, JSON.stringify(existingAssessments));
-    console.log(`✅ Assessment saved to ${key}`);
-    } catch (error) {
-    console.error(`❌ Failed to save to ${key}:`, error);
-  }
-});
+        try {
+          const existingAssessments = JSON.parse(localStorage.getItem(key) || '[]');
+          existingAssessments.push(completedAssessmentData);
+          localStorage.setItem(key, JSON.stringify(existingAssessments));
+          console.log(`✅ Assessment saved to ${key}`);
+        } catch (error) {
+          console.error(`❌ Failed to save to ${key}:`, error);
+        }
+      });
 
-// CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
-      // CROSS-DOMAIN FIX - Also save to multiple keys for dashboard compatibility
-      try {
-      localStorage.setItem('sylvia_completed_assessments', JSON.stringify(assessments));
-      localStorage.setItem('all_assessments', JSON.stringify(assessments));
-  
       // Also ensure the assessment appears in the GP's personal list
       if (assessmentLink) {
-      const userEmail = assessmentLink.createdBy;
-      const userCompletedKey = `${userEmail}_completed_assessments`;
-      const userCompleted = JSON.parse(localStorage.getItem(userCompletedKey) || '[]');
-      userCompleted.push(completedAssessmentData);
-      localStorage.setItem(userCompletedKey, JSON.stringify(userCompleted));
-      console.log(`✅ Also saved to ${userEmail} personal completed list`);
-      }
-      } catch (error) {
-      console.log('Cross-domain save failed:', error);
+        try {
+          const userEmail = assessmentLink.createdBy;
+          const userCompletedKey = `${userEmail}_completed_assessments`;
+          const userCompleted = JSON.parse(localStorage.getItem(userCompletedKey) || '[]');
+          userCompleted.push(completedAssessmentData);
+          localStorage.setItem(userCompletedKey, JSON.stringify(userCompleted));
+          console.log(`✅ Also saved to ${userEmail} personal completed list`);
+        } catch (error) {
+          console.error('Failed to save to user-specific list:', error);
+        }
       }
       // ALSO store individual assessment for GP results page (keep this for results page compatibility)
       localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
@@ -129,6 +144,9 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
       }
 
       // Route based on care pathway
+      console.log("🛤️ Determined care pathway:", determinedPath);
+      console.log("🎯 Risk level for routing:", result.riskLevel);
+      
       if (determinedPath === 'self-care' || determinedPath === 'education') {
         const treatmentPreferences = normalizedData.treatmentPreferences || [];
         const educationUrl = treatmentPreferences.length > 0 
@@ -157,7 +175,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
           duration: 5000
         });
         
-        navigate(`/patient-results/${sessionId}`);
+        console.log("🔄 Navigating to patient results page:", `/patient-results/${sessionId}`);
+        // Small delay to ensure data is saved before navigation
+        setTimeout(() => {
+          navigate(`/patient-results/${sessionId}`);
+        }, 500);
       }
     } catch (error) {
       console.error("❌ Error processing assessment:", error);

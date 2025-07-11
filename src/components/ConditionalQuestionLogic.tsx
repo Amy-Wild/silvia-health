@@ -1,8 +1,9 @@
 
 import { calculateBMI } from "@/utils/assessmentProcessor";
+import { PatientAssessmentData } from "@/types/clinicalTypes";
 
 // Function to determine the appropriate care path based on assessment data
-export const determineCarePath = (data: any): 'self-care' | 'education' | 'gp-routine' | 'gp-urgent' => {
+export const determineCarePath = (data: PatientAssessmentData): 'self-care' | 'education' | 'gp-routine' | 'gp-urgent' => {
   // Check for urgent flags first
   if (getUrgentFlags(data).length > 0) {
     return 'gp-urgent';
@@ -23,7 +24,7 @@ export const determineCarePath = (data: any): 'self-care' | 'education' | 'gp-ro
 };
 
 // Function to generate a clinical summary based on assessment data
-export const generateClinicalSummary = (data: any) => {
+export const generateClinicalSummary = (data: PatientAssessmentData) => {
   // Vasomotor Symptoms
   const vasomotor = {
     severity: data.hotFlashFrequency || 'None',
@@ -124,7 +125,7 @@ export const generateNHSRecommendations = (data: any, riskLevel: string): string
 };
 
 // Function to generate patient guidance based on assessment data
-export const generatePatientGuidance = (data: any): string => {
+export const generatePatientGuidance = (data: PatientAssessmentData): string => {
   let guidance = "Based on your assessment, here's some general guidance:\n\n";
 
   if (data.hotFlashFrequency === 'severe') {
@@ -143,7 +144,7 @@ export const generatePatientGuidance = (data: any): string => {
 };
 
 // NICE NG23 COMPLIANT RISK CALCULATION
-export const calculateRiskLevel = (data: any): string => {
+export const calculateRiskLevel = (data: PatientAssessmentData): string => {
   console.log("=== NICE NG23 COMPLIANT RISK CALCULATION ===");
   console.log("Input data:", data);
   
@@ -215,7 +216,7 @@ export const calculateRiskLevel = (data: any): string => {
 };
 
 // NICE NG23 COMPLIANT URGENT FLAGS
-export const getUrgentFlags = (data: any): string[] => {
+export const getUrgentFlags = (data: PatientAssessmentData): string[] => {
   console.log("=== NICE NG23 URGENT FLAGS ASSESSMENT ===");
   console.log("Input data for urgent flags:", data);
   
@@ -261,7 +262,7 @@ export const getUrgentFlags = (data: any): string[] => {
 };
 
 // Function to get red flags based on assessment data
-export const getRedFlags = (data: any): string[] => {
+export const getRedFlags = (data: PatientAssessmentData): string[] => {
     const redFlags: string[] = [];
   
     if (data.postmenopausalBleeding === 'yes') {
