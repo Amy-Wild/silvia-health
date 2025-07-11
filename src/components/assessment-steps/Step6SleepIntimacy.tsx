@@ -5,10 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
-interface Step6SleepIntimacyProps {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step6SleepIntimacyProps = AssessmentStepProps;
 
 const Step6SleepIntimacy = ({ data, onUpdate }: Step6SleepIntimacyProps) => {
   const handleTreatmentPreferenceChange = (preference: string, checked: boolean) => {

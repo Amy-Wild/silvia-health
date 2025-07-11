@@ -86,6 +86,8 @@ const GPDashboard = () => {
       // Read completed assessments from the unified localStorage key
       const completedAssessments = JSON.parse(localStorage.getItem('completed_assessments') || '[]');
       console.log("📋 Completed assessments from localStorage:", completedAssessments);
+      console.log("📋 DETAILED VIEW - First assessment patientRef:", completedAssessments[0]?.patientRef);
+      console.log("📋 DETAILED VIEW - All patientRefs:", completedAssessments.map(a => a.patientRef));
       
       // Transform assessments to match expected interface
       const allAssessments = completedAssessments.map((assessment: any) => ({

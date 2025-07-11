@@ -3,10 +3,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface Step3Props {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step3Props = AssessmentStepProps;
 
 const Step3HotFlashes = ({ data, onUpdate }: Step3Props) => {
   return (

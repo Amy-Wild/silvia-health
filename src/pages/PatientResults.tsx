@@ -4,36 +4,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Heart, Info, AlertTriangle, Download, BookOpen, Calendar, Clock, Activity, Phone, Shield } from "lucide-react";
 import TrackerIntegration from "@/components/TrackerIntegration";
-import { useState, useEffect } from "react";
-import { getAssessment } from "@/utils/assessmentStorage";
+import { useState, useEffect, useCallback } from "react";
+import { getAssessment, AssessmentResult } from "@/utils/assessmentStorage";
 import { calculateRiskLevel, getUrgentFlags, getRedFlags, generatePatientGuidance } from "@/components/ConditionalQuestionLogic";
+import { PatientAssessmentData } from "@/types/clinicalTypes";
 
 const PatientResults = () => {
   const { sessionId } = useParams();
-  const [assessmentData, setAssessmentData] = useState<any>(null);
+  const [assessmentData, setAssessmentData] = useState<AssessmentResult | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAssessmentData();
-  }, [sessionId]);
-
-  const loadAssessmentData = async () => {
+  const loadAssessmentData = useCallback(async () => {
+    console.log("🔍 PatientResults: Loading assessment data for sessionId:", sessionId);
     if (!sessionId) {
+      console.log("❌ PatientResults: No sessionId provided");
       setLoading(false);
       return;
     }
 
     try {
       const assessment = await getAssessment(sessionId);
+      console.log("📊 PatientResults: Retrieved assessment:", assessment);
       if (assessment) {
         setAssessmentData(assessment);
+        console.log("✅ PatientResults: Assessment data set successfully");
+      } else {
+        console.log("⚠️ PatientResults: No assessment found for sessionId:", sessionId);
       }
     } catch (error) {
-      console.error("Error loading assessment:", error);
+      console.error("❌ PatientResults: Error loading assessment:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    loadAssessmentData();
+  }, [sessionId, loadAssessmentData]);
 
   // Generate dynamic results based on assessment data
   const generateDynamicResults = () => {
@@ -70,7 +77,7 @@ const PatientResults = () => {
     };
   };
 
-  const generateKeyFindings = (rawData: any, riskLevel: string) => {
+  const generateKeyFindings = (rawData: PatientAssessmentData, riskLevel: string) => {
     const findings = [];
     
     // Vasomotor symptoms
@@ -105,7 +112,7 @@ const PatientResults = () => {
     return findings;
   };
 
-  const generatePersonalizedActions = (rawData: any, riskLevel: string, hasRedFlags: boolean, hasCriticalMentalHealth: boolean) => {
+  const generatePersonalizedActions = (rawData: PatientAssessmentData, riskLevel: string, hasRedFlags: boolean, hasCriticalMentalHealth: boolean) => {
     const actions = [];
 
     // Critical mental health - immediate support
@@ -164,7 +171,7 @@ const PatientResults = () => {
     return actions;
   };
 
-  const generateGPDiscussionTopics = (rawData: any, riskLevel: string) => {
+  const generateGPDiscussionTopics = (rawData: PatientAssessmentData, riskLevel: string) => {
     const topics = [];
 
     if (rawData.treatmentPreferences?.includes('hrt')) {
@@ -196,7 +203,7 @@ const PatientResults = () => {
     return topics;
   };
 
-  const generateNextSteps = (rawData: any, riskLevel: string, hasRedFlags: boolean) => {
+  const generateNextSteps = (rawData: PatientAssessmentData, riskLevel: string, hasRedFlags: boolean) => {
     const steps = [];
 
     if (hasRedFlags) {
@@ -214,7 +221,7 @@ const PatientResults = () => {
     return steps;
   };
 
-  const generateEducationalTopics = (rawData: any) => {
+  const generateEducationalTopics = (rawData: PatientAssessmentData) => {
     const topics = [];
     const priorities = [];
 

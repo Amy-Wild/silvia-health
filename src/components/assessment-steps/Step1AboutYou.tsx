@@ -4,11 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Info } from "lucide-react";
+import { AssessmentStepProps } from "@/types/componentTypes";
 
-interface Step1Props {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+type Step1Props = AssessmentStepProps;
 
 const Step1AboutYou = ({ data, onUpdate }: Step1Props) => {
   return (

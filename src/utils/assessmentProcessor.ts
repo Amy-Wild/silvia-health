@@ -10,34 +10,7 @@ import {
 import { EmailService } from "@/services/EmailService";
 import type { PatientAssessmentData } from "@/types/clinicalTypes";
 
-interface AssessmentData {
-  patientRef?: string;
-  age?: string;
-  dateOfBirth?: string;
-  menstrualStatus?: string;
-  periodsStopped?: string;
-  postmenopausalBleeding?: string;
-  unexplainedWeightLoss?: string;
-  severePelvicPain?: string;
-  hotFlashFrequency?: string;
-  nightSweats?: string;
-  physicalSymptoms?: string[];
-  moodSymptoms?: string;
-  libidoChanges?: string;
-  smokingStatus?: string;
-  alcoholConsumption?: string;
-  exerciseLevel?: string;
-  bmi?: string;
-  treatmentPreferences?: string[];
-  personalMedicalHistory?: string[];
-  familyHistory?: string[];
-  height?: string;
-  weight?: string;
-  sleepQuality?: string;
-  vaginalSymptoms?: string;
-  cognitiveSymptoms?: string;
-  [key: string]: any;
-}
+// Using PatientAssessmentData from clinical types instead of duplicate interface
 
 export const calculateBMI = (height?: string, weight?: string): number | null => {
   if (!height || !weight) return null;

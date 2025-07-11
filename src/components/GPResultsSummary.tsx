@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Clock, User, Heart, Brain, Activity, Shield } from "lucide-react";
 
+import { AssessmentResult } from "@/types/componentTypes";
+
 interface GPResultsSummaryProps {
-  clinicalResults: any;
+  clinicalResults: AssessmentResult;
 }
 
 const GPResultsSummary = ({ clinicalResults }: GPResultsSummaryProps) => {

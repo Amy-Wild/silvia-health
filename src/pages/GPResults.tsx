@@ -7,24 +7,21 @@ import { useNavigate } from "react-router-dom";
 import GPClinicalSummary from "@/components/GPClinicalSummary";
 import TreatmentRecommendations from "@/components/TreatmentRecommendations";
 import { generateClinicalSummary, generateNHSRecommendations, getRedFlags, getUrgentFlags, calculateRiskLevel } from "@/components/ConditionalQuestionLogic";
-import { useState, useEffect } from "react";
-import { getAssessment } from "@/utils/assessmentStorage";
+import { useState, useEffect, useCallback } from "react";
+import { getAssessment, AssessmentResult } from "@/utils/assessmentStorage";
+import { PatientAssessmentData } from "@/types/clinicalTypes";
 
 const GPResults = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const [clinicalResults, setClinicalResults] = useState<any>(null);
+  const [clinicalResults, setClinicalResults] = useState<AssessmentResult | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAssessmentData();
-  }, [sessionId]);
-
-  const loadAssessmentData = async () => {
-    console.log("🔍 Loading assessment data for sessionId:", sessionId);
+  const loadAssessmentData = useCallback(async () => {
+    console.log("🔍 GPResults: Loading assessment data for sessionId:", sessionId);
     
     if (!sessionId) {
-      console.error("❌ No sessionId provided");
+      console.error("❌ GPResults: No sessionId provided");
       setLoading(false);
       return;
     }
@@ -46,9 +43,13 @@ const GPResults = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
-  const generateEnhancedGPResults = (assessmentResult: any) => {
+  useEffect(() => {
+    loadAssessmentData();
+  }, [sessionId, loadAssessmentData]);
+
+  const generateEnhancedGPResults = (assessmentResult: AssessmentResult) => {
     const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
     
     console.log('Raw assessment data:', rawData); // Debug log
@@ -98,7 +99,7 @@ const GPResults = () => {
   };
 
   // CORRECTED URGENCY SCORE CALCULATION
-  const calculateCorrectUrgencyScore = (rawData: any, riskLevel: string): number => {
+  const calculateCorrectUrgencyScore = (rawData: PatientAssessmentData, riskLevel: string): number => {
     let baseScore = 0;
     
     // Base score from risk level
@@ -122,7 +123,7 @@ const GPResults = () => {
   };
 
   // CORRECTED PSYCHOLOGICAL RISK ASSESSMENT
-  const assessCorrectPsychologicalRisk = (rawData: any): string => {
+  const assessCorrectPsychologicalRisk = (rawData: PatientAssessmentData): string => {
     // CRITICAL mapping for self-harm risk
     if (rawData.selfHarmRisk === 'frequent') {
       return 'CRITICAL - Immediate intervention required (frequent suicidal ideation reported)';
@@ -149,7 +150,7 @@ const GPResults = () => {
     return 'LOW - No immediate psychological concerns identified';
   };
 
-  const generateTreatmentOptions = (rawData: any, clinicalSummary: any, riskLevel: string) => {
+  const generateTreatmentOptions = (rawData: PatientAssessmentData, clinicalSummary: any, riskLevel: string) => {
     const options = [];
     
     // HRT Assessment
@@ -187,7 +188,7 @@ const GPResults = () => {
     return options;
   };
 
-  const assessHRTSuitability = (rawData: any, clinicalSummary: any) => {
+  const assessHRTSuitability = (rawData: PatientAssessmentData, clinicalSummary: any) => {
     let probability = 70;
     let suitability = 70;
     const considerations = [];
@@ -239,7 +240,7 @@ const GPResults = () => {
     };
   };
 
-  const generateLifestyleInterventions = (rawData: any) => {
+  const generateLifestyleInterventions = (rawData: PatientAssessmentData) => {
     const interventions = [];
     
     if (rawData.smokingStatus === 'current') {
@@ -256,7 +257,7 @@ const GPResults = () => {
     return interventions;
   };
 
-  const generateRiskFactors = (rawData: any) => {
+  const generateRiskFactors = (rawData: PatientAssessmentData) => {
     const factors = [];
     
     if (rawData.smokingStatus === 'current') factors.push("Current smoker");
@@ -492,7 +493,7 @@ const GPResults = () => {
 };
 
 // Helper functions moved to end of file for brevity
-const generateEnhancedGPResults = (assessmentResult: any) => {
+const generateEnhancedGPResults = (assessmentResult: AssessmentResult) => {
   const { rawData, riskLevel, recommendations, urgentFlags } = assessmentResult;
   
   console.log('Raw assessment data:', rawData);

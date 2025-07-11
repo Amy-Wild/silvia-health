@@ -3,10 +3,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface Step5Props {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step5Props = AssessmentStepProps;
 
 const Step5MoodMemory = ({ data, onUpdate }: Step5Props) => {
   return (

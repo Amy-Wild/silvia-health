@@ -143,19 +143,27 @@ class DataStore {
 
   // Find assessment link by session ID (searches across all users) - NOW PUBLIC
   findAssessmentLinkBySession(sessionId: string): AssessmentLink | null {
+    console.log(`🔍 Searching for assessment link with sessionId: ${sessionId}`);
+    
     // Get all localStorage keys that end with '_assessments'
     const keys = Object.keys(localStorage).filter(key => key.endsWith('_assessments'));
+    console.log(`📋 Found ${keys.length} assessment key(s) to search:`, keys);
     
     for (const key of keys) {
       try {
         const assessments: AssessmentLink[] = JSON.parse(localStorage.getItem(key) || '[]');
+        console.log(`🔍 Searching in ${key}, found ${assessments.length} assessments`);
         const found = assessments.find(assessment => assessment.sessionId === sessionId);
-        if (found) return found;
+        if (found) {
+          console.log(`✅ Found assessment link:`, found);
+          return found;
+        }
       } catch (error) {
         console.error(`❌ Error searching assessments in ${key}:`, error);
       }
     }
     
+    console.log(`❌ No assessment link found for sessionId: ${sessionId}`);
     return null;
   }
 

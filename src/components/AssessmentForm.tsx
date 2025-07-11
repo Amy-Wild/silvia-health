@@ -9,17 +9,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, Info } from "lucide-react";
 
+import { PatientAssessmentData } from "@/types/clinicalTypes";
+
 interface AssessmentFormProps {
   step: number;
-  data: any;
-  onDataChange: (data: any) => void;
+  data: PatientAssessmentData;
+  onDataChange: (data: PatientAssessmentData) => void;
   onRiskChange: (risk: string) => void;
 }
 
 const AssessmentForm = ({ step, data, onDataChange, onRiskChange }: AssessmentFormProps) => {
   const [formData, setFormData] = useState(data);
 
-  const updateData = (key: string, value: any) => {
+  const updateData = (key: keyof PatientAssessmentData, value: string | string[] | boolean) => {
     const newData = { ...formData, [key]: value };
     setFormData(newData);
     onDataChange(newData);
@@ -28,7 +30,7 @@ const AssessmentForm = ({ step, data, onDataChange, onRiskChange }: AssessmentFo
     assessRisk(newData);
   };
 
-  const assessRisk = (data: any) => {
+  const assessRisk = (data: PatientAssessmentData) => {
     // Red flag conditions
     const redFlags = [
       data.postmenopausalBleeding === "yes",

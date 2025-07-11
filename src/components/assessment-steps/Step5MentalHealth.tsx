@@ -4,10 +4,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Heart } from "lucide-react";
 
-interface Step5MentalHealthProps {
-  data: any;
-  onUpdate: (key: string, value: any) => void;
-}
+import { AssessmentStepProps } from "@/types/componentTypes";
+
+type Step5MentalHealthProps = AssessmentStepProps;
 
 const Step5MentalHealth = ({ data, onUpdate }: Step5MentalHealthProps) => {
   return (
