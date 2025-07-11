@@ -88,7 +88,7 @@ const Auth = () => {
           <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
             <Stethoscope className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">SYLVIA Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">SILVIA Login</CardTitle>
           <p className="text-gray-600">Access your health portal</p>
         </CardHeader>
         <CardContent>

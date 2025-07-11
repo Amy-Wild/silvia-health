@@ -38,11 +38,11 @@ const SymptomTracker = () => {
 
   const handleLogout = () => {
     // Preserve demo access while clearing user auth
-    const demoAuth = localStorage.getItem("sylvia_demo_auth");
+    const demoAuth = localStorage.getItem("silvia_demo_auth");
     localStorage.removeItem("auth_user");
     // Preserve demo access if it exists
     if (demoAuth) {
-      localStorage.setItem("sylvia_demo_auth", demoAuth);
+      localStorage.setItem("silvia_demo_auth", demoAuth);
     }
     // Force reload to the landing page
     window.location.replace("/");

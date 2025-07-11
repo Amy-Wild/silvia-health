@@ -290,7 +290,7 @@ const GPDashboard = () => {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SYLVIA Clinical Portal</h1>
+                <h1 className="text-xl font-bold text-gray-900">SILVIA Clinical Portal</h1>
                 <p className="text-sm text-gray-600">
                   <strong>S</strong>ymptom <strong>I</strong>ntake & <strong>L</strong>iaison for <strong>V</strong>ital <strong>I</strong>nsight & <strong>A</strong>ssessment
                 </p>

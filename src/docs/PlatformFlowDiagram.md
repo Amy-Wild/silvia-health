@@ -1,5 +1,5 @@
 
-# SYLVIA Health Platform Flow Diagram
+# SILVIA Health Platform Flow Diagram
 *Complete Patient Journey & System Architecture*
 
 ## 🏥 GP/Clinic Workflow
@@ -146,7 +146,7 @@ ELSE
 **Actions Available**:
 - Download assessment summary
 - Access personalized educational resources
-- Explore symptom tracking (redirects to SYLVIA homepage)
+- Explore symptom tracking (redirects to SILVIA homepage)
 - Close window
 
 ---
@@ -161,13 +161,13 @@ ELSE
 
 ---
 
-### 7. SYLVIA Platform Integration Points
+### 7. SILVIA Platform Integration Points
 
 #### 7A. Symptom Tracker Integration
 **New Patient Flow**: 
-- Assessment → Results → "Explore Symptom Tracking" → SYLVIA Homepage
+- Assessment → Results → "Explore Symptom Tracking" → SILVIA Homepage
 - URL: `/?source=assessment&session={sessionId}&focus=symptom-tracking`
-- Homepage explains SYLVIA platform and symptom tracking benefits
+- Homepage explains SILVIA platform and symptom tracking benefits
 - Patients can choose to sign up and start tracking
 
 **Returning Patient Flow**:
@@ -269,7 +269,7 @@ interface PatientAssessmentData {
 ## 🎯 Enhanced Integration Points
 
 ### External Systems
-- **SYLVIA Homepage**: Seamless patient onboarding for symptom tracking
+- **SILVIA Homepage**: Seamless patient onboarding for symptom tracking
 - **Educational Platform**: Dynamic content personalization
 - **Symptom Tracker**: Assessment-driven tracking recommendations
 - **Email Services**: Assessment link delivery with enhanced templates
@@ -303,11 +303,11 @@ interface PatientAssessmentData {
 - **New**: Long-term symptom tracking engagement and clinical utility
 
 ### Platform Integration Success
-- **New**: Assessment-to-SYLVIA conversion rates
+- **New**: Assessment-to-SILVIA conversion rates
 - **New**: Educational content engagement from personalized recommendations
 - **New**: Symptom tracking usage patterns from assessment recommendations
 - **New**: Clinical outcome improvements with integrated care pathway
 
 ---
 
-*This document serves as the technical blueprint for the complete SYLVIA Health platform flow, from GP initiation through patient completion, clinical review, and ongoing care integration with personalized symptom tracking and educational support.*
+*This document serves as the technical blueprint for the complete SILVIA Health platform flow, from GP initiation through patient completion, clinical review, and ongoing care integration with personalized symptom tracking and educational support.*

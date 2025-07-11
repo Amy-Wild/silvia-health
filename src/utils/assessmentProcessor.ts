@@ -123,8 +123,7 @@ export const processAssessmentData = async (assessmentData: AssessmentData, sess
   // Store result for GP access
   localStorage.setItem(`assessment_${sessionId}`, JSON.stringify(result));
   
-  // Clean up the patient reference storage (no longer needed)
-  localStorage.removeItem(`patient_ref_${sessionId}`);
+  // Note: Keep patient_ref_${sessionId} for completion hook - it will be cleaned up later
   
   console.log("💾 Assessment stored in localStorage");
   

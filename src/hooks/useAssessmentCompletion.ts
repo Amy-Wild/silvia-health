@@ -181,6 +181,11 @@ export const useAssessmentCompletion = (sessionId: string | undefined) => {
           navigate(`/patient-results/${sessionId}`);
         }, 500);
       }
+      
+      // Clean up temporary patient reference storage (now that assessment is complete)
+      localStorage.removeItem(`patient_ref_${sessionId}`);
+      console.log("🧹 Cleaned up temporary patient reference storage");
+      
     } catch (error) {
       console.error("❌ Error processing assessment:", error);
       toast({

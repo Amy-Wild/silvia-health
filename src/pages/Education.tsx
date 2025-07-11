@@ -15,6 +15,16 @@ const Education = () => {
   const fromAssessment = searchParams.get('source') === 'assessment';
   const sessionId = searchParams.get('sessionId');
   const preferences = searchParams.get('preferences')?.split(',') || [];
+  
+  // Get tab from URL parameter, default to "videos"
+  const activeTab = searchParams.get('tab') || "videos";
+  
+  // Handle tab changes
+  const handleTabChange = (value: string) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', value);
+    navigate(`/education?${newSearchParams.toString()}`, { replace: true });
+  };
 
   const videos = [
     {
@@ -212,7 +222,7 @@ const Education = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="videos" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="videos" className="flex items-center space-x-2">
                 <Play className="w-4 h-4" />
@@ -319,20 +329,94 @@ const Education = () => {
             </TabsContent>
 
             <TabsContent value="partner">
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 text-blue-600 mx-auto mb-6" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Partner Zone</h2>
-                <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                  Resources and guidance for partners, family, and friends to understand 
-                  and support women through perimenopause and menopause.
-                </p>
-                <Button 
-                  onClick={() => navigate('/partner-zone')}
-                  size="lg"
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Visit Partner Zone
-                </Button>
+              <div className="space-y-8">
+                {/* Header */}
+                <div className="text-center">
+                  <Users className="w-16 h-16 text-blue-600 mx-auto mb-6" />
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Partner Zone</h2>
+                  <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Resources and guidance for partners, family, and friends to understand 
+                    and support women through perimenopause and menopause.
+                  </p>
+                </div>
+
+                {/* Support Strategies */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {[
+                    {
+                      title: "Listen Without Fixing",
+                      description: "Sometimes she just needs to be heard and validated.",
+                      icon: "👂"
+                    },
+                    {
+                      title: "Learn About Symptoms", 
+                      description: "Understanding helps you provide better support.",
+                      icon: "📚"
+                    },
+                    {
+                      title: "Be Patient",
+                      description: "Hormonal changes can cause emotional fluctuations.",
+                      icon: "💙"
+                    },
+                    {
+                      title: "Support Changes",
+                      description: "Join her in healthy lifestyle adjustments.",
+                      icon: "🤝"
+                    }
+                  ].map((strategy, index) => (
+                    <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="text-3xl mb-3">{strategy.icon}</div>
+                        <h3 className="font-semibold text-lg mb-2">{strategy.title}</h3>
+                        <p className="text-gray-600 text-sm">{strategy.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Common Challenges */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Common Challenges & How to Help</h3>
+                  {[
+                    {
+                      challenge: "Sleep Disruption",
+                      support: "Consider separate bedding, room temperature control, and patience with sleep patterns"
+                    },
+                    {
+                      challenge: "Mood Changes", 
+                      support: "Remain calm, avoid taking things personally, and encourage professional help if needed"
+                    },
+                    {
+                      challenge: "Physical Intimacy",
+                      support: "Open communication, patience, and exploring alternative forms of intimacy"
+                    }
+                  ].map((item, index) => (
+                    <Card key={index}>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          <div className="md:w-1/3">
+                            <h4 className="font-semibold text-blue-700">{item.challenge}</h4>
+                          </div>
+                          <div className="md:w-2/3">
+                            <p className="text-gray-700 text-sm">{item.support}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Link to Full Partner Zone */}
+                <div className="text-center pt-6 border-t">
+                  <Button 
+                    onClick={() => navigate('/partner-zone')}
+                    variant="outline"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    Visit Full Partner Zone
+                    <Heart className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
               </div>
             </TabsContent>
           </Tabs>

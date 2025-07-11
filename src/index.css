@@ -45,24 +45,24 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* SYLVIA Health Brand Colors */
-    /* SYLVIA Health Brand Colors */
-   /* SYLVIA Health Brand Colors - Enhanced */
-   --sylvia-gentle-blue: 214 100% 96%; /* #eff6ff - Lighter blue */
-   --sylvia-soft-green: 142 76% 95%; /* #f0fdf4 - Softer green */
-   --sylvia-light-purple: 253 91% 97%; /* #faf5ff - Softer purple */
-   --sylvia-soft-coral: 25 95% 92%; /* #fef3e2 - Warmer coral */
-   --sylvia-text: 215 35% 20%; /* #2d3748 - Darker text */
-   --sylvia-background: 0 0% 100%; /* #ffffff */
-   --sylvia-primary-pink: 337 80% 65%; /* #e879a6 - New vibrant pink */
-   --sylvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
-   --sylvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
-   --sylvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
+    /* SILVIA Health Brand Colors */
+    /* SILVIA Health Brand Colors */
+   /* SILVIA Health Brand Colors - Enhanced */
+   --silvia-gentle-blue: 214 100% 96%; /* #eff6ff - Lighter blue */
+   --silvia-soft-green: 142 76% 95%; /* #f0fdf4 - Softer green */
+   --silvia-light-purple: 253 91% 97%; /* #faf5ff - Softer purple */
+   --silvia-soft-coral: 25 95% 92%; /* #fef3e2 - Warmer coral */
+   --silvia-text: 215 35% 20%; /* #2d3748 - Darker text */
+   --silvia-background: 0 0% 100%; /* #ffffff */
+   --silvia-primary-pink: 337 80% 65%; /* #e879a6 - New vibrant pink */
+   --silvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
+   --silvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
+   --silvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
     
     /* Clinical Status Colors */
-    --sylvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
-    --sylvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
-    --sylvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
+    --silvia-success: 142 76% 36%; /* #16a34a - GREEN (Low risk) */
+    --silvia-warning: 38 92% 50%; /* #f59e0b - AMBER (Medium risk) */
+    --silvia-error: 0 84% 60%; /* #ef4444 - RED (High risk/urgent) */
   }
 
   .dark {
@@ -114,41 +114,41 @@
   }
 }
 
-/* SYLVIA Health Brand Color Utilities */
+/* SILVIA Health Brand Color Utilities */
 @layer utilities {
-  .bg-sylvia-gentle-blue {
-    background-color: hsl(var(--sylvia-gentle-blue));
+  .bg-silvia-gentle-blue {
+    background-color: hsl(var(--silvia-gentle-blue));
   }
   
-  .bg-sylvia-soft-green {
-    background-color: hsl(var(--sylvia-soft-green));
+  .bg-silvia-soft-green {
+    background-color: hsl(var(--silvia-soft-green));
   }
   
-  .bg-sylvia-light-purple {
-    background-color: hsl(var(--sylvia-light-purple));
+  .bg-silvia-light-purple {
+    background-color: hsl(var(--silvia-light-purple));
   }
   
-  .bg-sylvia-soft-coral {
-    background-color: hsl(var(--sylvia-soft-coral));
+  .bg-silvia-soft-coral {
+    background-color: hsl(var(--silvia-soft-coral));
   }
   
-  .text-sylvia {
-    color: hsl(var(--sylvia-text));
+  .text-silvia {
+    color: hsl(var(--silvia-text));
   }
   
-  .border-sylvia-gentle-blue {
-    border-color: hsl(var(--sylvia-gentle-blue));
+  .border-silvia-gentle-blue {
+    border-color: hsl(var(--silvia-gentle-blue));
   }
   
-  .border-sylvia-soft-green {
-    border-color: hsl(var(--sylvia-soft-green));
+  .border-silvia-soft-green {
+    border-color: hsl(var(--silvia-soft-green));
   }
   
-  .border-sylvia-light-purple {
-    border-color: hsl(var(--sylvia-light-purple));
+  .border-silvia-light-purple {
+    border-color: hsl(var(--silvia-light-purple));
   }
   
-  .border-sylvia-soft-coral {
-    border-color: hsl(var(--sylvia-soft-coral));
+  .border-silvia-soft-coral {
+    border-color: hsl(var(--silvia-soft-coral));
   }
 }

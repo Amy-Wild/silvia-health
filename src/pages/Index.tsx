@@ -41,7 +41,7 @@ const Index = () => {
                 <Heart className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">SYLVIA Health</h1>
+                <h1 className="text-3xl font-bold text-gray-900">SILVIA Health</h1>
                 <p className="text-sm text-gray-600 mt-1">Your digital health companion</p>
               </div>
             </div>
@@ -145,7 +145,13 @@ const Index = () => {
                     <p className="text-gray-600 mb-4">
                       Comprehensive guides covering symptoms, stages, and what to expect during your journey.
                     </p>
-                    <Button className="w-full" variant="outline">Explore Guides</Button>
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => navigate("/education?tab=resources")}
+                    >
+                      Explore Guides
+                    </Button>
                   </CardContent>
                 </Card>
 
@@ -160,7 +166,13 @@ const Index = () => {
                     <p className="text-gray-600 mb-4">
                       Expert interviews, exercise routines, and practical tips from healthcare professionals.
                     </p>
-                    <Button className="w-full" variant="outline">Watch Videos</Button>
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => navigate("/education?tab=videos")}
+                    >
+                      Watch Videos
+                    </Button>
                   </CardContent>
                 </Card>
 
@@ -241,7 +253,7 @@ const Index = () => {
                     Every woman's menopause journey is unique. Learn about the different stages 
                     and how symptoms can vary from person to person.
                   </p>
-                  <Button>
+                  <Button onClick={() => navigate("/education?tab=resources")}>
                     <ArrowRight className="w-4 h-4 mr-2" />
                     Read Full Guide
                   </Button>
@@ -275,7 +287,13 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">Tools and tips for better sleep during menopause.</p>
-                  <Button className="w-full" variant="outline">Explore Tools</Button>
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate("/education?tab=resources")}
+                  >
+                    Explore Tools
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -288,7 +306,13 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">Meditation and relaxation techniques.</p>
-                  <Button className="w-full" variant="outline">Try Now</Button>
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate("/education?tab=resources")}
+                  >
+                    Try Now
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -346,7 +370,7 @@ const Index = () => {
           <div className="text-center text-gray-600">
             <div className="flex items-center justify-center mb-4">
               <Heart className="w-5 h-5 text-pink-500 mr-2" />
-              <span className="font-semibold">SYLVIA Health</span>
+              <span className="font-semibold">SILVIA Health</span>
             </div>
             <p className="text-sm">
               Supporting your health journey with evidence-based information and community connection.

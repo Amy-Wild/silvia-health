@@ -10,7 +10,7 @@ interface TrackerIntegrationProps {
 
 const TrackerIntegration = ({ sessionId, patientResults }: TrackerIntegrationProps) => {
   const handleLinkToTracker = () => {
-    // Direct patients to homepage where they can learn about SYLVIA and sign up if interested
+    // Direct patients to homepage where they can learn about SILVIA and sign up if interested
     const homeUrl = `/?source=assessment&session=${sessionId}&focus=symptom-tracking`;
     window.open(homeUrl, '_blank');
   };
@@ -195,7 +195,7 @@ const TrackerIntegration = ({ sessionId, patientResults }: TrackerIntegrationPro
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>New to SYLVIA?</strong> You'll be taken to our homepage where you can learn about our 
+              <strong>New to SILVIA?</strong> You'll be taken to our homepage where you can learn about our 
               symptom tracking platform and sign up if you'd like to start monitoring your symptoms.
             </p>
           </div>

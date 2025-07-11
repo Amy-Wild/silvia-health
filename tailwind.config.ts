@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// SYLVIA Health Brand Colors
+				// SILVIA Health Brand Colors
 				sylvia: {
 					'gentle-blue': '#dbeafe',
 					'soft-green': '#dcfce7',

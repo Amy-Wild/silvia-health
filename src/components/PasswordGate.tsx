@@ -18,7 +18,7 @@ const PasswordGate = ({ children }: PasswordGateProps) => {
 
   useEffect(() => {
     // Check if user has already entered the correct password
-    const storedAuth = localStorage.getItem("sylvia_demo_auth");
+    const storedAuth = localStorage.getItem("silvia_demo_auth");
     if (storedAuth === "demo2025") {
       setIsAuthenticated(true);
     }
@@ -29,7 +29,7 @@ const PasswordGate = ({ children }: PasswordGateProps) => {
     e.preventDefault();
     
     if (password === "demo2025") {
-      localStorage.setItem("sylvia_demo_auth", "demo2025");
+      localStorage.setItem("silvia_demo_auth", "demo2025");
       setIsAuthenticated(true);
       setError("");
     } else {
@@ -57,7 +57,7 @@ const PasswordGate = ({ children }: PasswordGateProps) => {
               </div>
             </div>
             <CardTitle className="text-2xl text-[#425563]">
-              SYLVIA Health Demo Access
+              SILVIA Health Demo Access
             </CardTitle>
             <p className="text-[#425563]/80 text-sm">
               This is a private demo. Please enter the access code provided.
