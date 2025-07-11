@@ -37,8 +37,13 @@ const SymptomTracker = () => {
   }, []);
 
   const handleLogout = () => {
-    // Clear all authentication data
-    localStorage.clear();
+    // Preserve demo access while clearing user auth
+    const demoAuth = localStorage.getItem("sylvia_demo_auth");
+    localStorage.removeItem("auth_user");
+    // Preserve demo access if it exists
+    if (demoAuth) {
+      localStorage.setItem("sylvia_demo_auth", demoAuth);
+    }
     // Force reload to the landing page
     window.location.replace("/");
   };
